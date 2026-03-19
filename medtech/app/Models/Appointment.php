@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Appointment extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'appointment_number', 'doctor_user_id', 'patient_user_id',
+        'family_member_id', 'slot_datetime', 'duration_minutes', 'type',
+        'status', 'reason', 'cancellation_reason',
+        'reminder_24h_sent', 'reminder_1h_sent', 'follow_up_reminder_sent',
+        'fee', 'payment_status', 'rescheduled_from',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'slot_datetime'            => 'datetime',
+            'reminder_24h_sent'        => 'boolean',
+            'reminder_1h_sent'         => 'boolean',
+            'follow_up_reminder_sent'  => 'boolean',
+            'fee'                      => 'decimal:2',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function ($appointment) {
+            if (empty($appointment->appointment_number)) {
+                $appointment->appointment_number = 'APT-' . date('Y') . '-' .
+                    str_pad(static::withTrashed()->count() + 1, 6, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    public function isUpcoming(): bool
+    {
+        return in_array($this->status, ['booked', 'confirmed'])
+            && $this->slot_datetime->isFuture();
+    }
+
+    public function isPast(): bool
+    {
+        return $this->slot_datetime->isPast();
+    }
+
+    // ─── Relationships ───────────────────────────────────────────────────────
+
+    public function doctor()
+    {
+        return $this->belongsTo(User::class, 'doctor_user_id');
+    }
+
+    public function patient()
+    {
+        return $this->belongsTo(User::class, 'patient_user_id');
+    }
+
+    public function familyMember()
+    {
+        return $this->belongsTo(FamilyMember::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+
+    public function rescheduledFrom()
+    {
+        return $this->belongsTo(Appointment::class, 'rescheduled_from');
+    }
+
+    // ─── Scopes ──────────────────────────────────────────────────────────────
+
+    public function scopeUpcoming($query)
+    {
+        return $query->whereIn('status', ['booked', 'confirmed'])
+                     ->where('slot_datetime', '>', now());
+    }
+
+    public function scopeToday($query)
+    {
+        return $query->whereDate('slot_datetime', today());
+    }
+
+    public function scopeForDoctor($query, int $doctorId)
+    {
+        return $query->where('doctor_user_id', $doctorId);
+    }
+}

@@ -1,0 +1,195 @@
+<?php
+
+namespace App\Http\Controllers\Doctor;
+
+use App\Http\Controllers\Controller;
+use App\Models\Prescription;
+use App\Models\PrescriptionMedicine;
+use App\Models\User;
+use App\Models\Appointment;
+use App\Services\PdfService;
+use App\Services\WhatsAppService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class PrescriptionController extends Controller
+{
+    public function __construct(
+        private PdfService      $pdf,
+        private WhatsAppService $whatsApp,
+    ) {}
+
+    public function index(Request $request)
+    {
+        $doctor = auth()->user();
+        $query  = Prescription::where('doctor_user_id', $doctor->id)
+            ->with(['patient.profile', 'medicines'])
+            ->latest('prescribed_date');
+
+        if ($s = $request->get('q')) {
+            $query->where(function ($q) use ($s) {
+                $q->where('prescription_number', 'like', "%{$s}%")
+                  ->orWhereHas('patient.profile', fn($p) => $p->where('full_name', 'like', "%{$s}%"));
+            });
+        }
+        if ($f = $request->get('filter')) {
+            match ($f) {
+                'today'     => $query->whereDate('prescribed_date', today()),
+                'unsent'    => $query->where('is_sent_whatsapp', false),
+                'this_week' => $query->whereBetween('prescribed_date', [now()->startOfWeek(), now()->endOfWeek()]),
+                default     => null,
+            };
+        }
+
+        $prescriptions = $query->paginate(20)->withQueryString();
+        return view('doctor.prescriptions.index', compact('prescriptions'));
+    }
+
+    public function create(Request $request)
+    {
+        $doctor  = auth()->user();
+        $profile = $doctor->doctorProfile;
+        $patient = $appointment = $record = null;
+
+        if ($pid = $request->get('patient')) {
+            $patient = User::where('id', $pid)->where('role', 'patient')
+                ->with(['profile', 'familyMembers' => fn($q) => $q->where('is_delinked', false)])
+                ->first();
+        }
+        if ($aid = $request->get('appointment')) {
+            $appointment = Appointment::where('id', $aid)->where('doctor_user_id', $doctor->id)->first();
+        }
+
+        $recentMedicines = PrescriptionMedicine::whereHas('prescription',
+            fn($q) => $q->where('doctor_user_id', $doctor->id)
+        )->select('medicine_name','generic_name','form','dosage','frequency','timing','duration_days')
+         ->orderByDesc('id')->limit(300)->get()
+         ->unique('medicine_name')->take(60)->values();
+
+        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'patient_user_id'           => ['required','exists:users,id'],
+            'family_member_id'          => ['nullable','exists:family_members,id'],
+            'prescribed_date'           => ['required','date'],
+            'chief_complaint'           => ['nullable','string','max:500'],
+            'diagnosis'                 => ['nullable','string','max:500'],
+            'notes'                     => ['nullable','string','max:2000'],
+            'follow_up_instructions'    => ['nullable','string','max:1000'],
+            'follow_up_date'            => ['nullable','date'],
+            'medicines'                 => ['required','array','min:1'],
+            'medicines.*.medicine_name' => ['required','string','max:200'],
+            'medicines.*.dosage'        => ['nullable','string','max:100'],
+            'medicines.*.form'          => ['nullable','string','max:50'],
+            'medicines.*.frequency'     => ['nullable','string','max:100'],
+            'medicines.*.duration_days' => ['nullable','integer','min:1'],
+            'medicines.*.timing'        => ['nullable','string'],
+            'medicines.*.special_instructions' => ['nullable','string','max:300'],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $rx = Prescription::create([
+                'doctor_user_id'         => auth()->id(),
+                'patient_user_id'        => $request->patient_user_id,
+                'family_member_id'       => $request->family_member_id ?: null,
+                'medical_record_id'      => $request->medical_record_id ?: null,
+                'appointment_id'         => $request->appointment_id ?: null,
+                'prescribed_date'        => $request->prescribed_date,
+                'chief_complaint'        => $request->chief_complaint,
+                'diagnosis'              => $request->diagnosis,
+                'notes'                  => $request->notes,
+                'follow_up_instructions' => $request->follow_up_instructions,
+                'follow_up_date'         => $request->follow_up_date ?: null,
+                'status'                 => 'active',
+                'is_sent_whatsapp'       => false,
+            ]);
+
+            foreach ($request->medicines as $i => $med) {
+                if (empty($med['medicine_name'])) continue;
+                PrescriptionMedicine::create([
+                    'prescription_id'      => $rx->id,
+                    'medicine_name'        => $med['medicine_name'],
+                    'generic_name'         => $med['generic_name'] ?? null,
+                    'dosage'               => $med['dosage'] ?? null,
+                    'form'                 => $med['form'] ?? null,
+                    'frequency'            => $med['frequency'] ?? null,
+                    'duration_days'        => $med['duration_days'] ?? null,
+                    'timing'               => $med['timing'] ?? null,
+                    'special_instructions' => $med['special_instructions'] ?? null,
+                    'sort_order'           => $i,
+                ]);
+            }
+
+            DB::commit();
+            dispatch(new \App\Jobs\GeneratePrescriptionPdfJob($rx));
+
+            if ($request->get('action') === 'send_whatsapp') {
+                return redirect()->route('doctor.prescriptions.send-whatsapp', $rx)
+                    ->with('success', 'Prescription saved.');
+            }
+            return redirect()->route('doctor.prescriptions.show', $rx)
+                ->with('success', 'Prescription #'.$rx->prescription_number.' created.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['general' => $e->getMessage()]);
+        }
+    }
+
+    public function show(Prescription $prescription)
+    {
+        $this->auth($prescription);
+        $prescription->load(['doctor.profile','doctor.doctorProfile','patient.profile','patient.familyMembers','medicines','medicalRecord']);
+        return view('doctor.prescriptions.show', compact('prescription'));
+    }
+
+    public function pdf(Prescription $prescription, Request $request)
+    {
+        $this->auth($prescription);
+        $prescription->load(['doctor.profile','doctor.doctorProfile','patient.profile','medicines']);
+        return $request->get('download')
+            ? $this->pdf->download($prescription)
+            : $this->pdf->stream($prescription);
+    }
+
+    public function showSendWhatsApp(Prescription $prescription)
+    {
+        $this->auth($prescription);
+        $prescription->load(['patient.profile','medicines','doctor.profile','doctor.doctorProfile']);
+        return view('doctor.prescriptions.send-whatsapp', compact('prescription'));
+    }
+
+    public function sendWhatsApp(Prescription $prescription)
+    {
+        $this->auth($prescription);
+        $prescription->load(['patient.profile','medicines','doctor.profile','doctor.doctorProfile']);
+        try {
+            if (! $prescription->pdf_path || ! \Storage::exists($prescription->pdf_path)) {
+                $this->pdf->generate($prescription);
+                $prescription->refresh();
+            }
+            $this->whatsApp->sendPrescription($prescription);
+            $prescription->update(['is_sent_whatsapp' => true, 'whatsapp_sent_at' => now()]);
+            return redirect()->route('doctor.prescriptions.show', $prescription)
+                ->with('success', 'Prescription sent to patient\'s WhatsApp.');
+        } catch (\Throwable $e) {
+            return back()->withErrors(['whatsapp' => 'Send failed: '.$e->getMessage()]);
+        }
+    }
+
+    public function regeneratePdf(Prescription $prescription)
+    {
+        $this->auth($prescription);
+        $prescription->load(['doctor.profile','doctor.doctorProfile','patient.profile','medicines']);
+        $this->pdf->generate($prescription);
+        return back()->with('success', 'PDF regenerated.');
+    }
+
+    private function auth(Prescription $rx): void
+    {
+        if ($rx->doctor_user_id !== auth()->id()) abort(403);
+    }
+}
