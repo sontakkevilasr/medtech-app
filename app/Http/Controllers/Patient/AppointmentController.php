@@ -131,11 +131,11 @@ class AppointmentController extends Controller
     // ── AJAX: Available slots for a given date ───────────────────────────────
     // GET /patient/appointments/book/{doctor}/slots?date=2025-03-15
 
-    public function availableSlotsForDate(Request $request, int $doctorId)
+    public function availableSlotsForDate(Request $request, int $doctor)
     {
         $request->validate(['date' => ['required', 'date', 'after_or_equal:today']]);
 
-        $doctor  = User::findOrFail($doctorId);
+        $doctor  = User::findOrFail($doctor);
         $profile = $doctor->doctorProfile;
         $date    = Carbon::parse($request->date);
         $dayName = strtolower($date->format('l')); // monday, tuesday…
@@ -162,7 +162,7 @@ class AppointmentController extends Controller
         }
 
         // Remove already-booked slots
-        $booked = Appointment::where('doctor_user_id', $doctorId)
+        $booked = Appointment::where('doctor_user_id', $doctor->id)
             ->whereDate('slot_datetime', $date)
             ->whereNotIn('status', ['cancelled'])
             ->pluck('slot_datetime')
@@ -188,11 +188,11 @@ class AppointmentController extends Controller
     // ── AJAX: Available dates for a month ────────────────────────────────────
     // GET /patient/appointments/book/{doctor}/dates?month=2025-03
 
-    public function availableDatesForMonth(Request $request, int $doctorId)
+    public function availableDatesForMonth(Request $request, int $doctor)
     {
         $request->validate(['month' => ['required', 'date_format:Y-m']]);
 
-        $doctor  = User::findOrFail($doctorId);
+        $doctor  = User::findOrFail($doctor);
         $profile = $doctor->doctorProfile;
         $slots   = $profile->available_slots ?? [];
 

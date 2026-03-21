@@ -64,7 +64,7 @@
     <div class="panel">
         {{-- Month nav --}}
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--warm-bd)">
-            <button type="button" @click="prevMonth()"
+            <button type="button" x-on:click="prevMonth()"
                     :disabled="isCurrentMonth"
                     style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--warm-bd);border-radius:8px;background:transparent;cursor:pointer;transition:all .15s"
                     :style="isCurrentMonth ? 'opacity:.3;cursor:not-allowed' : ''"
@@ -72,7 +72,7 @@
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
             <div style="font-family:'Lora',serif;font-size:1.1rem;color:var(--txt)" x-text="monthLabel"></div>
-            <button type="button" @click="nextMonth()"
+            <button type="button" x-on:click="nextMonth()"
                     style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--warm-bd);border-radius:8px;background:transparent;cursor:pointer;transition:all .15s"
                     onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -94,7 +94,7 @@
                     <div x-show="!cell.date" style="padding:6px"></div>
                     {{-- Date cell --}}
                     <button x-show="cell.date" type="button"
-                            @click="cell.available && selectDate(cell.date)"
+                            x-on:click="cell.available && selectDate(cell.date)"
                             :disabled="!cell.available"
                             style="width:100%;aspect-ratio:1;border:none;border-radius:10px;cursor:pointer;transition:all .15s;font-size:.875rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;position:relative"
                             :style="
@@ -150,7 +150,7 @@
             <div x-show="slots.length > 0"
                  style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
                 <template x-for="slot in slots" :key="slot">
-                    <button type="button" @click="selectSlot(slot)"
+                    <button type="button" x-on:click="selectSlot(slot)"
                             style="padding:8px 4px;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid"
                             :style="selectedSlot === slot
                                 ? 'background:var(--plum);color:#fff;border-color:var(--plum);box-shadow:0 2px 10px rgba(74,55,96,.3)'
@@ -214,7 +214,7 @@
         {{-- Booking form --}}
         <form method="POST"
               :action="storeUrl"
-              @submit.prevent="submitBooking($el)"
+              x-on:submit.prevent="submitBooking($el)"
               id="booking-form">
             @csrf
 
