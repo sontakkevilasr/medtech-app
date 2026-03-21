@@ -185,9 +185,25 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
 .pager a:hover { background: var(--bg); }
 .pager .disabled { opacity: .4; cursor: not-allowed; }
 
+/* ── Mobile ── */
+#mob-toggle {
+    display: none; background: none; border: none; cursor: pointer;
+    color: var(--txt); padding: 4px;
+}
+#overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 45;
+}
+#overlay.show { display: block; }
+
 @media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); }
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+    }
+    .sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(0,0,0,.4); }
     .topbar, .main-content { left: 0; margin-left: 0; }
+    #mob-toggle { display: flex; align-items: center; }
 }
 </style>
 @stack('styles')
@@ -282,9 +298,19 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
     </div>
 </aside>
 
+{{-- ── Mobile overlay ──────────────────────────────────────────────────────── --}}
+<div id="overlay" onclick="closeSidebar()"></div>
+
 {{-- ── Topbar ───────────────────────────────────────────────────────────────── -- --}}
 <header class="topbar">
-    <div class="page-title">@yield('page-title', 'Dashboard')</div>
+    <div style="display:flex;align-items:center;gap:12px">
+        <button id="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        <div class="page-title">@yield('page-title', 'Dashboard')</div>
+    </div>
 
     {{-- Search --}}
     <div style="position:relative">
@@ -321,5 +347,15 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
 </main>
 
 @stack('scripts')
+<script>
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+}
+</script>
 </body>
 </html>
