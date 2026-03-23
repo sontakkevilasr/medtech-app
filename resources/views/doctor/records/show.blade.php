@@ -171,7 +171,7 @@ $isMyRecord = $record->doctor_user_id === auth()->id();
                         @if(isset($att['uploaded_at'])) · {{ \Carbon\Carbon::parse($att['uploaded_at'])->format('d M Y') }} @endif
                     </div>
                 </div>
-                <a href="{{ Storage::disk('public')->url($att['path']) }}" target="_blank"
+                <a href="{{ asset('storage/' . $att['path']) }}" target="_blank"
                    style="padding:5px 12px;background:var(--leaf);color:#fff;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">
                     {{ $isImage ? 'View' : 'Download' }}
                 </a>
