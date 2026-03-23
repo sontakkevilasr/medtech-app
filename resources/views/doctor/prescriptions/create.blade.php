@@ -8,7 +8,7 @@
 
 @push('styles')
 <style>
-    .rx-card { background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px;overflow:hidden; }
+    .rx-card { background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px;overflow:visible; }
     .rx-card-head { padding:13px 20px;border-bottom:1px solid var(--warm-bd);display:flex;align-items:center;gap:9px;font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--txt); }
     .rx-card-body { padding:18px 20px; }
     .fg { display:grid;gap:14px; }
@@ -362,9 +362,9 @@ function rxForm() {
         },
         async searchPatients() {
             if (this.patientQuery.length < 2) { this.results = []; return; }
-            const r = await fetch(`{{ route('doctor.patients.search') }}?q=${encodeURIComponent(this.patientQuery)}&type=mobile`);
+            const r = await fetch(`{{ route('doctor.patients.search') }}?q=${encodeURIComponent(this.patientQuery)}&type=any`);
             const d = await r.json();
-            this.results = d.found ? [d.patient] : [];
+            this.results = d.found ? (d.patients || [d.patient]) : [];
             this.showPList = this.results.length > 0;
         },
         selectPatient(p) { this.patientId = p.id; this.patientQuery = p.name; this.selectedPatient = p; this.showPList = false; document.getElementById('patient_id_input').value = p.id; },

@@ -97,40 +97,75 @@ class PatientController extends Controller
     public function search(Request $request)
     {
         $q      = $request->get('q', '');
-        $type   = $request->get('type', 'mobile'); // mobile | sub_id | aadhaar
+        $type   = $request->get('type', 'mobile'); // mobile | sub_id | aadhaar | any
 
-        if (strlen($q) < 3) {
-            return response()->json(['found' => false]);
+        if (strlen($q) < 2) {
+            return response()->json(['found' => false, 'patients' => []]);
         }
 
-        $result = $this->accessControl->findPatient($q, $type);
+        // Multi-mode search: try name, mobile, and sub_id
+        if ($type === 'mobile' || $type === 'any') {
+            $patients = User::where('role', 'patient')
+                ->where(function ($query) use ($q) {
+                    $query->where('mobile_number', 'like', "%{$q}%")
+                          ->orWhereHas('profile', fn($p) => $p->where('full_name', 'like', "%{$q}%"));
+                })
+                ->with('profile')
+                ->limit(10)
+                ->get();
 
-        if (! $result['found']) {
-            return response()->json(['found' => false, 'message' => 'No patient found.']);
+            if ($patients->isNotEmpty()) {
+                $list = $patients->map(fn($p) => [
+                    'id'     => $p->id,
+                    'name'   => $p->profile?->full_name ?? 'Unknown',
+                    'mobile' => $p->full_mobile ?? $p->mobile_number,
+                    'age'    => $p->profile?->age,
+                    'gender' => $p->profile?->gender,
+                    'city'   => $p->profile?->city,
+                ])->values();
+
+                return response()->json([
+                    'found'    => true,
+                    'patient'  => $list->first(),
+                    'patients' => $list,
+                ]);
+            }
         }
 
-        $patient = $result['user'];
-        $member  = $result['member'];
+        // Fallback to existing access control search for aadhaar/sub_id
+        if ($type !== 'any') {
+            $result = $this->accessControl->findPatient($q, $type);
 
-        return response()->json([
-            'found'   => true,
-            'patient' => [
-                'id'       => $patient->id,
-                'name'     => $patient->profile?->full_name ?? 'Unknown',
-                'mobile'   => $patient->full_mobile,
-                'age'      => $patient->profile?->age,
-                'gender'   => $patient->profile?->gender,
-                'city'     => $patient->profile?->city,
-            ],
-            'family_member' => $member ? [
-                'id'       => $member->id,
-                'name'     => $member->full_name,
-                'relation' => $member->relation,
-                'sub_id'   => $member->sub_id,
-            ] : null,
-            'identifier'      => $q,
-            'identifier_type' => $type,
-        ]);
+            if ($result['found']) {
+                $patient = $result['user'];
+                $member  = $result['member'];
+
+                $patientData = [
+                    'id'     => $patient->id,
+                    'name'   => $patient->profile?->full_name ?? 'Unknown',
+                    'mobile' => $patient->full_mobile,
+                    'age'    => $patient->profile?->age,
+                    'gender' => $patient->profile?->gender,
+                    'city'   => $patient->profile?->city,
+                ];
+
+                return response()->json([
+                    'found'           => true,
+                    'patient'         => $patientData,
+                    'patients'        => [$patientData],
+                    'family_member'   => $member ? [
+                        'id'       => $member->id,
+                        'name'     => $member->full_name,
+                        'relation' => $member->relation,
+                        'sub_id'   => $member->sub_id,
+                    ] : null,
+                    'identifier'      => $q,
+                    'identifier_type' => $type,
+                ]);
+            }
+        }
+
+        return response()->json(['found' => false, 'patients' => [], 'message' => 'No patient found.']);
     }
 
     // ─── Raise Access Request (from patient list or modal) ───────────────────
