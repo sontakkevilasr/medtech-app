@@ -33,7 +33,7 @@
     <!-- Heading -->
     <div style="text-align:center;margin-bottom:1.5rem">
         <h1 class="font-display" style="font-size:1.6rem;color:var(--tx);letter-spacing:-.02em;margin-bottom:4px">Welcome back</h1>
-        <p style="font-size:.875rem;color:var(--mt)">Sign in to your MedTech account</p>
+        <p style="font-size:.875rem;color:var(--mt)">Sign in to your Naumah Clinic account</p>
     </div>
 
     <!-- Mode Tabs -->
@@ -131,7 +131,7 @@
     </div>
 
     <!-- Divider + register hint -->
-    <div class="divider" style="margin-top:1.5rem">New to MedTech?</div>
+    <div class="divider" style="margin-top:1.5rem">New to Naumah Clinic?</div>
 
     <p style="text-align:center;font-size:.875rem;color:var(--mt);margin-bottom:.75rem">
         OTP login automatically creates your account if you're new.

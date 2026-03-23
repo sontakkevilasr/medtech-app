@@ -282,7 +282,7 @@ class OtpService
                 [
                     'To'   => $user->country_code . $user->mobile_number,
                     'From' => config('otp.twilio.from'),
-                    'Body' => "Your MedTech OTP is {$otp}. Valid for {$this->expiresMinutes} minutes. Do not share.",
+                    'Body' => "Your Naumah Clinic OTP is {$otp}. Valid for {$this->expiresMinutes} minutes. Do not share.",
                 ]
             );
 

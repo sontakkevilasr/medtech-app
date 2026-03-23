@@ -39,7 +39,7 @@
     {{-- Header --}}
     <div style="padding:20px 24px;border-bottom:1.5px solid var(--warm-bd);display:flex;align-items:center;justify-content:space-between">
         <div>
-            <div style="font-family:'Lora',serif;font-size:1.1rem;color:var(--txt)">MedTech</div>
+            <div style="font-family:'Lora',serif;font-size:1.1rem;color:var(--txt)">Naumah Clinic</div>
             <div style="font-size:.72rem;color:var(--txt-lt)">Payment Receipt</div>
         </div>
         <div style="text-align:right">

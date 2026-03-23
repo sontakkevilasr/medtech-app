@@ -13,7 +13,7 @@
 <div style="padding:16px 20px;background:linear-gradient(135deg,#3d7a6e 0%,#2a5e54 100%);border-radius:14px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:14px">
     <span style="font-size:2rem">👋</span>
     <div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500">Welcome to MedTech!</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500">Welcome to Naumah Clinic!</div>
         <div style="font-size:.8rem;opacity:.85;margin-top:2px">Complete your professional profile so patients and admin can verify you.</div>
     </div>
 </div>

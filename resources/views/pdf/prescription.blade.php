@@ -250,7 +250,7 @@
 {{-- ── Letterhead ─────────────────────────────────────────────────────────── -- --}}
 <div class="letterhead">
     <div class="lh-left">
-        <div class="clinic-name">{{ $prescription->doctor->doctorProfile?->clinic_name ?? 'MedTech Clinic' }}</div>
+        <div class="clinic-name">{{ $prescription->doctor->doctorProfile?->clinic_name ?? 'Naumah Clinic' }}</div>
         <div class="doctor-name">Dr. {{ $prescription->doctor->profile?->full_name }}</div>
         <div class="doctor-quals">
             {{ $prescription->doctor->doctorProfile?->specialization }}

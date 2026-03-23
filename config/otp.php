@@ -47,7 +47,7 @@ return [
     'fast2sms' => [
         'api_key'     => env('FAST2SMS_API_KEY'),
         'sender_id'   => env('FAST2SMS_SENDER_ID', 'MEDTCH'),
-        'message'     => 'Your MedTech OTP is {otp}. Valid for {minutes} minutes. Do not share.',
+        'message'     => 'Your Naumah Clinic OTP is {otp}. Valid for {minutes} minutes. Do not share.',
     ],
 
     'twilio' => [

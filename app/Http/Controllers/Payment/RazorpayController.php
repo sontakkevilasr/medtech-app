@@ -73,7 +73,7 @@ class RazorpayController extends Controller
             'order_id'        => $result['order']['id'],
             'amount'          => $appointment->fee * 100, // paise
             'currency'        => 'INR',
-            'name'            => 'MedTech',
+            'name'            => 'Naumah Clinic',
             'description'     => 'Appointment with Dr. ' . $appointment->doctor?->profile?->full_name,
             'prefill_name'    => auth()->user()->profile?->full_name,
             'prefill_mobile'  => auth()->user()->country_code . auth()->user()->mobile_number,

@@ -50,7 +50,7 @@
                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                     Copy ID
                 </button>
-                <a href="https://wa.me/?text={{ urlencode('My MedTech Sub-ID is: '.$selfId.' — share with your doctor for quick record lookup.') }}"
+                <a href="https://wa.me/?text={{ urlencode('My Naumah Clinic Sub-ID is: '.$selfId.' — share with your doctor for quick record lookup.') }}"
                    target="_blank"
                    style="padding:8px 16px;border:1.5px solid rgba(37,211,102,.5);border-radius:9px;background:rgba(37,211,102,.15);color:#fff;font-size:.8125rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .15s"
                    onmouseover="this.style.background='rgba(37,211,102,.25)'" onmouseout="this.style.background='rgba(37,211,102,.15)'">
@@ -134,7 +134,7 @@
                         title="Copy Sub-ID">
                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                 </button>
-                <a href="https://wa.me/?text={{ urlencode($member->full_name."'s MedTech Sub-ID: ".$member->sub_id) }}"
+                <a href="https://wa.me/?text={{ urlencode($member->full_name."'s Naumah Clinic Sub-ID: ".$member->sub_id) }}"
                    target="_blank"
                    style="width:28px;height:28px;border:1px solid #bbf7d0;border-radius:7px;background:#f0fdf4;cursor:pointer;color:#15803d;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .12s"
                    title="Share via WhatsApp">

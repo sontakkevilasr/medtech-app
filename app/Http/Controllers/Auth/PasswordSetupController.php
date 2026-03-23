@@ -103,6 +103,6 @@ class PasswordSetupController extends Controller
         }
 
         return redirect()->route($user->role . '.dashboard')
-            ->with('success', 'Profile complete! Welcome to MedTech, ' . $request->full_name . '.');
+            ->with('success', 'Profile complete! Welcome to Naumah Clinic, ' . $request->full_name . '.');
     }
 }

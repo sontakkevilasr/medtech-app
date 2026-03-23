@@ -34,7 +34,7 @@ class WhatsAppService
             . "🏥 *Clinic:* {$clinic}\n"
             . "🔖 *Ref No:* {$appointment->appointment_number}\n\n"
             . "_Reply CANCEL to cancel this appointment._\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -54,7 +54,7 @@ class WhatsAppService
             . "📅 *When:* {$dateTime}\n"
             . "🏥 *Clinic:* {$doctor->doctorProfile->clinic_name}\n\n"
             . "_Please arrive 10 minutes early._\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -66,7 +66,7 @@ class WhatsAppService
             . "Dr. {$doctorName} has recommended a follow-up visit.\n\n"
             . "📅 *Recommended Date:* {$followUpDate}\n\n"
             . "Please book your appointment at your earliest.\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -96,7 +96,7 @@ class WhatsAppService
                 ? "🗓️ *Follow-up:* {$prescription->follow_up_date->format('d M Y')}\n\n"
                 : '')
             . "_Show this message at the pharmacy or download PDF from the app._\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         $sent = $this->send($patient->full_mobile, $message);
 
@@ -121,7 +121,7 @@ class WhatsAppService
             . "_(Valid for {$expiresMinutes} minutes)_\n\n"
             . "Share this OTP with the doctor *only if you approve* this request.\n"
             . "Do NOT share if you did not visit this doctor.\n\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -132,7 +132,7 @@ class WhatsAppService
             . "Dear Dr. {$doctor->profile->full_name},\n"
             . "*{$patientName}* has approved your request to access their medical records.\n\n"
             . "_Access is valid for " . config('medtech.access.session_hours', 8) . " hours._\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($doctor->full_mobile, $message);
     }
@@ -143,7 +143,7 @@ class WhatsAppService
             . "Dear Dr. {$doctor->profile->full_name},\n"
             . "*{$patientName}* has declined your request to access their medical records.\n\n"
             . "_If you believe this is an error, please contact the patient directly._\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($doctor->full_mobile, $message);
     }
@@ -156,7 +156,7 @@ class WhatsAppService
             . "Time to take your medicine!\n\n"
             . "🔹 *{$medicineName}* — {$dosage}\n"
             . "⏰ *Time:* {$time}\n\n"
-            . "_Stay healthy! — MedTech_";
+            . "_Stay healthy! — Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -172,7 +172,7 @@ class WhatsAppService
             . "💉 *Vaccine:* {$vaccineName}\n"
             . "📅 *Due Date:* {$dueDate}\n\n"
             . "_Please visit your pediatrician to get this vaccine on time._\n"
-            . "_MedTech Health Platform_";
+            . "_Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -183,7 +183,7 @@ class WhatsAppService
             . "Dear {$patient->profile->full_name},\n\n"
             . "🗓️ *This Week:* {$milestoneName}\n\n"
             . "{$description}\n\n"
-            . "_Take care of yourself and your little one! — MedTech_";
+            . "_Take care of yourself and your little one! — Naumah Clinic_";
 
         return $this->send($patient->full_mobile, $message);
     }

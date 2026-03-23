@@ -47,7 +47,7 @@
                     onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
                 Copy ID
             </button>
-            <a href="https://wa.me/{{ ltrim($patient->country_code ?? '+91', '+') }}{{ $patient->mobile_number }}?text={{ urlencode($name."'s MedTech Sub-ID: ".$selfSubId." — share with your doctor for quick record lookup.") }}"
+            <a href="https://wa.me/{{ ltrim($patient->country_code ?? '+91', '+') }}{{ $patient->mobile_number }}?text={{ urlencode($name."'s Naumah Clinic Sub-ID: ".$selfSubId." — share with your doctor for quick record lookup.") }}"
                target="_blank"
                style="padding:7px 18px;border:1.5px solid #bbf7d0;border-radius:9px;background:#f0fdf4;color:#15803d;font-size:.8rem;font-weight:600;text-decoration:none;transition:all .12s"
                onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
