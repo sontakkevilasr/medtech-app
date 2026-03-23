@@ -133,7 +133,7 @@ $vitalUnits = ['height'=>'','weight'=>'kg','bp'=>'mmHg','pulse'=>'bpm','temperat
         <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--parch);border-radius:9px;margin-bottom:6px;border:1px solid var(--warm-bd)">
             <span style="font-size:1.2rem">{{ $isPdf ? '📄' : ($isImg ? '🖼️' : '📎') }}</span>
             <div style="flex:1;min-width:0;font-size:.8rem;color:var(--txt-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $att['name'] }}</div>
-            <a href="{{ Storage::url($att['path']) }}" target="_blank" download="{{ $att['name'] }}"
+            <a href="{{ asset('storage/' . $att['path']) }}" target="_blank" download="{{ $att['name'] }}"
                style="padding:5px 12px;background:var(--plum);color:#fff;border-radius:7px;font-size:.72rem;font-weight:600;text-decoration:none;white-space:nowrap">
                 Download
             </a>
