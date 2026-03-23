@@ -187,6 +187,13 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        $redirect = $request->input('redirect');
+
+        // Only allow redirects to our own domain
+        if ($redirect && str_starts_with($redirect, url('/'))) {
+            return redirect($redirect);
+        }
+
         return redirect()->route('home')
             ->with('success', 'You have been logged out successfully.');
     }

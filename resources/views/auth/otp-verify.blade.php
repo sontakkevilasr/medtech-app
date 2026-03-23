@@ -95,11 +95,15 @@
 
     <!-- Back link -->
     <div style="text-align:center;margin-top:1.5rem">
-        <a href="{{ route('auth.login') }}"
-           style="font-size:.8125rem;color:var(--mt);text-decoration:none;display:inline-flex;align-items:center;gap:5px"
-           onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--mt)'">
-            ← Use a different number
-        </a>
+        <form method="POST" action="{{ route('auth.logout') }}" style="display:inline">
+            @csrf
+            <input type="hidden" name="redirect" value="{{ route('auth.login') }}">
+            <button type="submit"
+                    style="background:none;border:none;cursor:pointer;font-size:.8125rem;color:var(--mt);font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px;padding:0"
+                    onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--mt)'">
+                ← Use a different number
+            </button>
+        </form>
     </div>
 
 </div>
