@@ -3,13 +3,13 @@
 @section('page-title')
     <a href="{{ route('patient.appointments.book') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Book Appointment</a>
     <span style="color:var(--txt-lt);margin:0 6px">/</span>
-    Dr. {{ $doctor->profile?->full_name }}
+    Dr. {{ preg_replace('/^Dr\.?\s*/i', '', $doctor->profile?->full_name ?? '') }}
 @endsection
 
 @section('content')
 @php
     $dp       = $doctor->doctorProfile;
-    $name     = $doctor->profile?->full_name ?? 'Doctor';
+    $name     = preg_replace('/^Dr\.?\s*/i', '', $doctor->profile?->full_name ?? 'Doctor');
     $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ',$name),0,2))));
     $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
     $color    = $colors[$doctor->id % count($colors)];
@@ -146,21 +146,68 @@
                 <div style="font-size:.78rem">Please try another date.</div>
             </div>
 
-            {{-- Slot chips --}}
-            <div x-show="slots.length > 0"
-                 style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px">
-                <template x-for="slot in slots" :key="slot">
-                    <button type="button" x-on:click="selectSlot(slot)"
-                            style="padding:8px 4px;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid"
-                            :style="selectedSlot === slot
-                                ? 'background:var(--plum);color:#fff;border-color:var(--plum);box-shadow:0 2px 10px rgba(74,55,96,.3)'
-                                : 'background:transparent;color:var(--txt-md);border-color:var(--warm-bd)'"
-                            onmouseover="if(this.getAttribute('data-sel')!='true'){this.style.borderColor='var(--plum)';this.style.color='var(--plum)';}"
-                            onmouseout="if(this.getAttribute('data-sel')!='true'){this.style.borderColor='var(--warm-bd)';this.style.color='var(--txt-md)';}"
-                            :data-sel="selectedSlot===slot?'true':'false'"
-                            x-text="formatTime(slot)">
-                    </button>
-                </template>
+            {{-- Slot chips grouped by time period --}}
+            <div x-show="!loadingSlots && slots.length > 0" style="display:flex;flex-direction:column;gap:16px">
+
+                {{-- Morning --}}
+                <div x-show="groupedSlots.morning.length > 0">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                        <span style="font-size:.95rem">🌅</span>
+                        <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt)">Morning</span>
+                        <span style="font-size:.68rem;color:var(--txt-lt);font-weight:400" x-text="groupedSlots.morning.length + ' slots'"></span>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <template x-for="slot in groupedSlots.morning" :key="slot">
+                            <button type="button" x-on:click="selectSlot(slot)"
+                                    class="slot-chip"
+                                    :class="selectedSlot === slot ? 'slot-active' : ''"
+                                    x-text="formatTime(slot)">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                {{-- Afternoon --}}
+                <div x-show="groupedSlots.afternoon.length > 0">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                        <span style="font-size:.95rem">☀️</span>
+                        <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt)">Afternoon</span>
+                        <span style="font-size:.68rem;color:var(--txt-lt);font-weight:400" x-text="groupedSlots.afternoon.length + ' slots'"></span>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <template x-for="slot in groupedSlots.afternoon" :key="slot">
+                            <button type="button" x-on:click="selectSlot(slot)"
+                                    class="slot-chip"
+                                    :class="selectedSlot === slot ? 'slot-active' : ''"
+                                    x-text="formatTime(slot)">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                {{-- Evening --}}
+                <div x-show="groupedSlots.evening.length > 0">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                        <span style="font-size:.95rem">🌆</span>
+                        <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt)">Evening</span>
+                        <span style="font-size:.68rem;color:var(--txt-lt);font-weight:400" x-text="groupedSlots.evening.length + ' slots'"></span>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <template x-for="slot in groupedSlots.evening" :key="slot">
+                            <button type="button" x-on:click="selectSlot(slot)"
+                                    class="slot-chip"
+                                    :class="selectedSlot === slot ? 'slot-active' : ''"
+                                    x-text="formatTime(slot)">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Slot count --}}
+            <div x-show="!loadingSlots && slots.length > 0" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--warm-bd);display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:.75rem;color:var(--txt-lt)" x-text="slots.length + ' slots available'"></span>
+                <span x-show="selectedSlot" style="font-size:.75rem;font-weight:600;color:var(--plum)" x-text="'Selected: ' + formatTime(selectedSlot)"></span>
             </div>
         </div>
     </div>
@@ -255,9 +302,10 @@
 
             <button type="submit"
                     :disabled="!selectedDate || !selectedSlot || submitting"
-                    style="width:100%;padding:.8rem;border:none;border-radius:11px;font-size:.9375rem;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--plum);color:#fff"
-                    :style="(!selectedDate || !selectedSlot || submitting) ? 'opacity:.45;cursor:not-allowed' : 'box-shadow:0 4px 16px rgba(74,55,96,.35)'">
+                    class="book-btn"
+                    :class="(!selectedDate || !selectedSlot || submitting) ? 'book-btn-disabled' : ''">
                 <span x-show="submitting" style="width:16px;height:16px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite"></span>
+                <svg x-show="!submitting" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 <span x-text="submitting ? 'Booking…' : 'Confirm Appointment'"></span>
             </button>
         </form>
@@ -295,6 +343,60 @@
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }
 .active-type { background: var(--plum) !important; color: #fff !important; border-color: var(--plum) !important; }
+.slot-chip {
+    padding: 8px 16px;
+    border-radius: 9px;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    border: 1.5px solid var(--warm-bd);
+    background: var(--cream, #fff);
+    color: var(--txt-md);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+}
+.slot-chip:hover {
+    border-color: var(--plum);
+    color: var(--plum);
+    background: var(--parch);
+}
+.slot-chip.slot-active {
+    background: var(--plum);
+    color: #fff;
+    border-color: var(--plum);
+    box-shadow: 0 2px 10px rgba(74, 55, 96, .3);
+}
+.slot-chip.slot-active:hover {
+    background: var(--plum);
+    color: #fff;
+}
+.book-btn {
+    width: 100%;
+    padding: .85rem 1rem;
+    border: none;
+    border-radius: 11px;
+    font-size: .9375rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--plum);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(74, 55, 96, .35);
+}
+.book-btn:hover { opacity: .9; }
+.book-btn-disabled {
+    background: var(--warm-bd, #e2dcd5);
+    color: var(--txt-lt, #a09890);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+.book-btn-disabled:hover { opacity: 1; }
 </style>
 @endpush
 
@@ -324,6 +426,17 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
         submitting:       false,
         bookingError:     '',
         storeUrl,
+
+        get groupedSlots() {
+            const morning = [], afternoon = [], evening = [];
+            for (const s of this.slots) {
+                const h = parseInt(s.split(':')[0], 10);
+                if (h < 12)      morning.push(s);
+                else if (h < 17) afternoon.push(s);
+                else             evening.push(s);
+            }
+            return { morning, afternoon, evening };
+        },
 
         async init() {
             await this.buildCalendar();
