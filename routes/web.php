@@ -33,13 +33,35 @@ Route::get('/health', fn() => response()->json(['status' => 'ok', 'time' => now(
 
 // ── Serve medical record attachments (works without storage symlink) ────────
 Route::middleware(['auth'])->group(function () {
-    Route::get('/attachments/medical-records/{path}', function (string $path) {
-        $fullPath = "medical-records/{$path}";
+    Route::get('/attachments/medical-records/{patientId}/{filename}', function (int $patientId, string $filename) {
+        $user = auth()->user();
+
+        // Block path traversal attempts
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(403);
+        }
+
+        // Authorization: only the patient, their doctor (with access), or admin
+        $isOwner  = $user->id === $patientId;
+        $isAdmin  = $user->role === 'admin';
+        $isDoctor = $user->role === 'doctor'
+            && \App\Models\MedicalRecord::where('patient_user_id', $patientId)
+                ->where('doctor_user_id', $user->id)
+                ->exists();
+
+        if (! $isOwner && ! $isAdmin && ! $isDoctor) {
+            abort(403);
+        }
+
+        $fullPath = "medical-records/{$patientId}/{$filename}";
         if (! Storage::disk('public')->exists($fullPath)) {
             abort(404);
         }
+
         return Storage::disk('public')->response($fullPath);
-    })->where('path', '.*')->name('attachments.medical-record');
+    })->where('patientId', '[0-9]+')
+      ->where('filename', '[a-zA-Z0-9._-]+')
+      ->name('attachments.medical-record');
 });
 
 Route::middleware(['auth', 'active', 'verified.mobile', 'locale'])->group(function () {

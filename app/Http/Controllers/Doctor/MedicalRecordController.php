@@ -255,7 +255,7 @@ class MedicalRecordController extends Controller
             return response()->json([
                 'success' => true,
                 'attachment' => last($existing),
-                'url' => Storage::disk('public')->url($path),
+                'url' => route('attachments.medical-record', str_replace('medical-records/', '', $path)),
             ]);
         }
 
