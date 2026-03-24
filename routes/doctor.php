@@ -49,7 +49,7 @@ Route::middleware('role:doctor')->group(function () {
         Route::post('/access/{accessRequest}/verify-otp',[PatientController::class, 'verifyAccessOtp'])->name('verify-otp');
         // History: access-gate UI is handled in controller (not middleware-redirect)
         Route::get('/{patient}/history',                 [PatientController::class, 'history'])        ->name('history');
-        Route::get('/{patient}',                         [PatientController::class, 'show'])            ->name('show');
+        Route::get('/{patient}',                         [PatientController::class, 'history'])         ->name('show');
         Route::post('/{patient}/notes',                  [PatientController::class, 'addNote'])         ->name('notes');
     });
 
