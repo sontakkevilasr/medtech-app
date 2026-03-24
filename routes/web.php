@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Common\ProfileController;
 use App\Http\Controllers\Common\NotificationController;
 use App\Http\Controllers\Common\WhatsAppController;
@@ -29,6 +30,17 @@ Route::get('/health', fn() => response()->json(['status' => 'ok', 'time' => now(
 | Available to ALL roles (doctor, patient, admin)
 |--------------------------------------------------------------------------
 */
+
+// ── Serve medical record attachments (works without storage symlink) ────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/attachments/medical-records/{path}', function (string $path) {
+        $fullPath = "medical-records/{$path}";
+        if (! Storage::disk('public')->exists($fullPath)) {
+            abort(404);
+        }
+        return Storage::disk('public')->response($fullPath);
+    })->where('path', '.*')->name('attachments.medical-record');
+});
 
 Route::middleware(['auth', 'active', 'verified.mobile', 'locale'])->group(function () {
 

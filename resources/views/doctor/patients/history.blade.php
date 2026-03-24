@@ -263,7 +263,7 @@
                 @if($record->attachments && count($record->attachments) > 0)
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
                     @foreach($record->attachments as $att)
-                    <a href="{{ asset('storage/' . ($att['path'] ?? '')) }}" target="_blank"
+                    <a href="{{ route('attachments.medical-record', str_replace('medical-records/', '', $att['path'] ?? '')) }}" target="_blank"
                        style="display:flex;align-items:center;gap:5px;font-size:.72rem;padding:3px 9px;border:1px solid var(--warm-bd);border-radius:7px;color:var(--txt-md);text-decoration:none;background:var(--cream)"
                        onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='var(--cream)'">
                         <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>

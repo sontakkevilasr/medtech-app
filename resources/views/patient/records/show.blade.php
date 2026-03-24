@@ -136,7 +136,7 @@ $vt = $vtCfg[$record->visit_type] ?? $vtCfg['consultation'];
                     <div style="font-size:.8125rem;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $att['name'] }}</div>
                     @if(isset($att['size']))<div style="font-size:.7rem;color:var(--txt-lt)">{{ round($att['size']/1024) }} KB</div>@endif
                 </div>
-                <a href="{{ asset('storage/' . $att['path']) }}" target="_blank" download="{{ $att['name'] }}"
+                <a href="{{ route('attachments.medical-record', str_replace('medical-records/', '', $att['path'])) }}" target="_blank" download="{{ $att['name'] }}"
                    style="padding:6px 14px;background:var(--plum);color:#fff;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">
                     Download
                 </a>
