@@ -1,120 +1,189 @@
 @extends('layouts.doctor')
 @section('title', 'Analytics')
-@section('page-title', 'Analytics')
+@section('page-title', 'Practice Analytics')
 
 @section('content')
+<div class="fade-in">
 
-{{-- KPI Cards --}}
-<div class="stat-grid" style="margin-bottom:24px">
-    <div class="stat-card">
-        <div class="stat-label">Total Appointments</div>
-        <div class="stat-value">{{ number_format($totalAppointments) }}</div>
-        <div class="stat-sub">{{ $completedAppointments }} completed · {{ $cancelledAppointments }} cancelled</div>
+{{-- ── KPI row ──────────────────────────────────────────────────────────────── --}}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+@php $kpiCards = [
+    ['label'=>'Total Patients',       'val'=>$kpis['total_patients'],       'sub'=>$kpis['patients_this_month'].' this month',    'color'=>'#3d7a6e'],
+    ['label'=>'Total Appointments',   'val'=>$kpis['total_appointments'],   'sub'=>$kpis['apts_this_month'].' this month',        'color'=>'#4a3760'],
+    ['label'=>'Prescriptions Written','val'=>$kpis['total_prescriptions'],  'sub'=>$kpis['rx_this_month'].' this month',          'color'=>'#c98a3a'],
+    ['label'=>'Cancellation Rate',    'val'=>$kpis['no_show_rate'],         'sub'=>$kpis['cancelled_apts'].' cancelled total',    'color'=>'#c0737a'],
+];
+@endphp
+@foreach($kpiCards as $k)
+<div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:18px 20px">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:{{ $k['color'] }};line-height:1;margin-bottom:6px">
+        {{ $k['val'] }}
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Revenue</div>
-        <div class="stat-value">₹{{ number_format($totalRevenue) }}</div>
-        <div class="stat-sub">all time collected</div>
+    <div style="font-size:.82rem;font-weight:600;color:var(--txt)">{{ $k['label'] }}</div>
+    <div style="font-size:.72rem;color:var(--txt-lt);margin-top:2px">{{ $k['sub'] }}</div>
+    <div style="height:3px;border-radius:2px;background:{{ $k['color'] }};margin-top:12px;opacity:.6"></div>
+</div>
+@endforeach
+</div>
+
+{{-- ── Revenue + Completion row ────────────────────────────────────────────── --}}
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px">
+    <div style="background:linear-gradient(135deg,#1c2b2a 0%,#263635 100%);border-radius:14px;padding:18px 20px;color:#fff">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-bottom:6px">Revenue This Month</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:#d4a853">
+            ₹{{ number_format($kpis['revenue_month'], 0) }}
+        </div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:4px">Total: ₹{{ number_format($kpis['revenue_total'], 0) }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Patients</div>
-        <div class="stat-value">{{ number_format($totalPatients) }}</div>
-        <div class="stat-sub">{{ $newPatientsThisMonth }} new this month</div>
+    <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:18px 20px">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt-lt);margin-bottom:6px">Completion Rate</div>
+        @php $rate = $kpis['total_appointments'] > 0 ? round($kpis['completed_apts']/$kpis['total_appointments']*100) : 0; @endphp
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:#3d7a6e">{{ $rate }}%</div>
+        <div style="height:6px;background:var(--warm-bd);border-radius:3px;overflow:hidden;margin-top:10px">
+            <div style="height:100%;background:#3d7a6e;border-radius:3px;width:{{ $rate }}%;transition:width .6s"></div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Prescriptions</div>
-        <div class="stat-value">{{ number_format($totalPrescriptions) }}</div>
-        <div class="stat-sub">{{ $prescriptionsThisMonth }} this month</div>
+    <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:18px 20px">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt-lt);margin-bottom:10px">Exports</div>
+        @foreach(['Patients' => route('doctor.analytics.export.patients'), 'Appointments' => route('doctor.analytics.export.appointments'), 'Prescriptions' => route('doctor.analytics.export.prescriptions')] as $lbl => $url)
+        <a href="{{ $url }}"
+           style="display:flex;align-items:center;gap:6px;padding:5px 0;font-size:.8rem;color:var(--txt-md);text-decoration:none;border-bottom:1px solid var(--warm-bd);transition:color .12s"
+           onmouseover="this.style.color='var(--leaf)'" onmouseout="this.style.color='var(--txt-md)'">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            {{ $lbl }} (.xlsx)
+        </a>
+        @endforeach
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+{{-- ── Charts row ───────────────────────────────────────────────────────────── --}}
+<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:22px">
 
-    {{-- Appointment trend --}}
-    <div class="panel">
-        <div class="panel-head">
-            <div class="panel-title">Appointments — Last 12 Months</div>
+    {{-- Appointment 6-month trend --}}
+    <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:0;overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--warm-bd)">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--txt)">Appointment Trend</div>
+            <div style="font-size:.75rem;color:var(--txt-lt)">Last 6 months</div>
         </div>
-        @php $maxApt = $appointmentChart->max('total') ?: 1; @endphp
-        <div style="padding:16px 20px">
-            <div style="display:flex;align-items:flex-end;gap:6px;height:80px">
-                @foreach($appointmentChart as $bar)
-                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" title="{{ $bar['month'] }}: {{ $bar['total'] }} appointments">
-                    <div style="width:100%;background:var(--leaf);border-radius:3px 3px 0 0;height:{{ max(3, round(($bar['total'] / $maxApt) * 70)) }}px"></div>
-                </div>
-                @endforeach
-            </div>
-            <div style="display:flex;gap:6px;margin-top:4px">
-                @foreach($appointmentChart as $bar)
-                <div style="flex:1;text-align:center;font-size:.55rem;color:var(--txt-lt)">{{ explode(' ', $bar['month'])[0] }}</div>
-                @endforeach
-            </div>
+        <div style="padding:18px;height:220px">
+            <canvas id="aptTrendChart"></canvas>
         </div>
     </div>
 
-    {{-- Revenue trend --}}
-    <div class="panel">
-        <div class="panel-head">
-            <div class="panel-title">Revenue — Last 12 Months</div>
+    {{-- Day of week chart --}}
+    <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:0;overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--warm-bd)">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--txt)">Busiest Days</div>
+            <div style="font-size:.75rem;color:var(--txt-lt)">Appointments by day of week</div>
         </div>
-        @php $maxRev = $revenueChart->max('amount') ?: 1; @endphp
-        <div style="padding:16px 20px">
-            <div style="display:flex;align-items:flex-end;gap:6px;height:80px">
-                @foreach($revenueChart as $bar)
-                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" title="{{ $bar['month'] }}: ₹{{ number_format($bar['amount']) }}">
-                    <div style="width:100%;background:var(--amber);border-radius:3px 3px 0 0;height:{{ max(3, round(($bar['amount'] / $maxRev) * 70)) }}px"></div>
-                </div>
-                @endforeach
-            </div>
-            <div style="display:flex;gap:6px;margin-top:4px">
-                @foreach($revenueChart as $bar)
-                <div style="flex:1;text-align:center;font-size:.55rem;color:var(--txt-lt)">{{ explode(' ', $bar['month'])[0] }}</div>
-                @endforeach
-            </div>
+        <div style="padding:18px;height:220px">
+            <canvas id="dayChart"></canvas>
         </div>
+    </div>
+</div>
+
+{{-- ── Top Patients ─────────────────────────────────────────────────────────── --}}
+<div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;overflow:hidden">
+    <div style="padding:14px 20px;border-bottom:1.5px solid var(--warm-bd)">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--txt)">Top Patients</div>
+        <div style="font-size:.75rem;color:var(--txt-lt)">Most frequent visitors</div>
     </div>
 
-    {{-- Visit type breakdown --}}
-    <div class="panel">
-        <div class="panel-head">
-            <div class="panel-title">Visit Types</div>
-        </div>
-        <div style="padding:16px 20px">
-            @forelse($visitTypes as $type => $count)
-            @php $pct = $totalAppointments > 0 ? round(($count / $totalAppointments) * 100) : 0; @endphp
-            <div style="margin-bottom:12px">
-                <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:4px">
-                    <span style="color:var(--txt-md)">{{ ucfirst(str_replace('_',' ',$type ?? 'in_person')) }}</span>
-                    <span style="color:var(--txt-lt)">{{ $count }} ({{ $pct }}%)</span>
-                </div>
-                <div style="height:6px;background:var(--warm-bd);border-radius:3px;overflow:hidden">
-                    <div style="height:100%;background:var(--leaf);border-radius:3px;width:{{ $pct }}%"></div>
-                </div>
-            </div>
-            @empty
-            <div style="color:var(--txt-lt);font-size:.85rem">No data yet.</div>
-            @endforelse
-        </div>
+    @if($topPatients->isEmpty())
+    <div style="padding:28px;text-align:center;color:var(--txt-lt);font-size:.875rem">
+        No patient visit data yet.
     </div>
-
-    {{-- Completion rate --}}
-    <div class="panel">
-        <div class="panel-head">
-            <div class="panel-title">Appointment Completion Rate</div>
-        </div>
-        <div style="padding:24px 20px;text-align:center">
-            @php $rate = $totalAppointments > 0 ? round(($completedAppointments / $totalAppointments) * 100) : 0; @endphp
-            <svg width="100" height="100" viewBox="0 0 100 100" style="display:block;margin:0 auto 12px">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--warm-bd)" stroke-width="8"/>
-                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--leaf)" stroke-width="8"
-                        stroke-dasharray="{{ round(2 * 3.14159 * 40) }}"
-                        stroke-dashoffset="{{ round(2 * 3.14159 * 40 * (1 - $rate/100)) }}"
-                        stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                <text x="50" y="55" text-anchor="middle" font-size="18" font-weight="600" fill="var(--txt)">{{ $rate }}%</text>
-            </svg>
-            <div style="font-size:.8rem;color:var(--txt-lt)">{{ $completedAppointments }} completed of {{ $totalAppointments }} total</div>
-        </div>
-    </div>
+    @else
+    <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:1.5px solid var(--warm-bd)">
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">#</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">Patient</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">Visits</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">Last Visit</th>
+            <th style="padding:9px 18px"></th>
+        </tr></thead>
+        <tbody>
+        @foreach($topPatients as $i => $tp)
+        @php
+            $name     = $tp->patient?->profile?->full_name ?? 'Unknown';
+            $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$name),0,2))));
+            $colors   = ['#3d7a6e','#4a3760','#c98a3a','#3d5e7a','#c0737a','#6b7280'];
+            $color    = $colors[$i % count($colors)];
+        @endphp
+        <tr style="border-bottom:1px solid var(--warm-bd);transition:background .1s" onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
+            <td style="padding:11px 18px;font-size:.85rem;color:var(--txt-lt);font-weight:500">{{ $i + 1 }}</td>
+            <td style="padding:11px 18px">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:34px;height:34px;border-radius:9px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0">
+                        {{ $initials }}
+                    </div>
+                    <div style="font-weight:500;font-size:.875rem;color:var(--txt)">{{ $name }}</div>
+                </div>
+            </td>
+            <td style="padding:11px 18px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <div style="height:6px;background:var(--warm-bd);border-radius:3px;width:80px;overflow:hidden">
+                        <div style="height:100%;background:{{ $color }};border-radius:3px;width:{{ min(100, $tp->visit_count / ($topPatients->first()->visit_count) * 100) }}%"></div>
+                    </div>
+                    <span style="font-size:.85rem;font-weight:600;color:var(--txt)">{{ $tp->visit_count }}</span>
+                </div>
+            </td>
+            <td style="padding:11px 18px;font-size:.8rem;color:var(--txt-lt)">
+                {{ \Carbon\Carbon::parse($tp->last_visit)->format('d M Y') }}
+            </td>
+            <td style="padding:11px 18px;text-align:right">
+                <a href="{{ route('doctor.patients.history', $tp->patient_user_id) }}"
+                   style="font-size:.75rem;padding:4px 10px;border:1.5px solid var(--warm-bd);border-radius:8px;color:var(--txt-md);text-decoration:none;transition:all .12s"
+                   onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">View</a>
+            </td>
+        </tr>
+        @endforeach
+        </tbody>
+    </table>
+    @endif
+</div>
 
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const chartOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { family:'Outfit', size:11 }, boxWidth:10 } } },
+    scales: {
+        x: { grid:{ display:false }, ticks:{ font:{ family:'Outfit', size:10 } } },
+        y: { grid:{ color:'#ede8e0' }, ticks:{ font:{ family:'Outfit', size:10 }, precision:0 } }
+    }
+};
+
+// Appointment trend
+new Chart(document.getElementById('aptTrendChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode(array_column($aptTrend, 'label')) !!},
+        datasets: [
+            { label:'Completed', data:{!! json_encode(array_column($aptTrend,'completed')) !!}, backgroundColor:'#3d7a6e', borderRadius:4, borderSkipped:false },
+            { label:'Cancelled', data:{!! json_encode(array_column($aptTrend,'cancelled')) !!}, backgroundColor:'#e8724a', borderRadius:4, borderSkipped:false },
+        ]
+    },
+    options: { ...chartOpts, scales: { ...chartOpts.scales, x:{ ...chartOpts.scales.x, stacked:true }, y:{ ...chartOpts.scales.y, stacked:true } } }
+});
+
+// Day of week
+new Chart(document.getElementById('dayChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode(array_values($dayLabels)) !!},
+        datasets: [{
+            label:'Appointments',
+            data: {!! json_encode($dayData) !!},
+            backgroundColor: ['#e8e2da','#3d7a6e','#3d7a6e','#3d7a6e','#3d7a6e','#3d7a6e','#e8e2da'],
+            borderRadius: 5, borderSkipped: false,
+        }]
+    },
+    options: { ...chartOpts, plugins:{ legend:{ display:false } } }
+});
+</script>
+@endpush
