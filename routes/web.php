@@ -83,13 +83,26 @@ Route::middleware(['auth', 'active', 'verified.mobile', 'locale'])->group(functi
     });
 
     // ── Notifications ────────────────────────────────────────────────────────
-    Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/',                 [NotificationController::class, 'index'])  ->name('index');
-        Route::post('/{id}/read',       [NotificationController::class, 'markRead'])->name('read');
-        Route::post('/read-all',        [NotificationController::class, 'markAllRead'])->name('read-all');
-        Route::delete('/{id}',          [NotificationController::class, 'destroy'])->name('destroy');
-        Route::get('/count',            [NotificationController::class, 'unreadCount'])->name('count');
+    // Route::prefix('notifications')->name('notifications.')->group(function () {
+    //     Route::get('/',                 [NotificationController::class, 'index'])  ->name('index');
+    //     Route::post('/{id}/read',       [NotificationController::class, 'markRead'])->name('read');
+    //     Route::post('/read-all',        [NotificationController::class, 'markAllRead'])->name('read-all');
+    //     Route::delete('/{id}',          [NotificationController::class, 'destroy'])->name('destroy');
+    //     Route::get('/count',            [NotificationController::class, 'unreadCount'])->name('count');
+    // });
+
+    Route::middleware(['auth', 'active', 'verified.mobile'])
+    ->prefix('notifications')
+    ->name('notifications.')
+    ->group(function () {
+        Route::get('/',             [NotificationController::class, 'index'])      ->name('index');
+        Route::get('/latest',       [NotificationController::class, 'latest'])     ->name('latest');   // ← ADD THIS
+        Route::get('/count',        [NotificationController::class, 'unreadCount'])->name('count');
+        Route::post('/{id}/read',   [NotificationController::class, 'markRead'])   ->name('read');
+        Route::post('/read-all',    [NotificationController::class, 'markAllRead'])->name('read-all');
+        Route::delete('/{id}',      [NotificationController::class, 'destroy'])    ->name('destroy');
     });
+
 
     // ── Locale switcher ──────────────────────────────────────────────────────
     Route::post('/locale/{lang}', function (string $lang) {
@@ -101,3 +114,6 @@ Route::middleware(['auth', 'active', 'verified.mobile', 'locale'])->group(functi
         return back();
     })->name('locale.switch')->where('lang', 'en|hi|mr');
 });
+
+
+

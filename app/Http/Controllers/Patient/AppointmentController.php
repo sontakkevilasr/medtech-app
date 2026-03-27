@@ -11,6 +11,7 @@ use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class AppointmentController extends Controller
 {
@@ -267,6 +268,8 @@ class AppointmentController extends Controller
             'payment_status'  => 'pending',
         ]);
 
+        NotificationService::appointmentBooked($appointment->load('doctor.profile', 'patient.profile'));
+
         // Schedule reminders
         $this->reminder->scheduleAppointmentReminders($appointment);
 
@@ -306,7 +309,8 @@ class AppointmentController extends Controller
             'status'              => 'cancelled',
             'cancellation_reason' => $request->reason,
         ]);
-
+        NotificationService::appointmentCancelled($appointment->fresh(), 'patient');
+        
         return back()->with('success', 'Appointment cancelled.');
     }
 

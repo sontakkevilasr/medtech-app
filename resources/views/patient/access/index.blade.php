@@ -137,8 +137,8 @@
     {{-- Active Grants --}}
     <div class="panel">
         <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--warm-bd);margin-bottom:16px">
-            <div>
-                <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">Active Doctor Access</h3>
+            <div style="padding: 14px 18px 0px;">
+                <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin:10">Active Doctor Access</h3>
                 <div style="font-size:.75rem;color:var(--txt-lt);margin-top:2px">Doctors currently authorized to view your health records</div>
             </div>
             <span style="font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:20px;background:{{ $active->isEmpty() ? 'var(--parch)' : '#e8f5f3' }};color:{{ $active->isEmpty() ? 'var(--txt-lt)' : '#1a7a6a' }}">
@@ -217,9 +217,9 @@
 
     {{-- Family Member Overrides --}}
     @if($patient->familyMembers->isNotEmpty())
-    <div class="panel">
+    <div class="panel" style="padding: 14px 18px 0px;">
         <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--warm-bd)">
-            <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">Family Member Settings</h3>
+            <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin:0">Family Member Settings</h3>
             <div style="font-size:.75rem;color:var(--txt-lt);margin-top:2px">
                 Override the default access setting for individual family members
             </div>

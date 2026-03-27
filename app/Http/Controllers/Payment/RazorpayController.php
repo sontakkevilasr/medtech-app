@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Appointment;
 use App\Services\RazorpayService;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class RazorpayController extends Controller
 {
@@ -97,6 +98,9 @@ class RazorpayController extends Controller
             razorpayPaymentId: $request->razorpay_payment_id,
             razorpaySignature: $request->razorpay_signature,
         );
+
+        if ($result['success'])
+        NotificationService::paymentReceived($result['payment']->load('appointment.doctor.profile'));
 
         if (!$result['success']) {
             if ($request->expectsJson()) {

@@ -11,6 +11,7 @@ use App\Services\PdfService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\NotificationService;
 
 class PrescriptionController extends Controller
 {
@@ -108,6 +109,8 @@ class PrescriptionController extends Controller
                 'is_sent_whatsapp'       => false,
             ]);
 
+            NotificationService::prescriptionCreated($rx->load('doctor.profile'));
+
             foreach ($request->medicines as $i => $med) {
                 if (empty($med['medicine_name'])) continue;
                 PrescriptionMedicine::create([
@@ -175,6 +178,7 @@ class PrescriptionController extends Controller
             $prescription->update(['is_sent_whatsapp' => true, 'whatsapp_sent_at' => now()]);
             return redirect()->route('doctor.prescriptions.show', $prescription)
                 ->with('success', 'Prescription sent to patient\'s WhatsApp.');
+            NotificationService::prescriptionSentWhatsApp($prescription);
         } catch (\Throwable $e) {
             return back()->withErrors(['whatsapp' => 'Send failed: '.$e->getMessage()]);
         }

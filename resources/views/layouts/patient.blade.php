@@ -586,7 +586,7 @@
     </div>
     <div class="tb-right">
         @yield('topbar-extras')
-
+        @include('partials.notification-bell')
         <a href="{{ route('patient.appointments.book') }}" class="next-apt-chip" style="text-decoration:none">
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -601,6 +601,7 @@
             @php $pc = auth()->user()->accessRequests()->where('status','pending')->where('otp_expires_at','>',now())->count() @endphp
             @if($pc > 0)<span class="tb-dot"></span>@endif
         </a>
+
 
         <a href="{{ route('patient.profile.edit') }}" class="tb-btn" title="Settings">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

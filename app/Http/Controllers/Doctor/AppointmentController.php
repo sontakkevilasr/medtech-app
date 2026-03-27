@@ -7,6 +7,8 @@ use App\Models\Appointment;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
+
 
 class AppointmentController extends Controller
 {
@@ -99,6 +101,7 @@ class AppointmentController extends Controller
     {
         $this->gate($appointment);
         $appointment->update(['status' => 'confirmed']);
+        NotificationService::appointmentConfirmed($appointment->load('doctor.profile'));
 
         try {
             $this->whatsApp->sendAppointmentConfirmation(
@@ -119,6 +122,7 @@ class AppointmentController extends Controller
     {
         $this->gate($appointment);
         $appointment->update(['status' => 'completed']);
+        NotificationService::appointmentCompleted($appointment->load('doctor.profile'));
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'status' => 'completed']);
@@ -136,7 +140,8 @@ class AppointmentController extends Controller
             'status'              => 'cancelled',
             'cancellation_reason' => $request->reason ?? 'Cancelled by doctor',
         ]);
-
+        NotificationService::appointmentCancelled($appointment->fresh(), 'doctor');
+      
         try {
             $this->whatsApp->sendAppointmentCancellation(
                 $appointment->load(['doctor.profile', 'patient.profile'])

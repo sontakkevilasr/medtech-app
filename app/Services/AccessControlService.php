@@ -7,6 +7,8 @@ use App\Models\FamilyMember;
 use App\Models\PatientAccessPermission;
 use App\Models\DoctorAccessRequest;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
+
 
 class AccessControlService
 {
@@ -90,6 +92,8 @@ class AccessControlService
             'identifier_type'   => $identifierType,
             'status'            => 'pending',
         ]);
+
+        NotificationService::accessRequested($request->load('doctor.profile'));
 
         // ── Full access: auto-approve ─────────────────────────────────────
         if ($accessType === 'full') {

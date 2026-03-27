@@ -10,6 +10,7 @@ use App\Services\AccessControlService;
 use App\Services\OtpService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class AccessPermissionController extends Controller
 {
@@ -84,6 +85,10 @@ class AccessPermissionController extends Controller
 
         $result = $this->accessControl->patientApprove($request_model);
 
+        if ($result['success']){
+            NotificationService::accessApproved($request_model->load('doctor.profile', 'patient.profile'));
+        } 
+
         if ($request->expectsJson()) {
             return response()->json($result);
         }
@@ -102,6 +107,9 @@ class AccessPermissionController extends Controller
 
         $result = $this->accessControl->patientDeny($request_model);
 
+        if ($result['success'])
+        NotificationService::accessDenied($request_model->load('doctor.profile', 'patient.profile'));
+        
         if ($request->expectsJson()) {
             return response()->json($result);
         }
@@ -120,6 +128,14 @@ class AccessPermissionController extends Controller
         $doctor  = User::where('id', $doctorId)->where('role', 'doctor')->firstOrFail();
 
         $ok = $this->accessControl->revokeAccess($patient, $doctorId);
+        
+        if ($ok)
+        NotificationService::accessRevoked(
+            \App\Models\DoctorAccessRequest::where('doctor_user_id', $doctorId)
+                ->where('patient_user_id', auth()->id())
+                ->latest()->first()
+                ->load('doctor.profile', 'patient.profile')
+        );
 
         if ($request->expectsJson()) {
             return response()->json([

@@ -9,6 +9,7 @@ use App\Models\PatientTimeline;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class TimelineController extends Controller
 {
@@ -84,7 +85,7 @@ class TimelineController extends Controller
             default => $startDate->copy()->addDays($template->total_duration_days),
         };
 
-        PatientTimeline::create([
+        $patientTimeline = PatientTimeline::create([
             'template_id'           => $template->id,
             'patient_user_id'       => $patient->id,
             'family_member_id'      => $request->family_member_id ?: null,
@@ -94,7 +95,8 @@ class TimelineController extends Controller
             'custom_notes'          => $request->custom_notes ? ['note' => $request->custom_notes] : null,
             'is_active'             => true,
         ]);
-
+        NotificationService::timelineAssigned($patientTimeline->load('template', 'assignedByDoctor.profile'));
+        
         return redirect()
             ->route('doctor.patients.history', $patientId)
             ->with('success', "\"{$template->title}\" assigned to {$patient->profile?->full_name} starting {$startDate->format('d M Y')}.");
