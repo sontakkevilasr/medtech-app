@@ -205,6 +205,7 @@ function otpApp() {
             }
             if (this.submitting) return;
             this.submitting = true;
+            this.$refs.otpForm.querySelector('[name="otp"]').value = this.digits.join('');
             this.$refs.otpForm.submit();
         },
 

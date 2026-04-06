@@ -278,10 +278,13 @@ class WhatsAppService
     public function sendVerificationApproved($doctor): bool
     {
         $name   = $doctor->profile?->full_name ?? 'Doctor';
-        $mobile = ltrim($doctor->country_code ?? '+91', '+') . $doctor->mobile_number;
+        $mobile = ($doctor->country_code ?? '+91') . $doctor->mobile_number;
 
-        return $this->send($mobile, "verification_approved", [
-            ['key' => 'doctor_name', 'value' => "Dr. {$name}"],
-        ]);
+        $message = "✅ *Verification Approved*\n\n"
+            . "Dear Dr. {$name},\n"
+            . "Your account has been verified successfully. You can now start accepting appointments.\n\n"
+            . "_Naumah Clinic_";
+
+        return $this->send($mobile, $message);
     }
 }

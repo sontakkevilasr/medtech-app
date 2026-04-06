@@ -71,7 +71,7 @@ class RazorpayController extends Controller
 
         return response()->json([
             'success'         => true,
-            'order_id'        => $result['order']['id'],
+            'order_id'        => $result['order_id'],
             'amount'          => $appointment->fee * 100, // paise
             'currency'        => 'INR',
             'name'            => 'Naumah Clinic',
