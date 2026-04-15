@@ -7,7 +7,7 @@
     <title>@yield('title', 'Naumah Clinic') — India's Health Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         *,*::before,*::after{box-sizing:border-box}
         body{
