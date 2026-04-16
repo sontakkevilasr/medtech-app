@@ -17,7 +17,7 @@
             </div>
             <div style="flex:1;min-width:0">
                 <div style="font-size:.9375rem;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                    Dr. {{ $name }}
+                    {{ $name }}
                 </div>
                 <div style="font-size:.78rem;font-weight:600;color:{{ $color }};margin-top:1px">
                     {{ $dp?->specialization ?? 'General Physician' }}
