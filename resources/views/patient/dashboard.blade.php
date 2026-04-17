@@ -363,11 +363,13 @@
                         PDF
                     </a>
                     @endif
+                    @if($rx->medical_record_id)
                     <a href="{{ route('patient.history.show', $rx->medical_record_id) }}"
                        style="font-size:.72rem;color:var(--txt-lt);padding:4px 8px;border:1px solid var(--warm-bd);border-radius:7px;text-decoration:none;transition:all .12s"
                        onmouseover="this.style.background='var(--sand)'" onmouseout="this.style.background='transparent'">
                         View →
                     </a>
+                    @endif
                 </div>
             </div>
             @endforeach
