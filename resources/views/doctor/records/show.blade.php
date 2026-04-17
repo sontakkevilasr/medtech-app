@@ -171,7 +171,8 @@ $isMyRecord = $record->doctor_user_id === auth()->id();
                         @if(isset($att['uploaded_at'])) · {{ \Carbon\Carbon::parse($att['uploaded_at'])->format('d M Y') }} @endif
                     </div>
                 </div>
-                <a href="{{ route('attachments.medical-record', str_replace('medical-records/', '', $att['path'])) }}" target="_blank"
+                @php $ap = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2); @endphp
+                <a href="{{ route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']) }}" target="_blank"
                    style="padding:5px 12px;background:var(--leaf);color:#fff;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">
                     {{ $isImage ? 'View' : 'Download' }}
                 </a>

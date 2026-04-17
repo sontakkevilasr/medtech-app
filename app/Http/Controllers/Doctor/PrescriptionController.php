@@ -105,7 +105,7 @@ class PrescriptionController extends Controller
                 'notes'                  => $request->notes,
                 'follow_up_instructions' => $request->follow_up_instructions,
                 'follow_up_date'         => $request->follow_up_date ?: null,
-                'status'                 => 'active',
+                'status'                 => 'issued',
                 'is_sent_whatsapp'       => false,
             ]);
 
@@ -128,18 +128,19 @@ class PrescriptionController extends Controller
             }
 
             DB::commit();
-            dispatch(new \App\Jobs\GeneratePrescriptionPdfJob($rx));
-
-            if ($request->get('action') === 'send_whatsapp') {
-                return redirect()->route('doctor.prescriptions.send-whatsapp', $rx)
-                    ->with('success', 'Prescription saved.');
-            }
-            return redirect()->route('doctor.prescriptions.show', $rx)
-                ->with('success', 'Prescription #'.$rx->prescription_number.' created.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['general' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Could not save prescription: ' . $e->getMessage());
         }
+
+        dispatch(new \App\Jobs\GeneratePrescriptionPdfJob($rx->id));
+
+        if ($request->get('action') === 'send_whatsapp') {
+            return redirect()->route('doctor.prescriptions.send-whatsapp', $rx)
+                ->with('success', 'Prescription saved.');
+        }
+        return redirect()->route('doctor.prescriptions.show', $rx)
+            ->with('success', 'Prescription #'.$rx->prescription_number.' created.');
     }
 
     public function show(Prescription $prescription)

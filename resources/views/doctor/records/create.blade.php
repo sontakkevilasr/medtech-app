@@ -256,7 +256,8 @@
             @foreach($record->attachments as $i => $att)
             <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--parch);border-radius:8px;font-size:.78rem;margin-bottom:5px">
                 <span style="flex:1;color:var(--txt-md)">{{ $att['name'] }}</span>
-                <a href="{{ route('attachments.medical-record', str_replace('medical-records/', '', $att['path'])) }}" target="_blank"
+                @php $ap = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2); @endphp
+                <a href="{{ route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']) }}" target="_blank"
                    style="color:var(--leaf);text-decoration:none;font-size:.72rem">View</a>
             </div>
             @endforeach
