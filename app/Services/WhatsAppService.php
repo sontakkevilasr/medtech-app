@@ -89,8 +89,8 @@ class WhatsAppService
             . "📋 *Rx No:* {$prescription->prescription_number}\n"
             . "📅 *Date:* {$prescription->prescribed_date->format('d M Y')}\n\n"
             . "*Medicines:*\n{$medicineList}\n\n"
-            . ($prescription->general_instructions
-                ? "📝 *Instructions:* {$prescription->general_instructions}\n\n"
+            . ($prescription->notes
+                ? "📝 *Instructions:* {$prescription->notes}\n\n"
                 : '')
             . ($prescription->follow_up_date
                 ? "🗓️ *Follow-up:* {$prescription->follow_up_date->format('d M Y')}\n\n"
@@ -237,25 +237,28 @@ class WhatsAppService
 
     private function sendTwilio(string $toMobile, string $message): bool
     {
-        try {
-            $response = Http::withBasicAuth(
-                config('whatsapp.twilio.sid'),
-                config('whatsapp.twilio.token')
-            )->asForm()->post(
-                "https://api.twilio.com/2010-04-01/Accounts/" . config('whatsapp.twilio.sid') . "/Messages.json",
-                [
-                    'To'   => 'whatsapp:' . $toMobile,
-                    'From' => config('whatsapp.twilio.from'),
-                    'Body' => $message,
-                ]
-            );
+        $response = Http::withBasicAuth(
+            config('whatsapp.twilio.sid'),
+            config('whatsapp.twilio.token')
+        )->timeout(15)->asForm()->post(
+            "https://api.twilio.com/2010-04-01/Accounts/" . config('whatsapp.twilio.sid') . "/Messages.json",
+            [
+                'To'   => 'whatsapp:' . $toMobile,
+                'From' => config('whatsapp.twilio.from'),
+                'Body' => $message,
+            ]
+        );
 
-            return $response->successful();
-
-        } catch (\Throwable $e) {
-            Log::error('[WhatsApp Twilio] Exception', ['error' => $e->getMessage()]);
-            return false;
+        if ($response->successful()) {
+            return true;
         }
+
+        $body    = $response->json();
+        $reason  = $body['message'] ?? $response->body();
+        $code    = $body['code'] ?? $response->status();
+
+        Log::error('[WhatsApp Twilio] Failed', ['to' => $toMobile, 'code' => $code, 'reason' => $reason]);
+        throw new \RuntimeException("Twilio error {$code}: {$reason}");
     }
 
     private function sendWati(string $toMobile, string $message): bool
@@ -263,14 +266,19 @@ class WhatsAppService
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('whatsapp.wati.access_token'),
-            ])->post(config('whatsapp.wati.api_endpoint') . '/sendSessionMessage/' . $toMobile, [
+            ])->timeout(8)->post(config('whatsapp.wati.api_endpoint') . '/sendSessionMessage/' . $toMobile, [
                 'messageText' => $message,
             ]);
 
-            return $response->successful();
+            if ($response->successful()) {
+                return true;
+            }
+
+            Log::error('[WhatsApp WATI] Failed', ['to' => $toMobile, 'response' => $response->body()]);
+            return false;
 
         } catch (\Throwable $e) {
-            Log::error('[WhatsApp WATI] Exception', ['error' => $e->getMessage()]);
+            Log::error('[WhatsApp WATI] Exception', ['to' => $toMobile, 'error' => $e->getMessage()]);
             return false;
         }
     }

@@ -171,17 +171,20 @@ class PrescriptionController extends Controller
         $this->auth($prescription);
         $prescription->load(['patient.profile','medicines','doctor.profile','doctor.doctorProfile']);
         try {
-            if (! $prescription->pdf_path || ! \Storage::exists($prescription->pdf_path)) {
+            $disk = config('medtech.prescription.pdf_disk', 'local');
+            if (! $prescription->pdf_path || ! \Storage::disk($disk)->exists($prescription->pdf_path)) {
                 $this->pdf->generatePrescriptionPdf($prescription);
                 $prescription->refresh();
             }
-            $this->whatsApp->sendPrescription($prescription);
-            $prescription->update(['is_sent_whatsapp' => true, 'whatsapp_sent_at' => now()]);
+            $sent = $this->whatsApp->sendPrescription($prescription);
+            if (! $sent) {
+                return back()->with('error', 'Failed to send WhatsApp message. Please try again.');
+            }
+            NotificationService::prescriptionSentWhatsApp($prescription);
             return redirect()->route('doctor.prescriptions.show', $prescription)
                 ->with('success', 'Prescription sent to patient\'s WhatsApp.');
-            NotificationService::prescriptionSentWhatsApp($prescription);
         } catch (\Throwable $e) {
-            return back()->withErrors(['whatsapp' => 'Send failed: '.$e->getMessage()]);
+            return back()->with('error', 'Send failed: '.$e->getMessage());
         }
     }
 

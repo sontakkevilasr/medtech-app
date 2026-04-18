@@ -38,7 +38,7 @@ class FamilyMemberController extends Controller
 
     public function create()
     {
-        return view('patient.family.create');
+        return view('patient.family.create', ['member' => null]);
     }
 
     public function store(Request $request)

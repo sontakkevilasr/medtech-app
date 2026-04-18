@@ -65,10 +65,10 @@ class OtpService
             'otp_expires_at' => $expiresAt,
         ]);
 
-        // Set cooldown in cache
+        // Set cooldown in cache (store expiry timestamp so we can calculate seconds left)
         Cache::put(
             $this->cooldownKey($user),
-            true,
+            now()->addSeconds($this->resendCooldown)->timestamp,
             now()->addSeconds($this->resendCooldown)
         );
 
@@ -277,7 +277,7 @@ class OtpService
             $response = Http::withBasicAuth(
                 config('otp.twilio.sid'),
                 config('otp.twilio.token')
-            )->asForm()->post(
+            )->timeout(8)->asForm()->post(
                 "https://api.twilio.com/2010-04-01/Accounts/" . config('otp.twilio.sid') . "/Messages.json",
                 [
                     'To'   => $user->country_code . $user->mobile_number,
@@ -340,7 +340,9 @@ class OtpService
 
     private function cooldownSecondsLeft(User $user): int
     {
-        return (int) Cache::getTimeToLive($this->cooldownKey($user));
+        $expiresAt = Cache::get($this->cooldownKey($user));
+        if (! $expiresAt) return 0;
+        return max(0, (int) ($expiresAt - now()->timestamp));
     }
 
     private function incrementAttempts(User $user): void
