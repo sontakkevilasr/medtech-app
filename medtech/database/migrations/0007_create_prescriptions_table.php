@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('form', 30)->nullable();              // tablet, syrup, injection
             $table->string('frequency', 100);                    // 1-0-1, TDS, OD
             $table->integer('duration_days')->nullable();
-            $table->enum('timing', ['before_food', 'after_food', 'with_food', 'any_time'])
+            $table->enum('timing', ['before_food','after_food','with_food','any_time','empty_stomach','bed_time', ])
                   ->default('after_food');
             $table->text('special_instructions')->nullable();
             $table->integer('sort_order')->default(0);

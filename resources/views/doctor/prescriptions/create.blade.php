@@ -223,8 +223,8 @@
                                     <option value="after_food">After food</option>
                                     <option value="with_food">With food</option>
                                     <option value="empty_stomach">Empty stomach</option>
-                                    <option value="bedtime">Bedtime</option>
-                                    <option value="anytime">Anytime</option>
+                                    <option value="bed_time">Bedtime</option>
+                                    <option value="any_time">Anytime</option>
                                 </select>
                             </div>
                         </div>
