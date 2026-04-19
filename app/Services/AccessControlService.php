@@ -286,8 +286,14 @@ class AccessControlService
 
     private function findByMobile(string $mobile): array
     {
-        // Strip country code if included
-        $mobile = ltrim(preg_replace('/^\+?\d{1,3}/', '', $mobile), ' ');
+        $mobile = trim($mobile);
+        // Strip country code only when explicitly prefixed with +, e.g. +919876543210 → 9876543210
+        if (str_starts_with($mobile, '+')) {
+            $mobile = preg_replace('/^\+\d{1,3}/', '', $mobile);
+        } elseif (strlen($mobile) > 10) {
+            // e.g. "919876543210" → take last 10 digits
+            $mobile = substr($mobile, -10);
+        }
 
         $user = User::where('mobile_number', $mobile)
             ->where('role', 'patient')
