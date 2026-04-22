@@ -6,13 +6,14 @@
 <title>{{ $prescription->prescription_number }}</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { margin: 14mm 14mm 18mm 14mm; }
+    @page { margin: 14mm 18mm 18mm 18mm; }
     body {
         font-family: DejaVu Sans, sans-serif;
         font-size: 9.5pt;
         color: #1c2b2a;
         line-height: 1.45;
         background: #fff;
+        padding: 0 4mm;
     }
 
     /* ── Letterhead ─────────────────────────────────────── */
