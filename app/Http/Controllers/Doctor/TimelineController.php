@@ -49,6 +49,18 @@ class TimelineController extends Controller
             ->with(['profile', 'familyMembers'])
             ->firstOrFail();
 
+        // Verify doctor has access to this patient
+        $hasAccess = \App\Models\DoctorAccessRequest::where('doctor_user_id', auth()->id())
+            ->where('patient_user_id', $patientId)
+            ->where('status', 'approved')
+            ->where(fn($q) => $q->whereNull('access_expires_at')->orWhere('access_expires_at', '>', now()))
+            ->exists();
+
+        if (! $hasAccess) {
+            return redirect()->route('doctor.patients.index')
+                ->with('error', 'You need patient access to assign a timeline. Request access first.');
+        }
+
         $templates = TimelineTemplate::active()
             ->withCount('milestones')
             ->orderByRaw('is_system_template DESC')
@@ -62,11 +74,21 @@ class TimelineController extends Controller
             ->with('template')
             ->get();
 
-        return view('doctor.timelines.assign', compact('patient', 'templates', 'existing'));
+        $preselectedId = $request->get('template');
+
+        return view('doctor.timelines.assign', compact('patient', 'templates', 'existing', 'preselectedId'));
     }
 
     public function assign(Request $request, int $patientId)
     {
+        // Access guard
+        $hasAccess = \App\Models\DoctorAccessRequest::where('doctor_user_id', auth()->id())
+            ->where('patient_user_id', $patientId)
+            ->where('status', 'approved')
+            ->exists();
+
+        abort_unless($hasAccess, 403, 'Access denied.');
+
         $request->validate([
             'template_id'      => ['required', 'exists:timeline_templates,id'],
             'start_date'       => ['required', 'date'],

@@ -52,16 +52,10 @@
 
 @section('content')
 @php
-$spec = $patientTimeline->template?->specialty_type ?? 'other';
-$specMeta = [
-    'obstetrics' => ['color'=>'#c0737a','bg'=>'#fce7ef','icon'=>'🤰','label'=>'Pregnancy'],
-    'pediatrics' => ['color'=>'#3d7a8a','bg'=>'#e8f5f9','icon'=>'👶','label'=>'Paediatric'],
-    'ivf'        => ['color'=>'#8a6aaa','bg'=>'#f4f0fa','icon'=>'🧬','label'=>'IVF'],
-    'dental'     => ['color'=>'#3d7a6e','bg'=>'#eef5f3','icon'=>'🦷','label'=>'Dental'],
-    'cardiology' => ['color'=>'#c98a3a','bg'=>'#fdf5e8','icon'=>'❤️','label'=>'Cardiology'],
-    'oncology'   => ['color'=>'#6b7280','bg'=>'#f3f4f6','icon'=>'🎗️','label'=>'Oncology'],
-];
-$meta = $specMeta[$spec] ?? ['color'=>'#4a3760','bg'=>'#f4f0fa','icon'=>'📅','label'=>ucfirst($spec)];
+use App\Models\TimelineTemplate;
+$spec     = $patientTimeline->template?->specialty_type ?? 'other';
+$specMeta = TimelineTemplate::SPECIALTIES;
+$meta     = $specMeta[$spec] ?? ['color'=>'#4a3760','bg'=>'#f4f0fa','icon'=>'📅','label'=>ucfirst($spec)];
 
 $typeMeta = [
     'visit'       => ['label'=>'Visit',       'color'=>'#6a9e8e', 'bg'=>'#eef5f3'],

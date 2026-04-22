@@ -4,13 +4,8 @@
 
 @section('content')
 @php
-$specMeta = [
-    'obstetrics' => ['icon'=>'🤰','color'=>'#c0737a','bg'=>'#fce7ef','label'=>'Pregnancy'],
-    'pediatrics' => ['icon'=>'👶','color'=>'#3d7a8a','bg'=>'#e8f5f9','label'=>'Paediatric'],
-    'ivf'        => ['icon'=>'🧬','color'=>'#8a6aaa','bg'=>'#f4f0fa','label'=>'IVF'],
-    'dental'     => ['icon'=>'🦷','color'=>'#3d7a6e','bg'=>'#eef5f3','label'=>'Dental'],
-    'cardiology' => ['icon'=>'❤️','color'=>'#c98a3a','bg'=>'#fdf5e8','label'=>'Cardiology'],
-];
+use App\Models\TimelineTemplate;
+$specMeta = TimelineTemplate::SPECIALTIES;
 @endphp
 
 <div class="fade-in">

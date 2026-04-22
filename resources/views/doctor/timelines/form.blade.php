@@ -39,10 +39,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
             <div>
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px">Specialty *</label>
-                <input type="text" name="specialty_type" value="{{ old('specialty_type', $template?->specialty_type) }}"
-                       placeholder="e.g. cardiology"
-                       style="width:100%;padding:.55rem .8rem;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.875rem;color:var(--txt);background:#fff;outline:none;font-family:inherit"
-                       required>
+                @include('components.specialty-select', ['selected' => $template?->specialty_type])
             </div>
             <div>
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px">Duration</label>

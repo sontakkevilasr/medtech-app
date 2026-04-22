@@ -89,7 +89,9 @@ class PatientController extends Controller
                 ->count();
         });
 
-        return view('doctor.patients.index', compact('patients', 'search', 'filter'));
+        $assignTemplate = $request->get('assign_template');
+
+        return view('doctor.patients.index', compact('patients', 'search', 'filter', 'assignTemplate'));
     }
 
     // ─── AJAX Patient Search (for access request modal) ──────────────────────

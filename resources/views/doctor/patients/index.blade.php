@@ -5,12 +5,32 @@
 @section('content')
 <div x-data="patientList()" x-init="init()">
 
+@if($assignTemplate)
+{{-- ── Assign-mode banner ────────────────────────────────────────────────── --}}
+<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;background:#eef5f3;border:1.5px solid #b5ddd5;border-radius:13px;margin-bottom:20px">
+    <div style="width:38px;height:38px;border-radius:10px;background:#3d7a6e;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+    </div>
+    <div style="flex:1">
+        <div style="font-weight:600;font-size:.9rem;color:#1a5a4a">Assign Timeline to a Patient</div>
+        <div style="font-size:.78rem;color:#3a8a7a;margin-top:2px">Click <strong>Assign Timeline</strong> next to a patient below. Only patients with active access can receive timelines.</div>
+    </div>
+    <a href="{{ route('doctor.timelines.index') }}" style="font-size:.78rem;color:#3a8a7a;text-decoration:none;white-space:nowrap;border:1px solid #b5ddd5;padding:5px 12px;border-radius:8px;transition:background .12s"
+       onmouseover="this.style.background='#d0ece8'" onmouseout="this.style.background='transparent'">
+        ✕ Cancel
+    </a>
+</div>
+@endif
+
 {{-- ── Top bar: search + filters + add-patient button ─────────────────────── -- --}}
 <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
 
     {{-- Search form --}}
     <form method="GET" action="{{ route('doctor.patients.index') }}"
           style="display:flex;flex:1;min-width:220px;gap:0;position:relative">
+        @if($assignTemplate)<input type="hidden" name="assign_template" value="{{ $assignTemplate }}">@endif
         <div style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--txt-lt);pointer-events:none">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
@@ -152,26 +172,38 @@
 
         {{-- Actions --}}
         <div style="display:flex;gap:5px;flex-shrink:0">
-            @if($p->active_access)
-            <a href="{{ route('doctor.patients.history', $p->id) }}"
-               style="display:flex;align-items:center;gap:5px;padding:6px 11px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:500;text-decoration:none;transition:opacity .15s"
-               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-                View History
-            </a>
+            @if($assignTemplate)
+                @if($p->active_access)
+                <a href="{{ route('doctor.timelines.assign', $p->id) }}?template={{ $assignTemplate }}"
+                   style="display:flex;align-items:center;gap:5px;padding:6px 13px;background:var(--leaf);color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:opacity .15s"
+                   onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                    Assign Timeline →
+                </a>
+                @else
+                <span style="font-size:.75rem;color:var(--txt-lt);padding:6px 8px;border:1.5px solid var(--warm-bd);border-radius:8px;white-space:nowrap">No Access</span>
+                @endif
             @else
-            <button @click="openAccessModal({{ json_encode(['id' => $p->id, 'name' => $name, 'mobile' => $p->mobile_number, 'cc' => $p->country_code]) }})"
-                    style="display:flex;align-items:center;gap:5px;padding:6px 11px;background:transparent;color:var(--leaf);border:1.5px solid var(--leaf);border-radius:8px;font-size:.78rem;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s"
-                    onmouseover="this.style.background='#edf6f4'" onmouseout="this.style.background='transparent'">
-                Request Access
-            </button>
+                @if($p->active_access)
+                <a href="{{ route('doctor.patients.history', $p->id) }}"
+                   style="display:flex;align-items:center;gap:5px;padding:6px 11px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:500;text-decoration:none;transition:opacity .15s"
+                   onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                    View History
+                </a>
+                @else
+                <button @click="openAccessModal({{ json_encode(['id' => $p->id, 'name' => $name, 'mobile' => $p->mobile_number, 'cc' => $p->country_code]) }})"
+                        style="display:flex;align-items:center;gap:5px;padding:6px 11px;background:transparent;color:var(--leaf);border:1.5px solid var(--leaf);border-radius:8px;font-size:.78rem;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s"
+                        onmouseover="this.style.background='#edf6f4'" onmouseout="this.style.background='transparent'">
+                    Request Access
+                </button>
+                @endif
+                <a href="{{ route('doctor.patients.history', $p->id) }}"
+                   style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;border:1.5px solid var(--warm-bd);color:var(--txt-lt);text-decoration:none;transition:all .12s"
+                   onmouseover="this.style.background='var(--parch)';this.style.color='var(--txt)'" onmouseout="this.style.background='transparent';this.style.color='var(--txt-lt)'">
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
             @endif
-            <a href="{{ route('doctor.patients.history', $p->id) }}"
-               style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;border:1.5px solid var(--warm-bd);color:var(--txt-lt);text-decoration:none;transition:all .12s"
-               onmouseover="this.style.background='var(--parch)';this.style.color='var(--txt)'" onmouseout="this.style.background='transparent';this.style.color='var(--txt-lt)'">
-                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
-            </a>
         </div>
     </div>
     @endforeach

@@ -71,7 +71,7 @@
             @if($pt->assignedByDoctor)
             <div>
                 <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--txt-lt);margin-bottom:2px">Assigned by</div>
-                <div style="font-size:.8125rem;font-weight:500;color:var(--txt-md)">Dr. {{ $pt->assignedByDoctor->profile?->full_name }}</div>
+                <div style="font-size:.8125rem;font-weight:500;color:var(--txt-md)">{{ $pt->assignedByDoctor->profile?->full_name }}</div>
             </div>
             @endif
         </div>

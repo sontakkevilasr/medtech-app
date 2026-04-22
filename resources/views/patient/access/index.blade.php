@@ -272,7 +272,7 @@
 
     {{-- Recently closed --}}
     @if($recentClosed->isNotEmpty())
-    <div class="panel">
+    <div class="panel" style="padding: 14px 18px 0px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--warm-bd)">
             <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">Recent Activity</h3>
             <a href="{{ route('patient.access.history') }}" style="font-size:.75rem;color:var(--plum);text-decoration:none" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">Full history →</a>

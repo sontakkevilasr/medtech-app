@@ -9,6 +9,17 @@ class TimelineTemplate extends Model
 {
     use HasFactory;
 
+    // Single source of truth for specialty ENUM — matches DB migration exactly
+    const SPECIALTIES = [
+        'obstetrics' => ['label' => 'Obstetrics / Pregnancy', 'icon' => '🤰', 'color' => '#c0737a', 'bg' => '#fce7ef'],
+        'pediatrics' => ['label' => 'Paediatrics',            'icon' => '👶', 'color' => '#3d7a8a', 'bg' => '#e8f5f9'],
+        'ivf'        => ['label' => 'IVF & Fertility',        'icon' => '🧬', 'color' => '#8a6aaa', 'bg' => '#f4f0fa'],
+        'dental'     => ['label' => 'Dental & Ortho',         'icon' => '🦷', 'color' => '#3d7a6e', 'bg' => '#eef5f3'],
+        'orthopedic' => ['label' => 'Orthopaedics',           'icon' => '🦴', 'color' => '#c98a3a', 'bg' => '#fdf5e8'],
+        'oncology'   => ['label' => 'Oncology',               'icon' => '🎗️', 'color' => '#6b7280', 'bg' => '#f3f4f6'],
+        'custom'     => ['label' => 'Custom',                 'icon' => '📋', 'color' => '#4a3760', 'bg' => '#f4f0fa'],
+    ];
+
     protected $fillable = [
         'doctor_user_id', 'specialty_type', 'title', 'description',
         'total_duration_days', 'duration_unit', 'is_system_template', 'is_active',

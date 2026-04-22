@@ -27,14 +27,8 @@
 
 @section('content')
 @php
-$specMeta = [
-    'obstetrics' => ['color'=>'#c0737a','bg'=>'#fce7ef','label'=>'Pregnancy'],
-    'pediatrics' => ['color'=>'#3d7a8a','bg'=>'#e8f5f9','label'=>'Paediatric'],
-    'ivf'        => ['color'=>'#8a6aaa','bg'=>'#f4f0fa','label'=>'IVF'],
-    'dental'     => ['color'=>'#3d7a6e','bg'=>'#eef5f3','label'=>'Dental'],
-    'cardiology' => ['color'=>'#c98a3a','bg'=>'#fdf5e8','label'=>'Cardiology'],
-    'oncology'   => ['color'=>'#6b7280','bg'=>'#f3f4f6','label'=>'Oncology'],
-];
+use App\Models\TimelineTemplate;
+$specMeta     = TimelineTemplate::SPECIALTIES;
 $allTimelines = $selfTimelines->concat($memberTimelines);
 @endphp
 
@@ -60,7 +54,7 @@ $allTimelines = $selfTimelines->concat($memberTimelines);
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
         @foreach($selfTimelines as $pt)
-            @include('patient.timeline._card', ['pt' => $pt, 'specMeta' => $specMeta])
+            @include('patient.timeline.card', ['pt' => $pt, 'specMeta' => $specMeta])
         @endforeach
     </div>
 </div>
@@ -74,7 +68,7 @@ $allTimelines = $selfTimelines->concat($memberTimelines);
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
         @foreach($memberTimelines as $pt)
-            @include('patient.timeline._card', ['pt' => $pt, 'specMeta' => $specMeta])
+            @include('patient.timeline.card', ['pt' => $pt, 'specMeta' => $specMeta])
         @endforeach
     </div>
 </div>
