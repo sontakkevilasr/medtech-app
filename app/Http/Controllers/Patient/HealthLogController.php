@@ -69,7 +69,7 @@ class HealthLogController extends Controller
         $rules = [
             'log_type'  => ['required', 'in:bp,sugar,weight,oxygen,temperature,pulse'],
             'value_1'   => ['required', 'numeric', 'min:0', 'max:999'],
-            'context'   => ['nullable', 'in:fasting,post_meal,random,before_activity,after_activity,rest'],
+            'context'   => ['nullable', 'in:fasting,post_meal,random,morning,night,other'],
             'notes'     => ['nullable', 'string', 'max:255'],
             'logged_at' => ['nullable', 'date'],
         ];

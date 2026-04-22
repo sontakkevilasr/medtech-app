@@ -296,9 +296,9 @@
                     <option value="fasting">Fasting</option>
                     <option value="post_meal">Post-meal (2hr)</option>
                     <option value="random">Random</option>
-                    <option value="before_activity">Before activity</option>
-                    <option value="after_activity">After activity</option>
-                    <option value="rest">At rest</option>
+                    <option value="morning">Morning</option>
+                    <option value="night">Night</option>
+                    <option value="other">Other</option>
                 </select>
             </div>
 
