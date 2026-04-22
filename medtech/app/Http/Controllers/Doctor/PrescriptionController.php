@@ -150,6 +150,7 @@ class PrescriptionController extends Controller
     {
         $this->auth($prescription);
         $prescription->load(['doctor.profile','doctor.doctorProfile','patient.profile','medicines']);
+        dd($prescription);
         return $request->get('download')
             ? $this->pdf->download($prescription)
             : $this->pdf->stream($prescription);
