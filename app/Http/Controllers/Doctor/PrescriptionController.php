@@ -127,7 +127,7 @@ class PrescriptionController extends Controller
                     'form'                 => $med['form'] ?? null,
                     'frequency'            => $med['frequency'] ?? null,
                     'duration_days'        => $med['duration_days'] ?? null,
-                    'timing'               => $med['timing'] ?? null,
+                    'timing'               => $med['timing'] ?: 'after_food',
                     'special_instructions' => $med['special_instructions'] ?? null,
                     'sort_order'           => $i,
                 ]);
