@@ -178,7 +178,10 @@
                                 <div x-show="med.acList.length > 0" class="ac-list">
                                     <template x-for="(s, si) in med.acList" :key="si">
                                         <div class="ac-item" :class="med.acIdx===si?'hl':''" @mousedown.prevent="fillMed(idx, s)">
-                                            <div class="ac-item-name" x-text="s.medicine_name"></div>
+                                            <div style="display:flex;align-items:center;gap:5px">
+                                                <span class="ac-item-name" x-text="s.medicine_name"></span>
+                                                <span x-show="s._mine" style="font-size:.62rem;font-weight:700;color:var(--leaf,#3d7a5c);background:rgba(61,122,92,.1);padding:1px 5px;border-radius:4px;letter-spacing:.04em">★ MY LIST</span>
+                                            </div>
                                             <div class="ac-item-meta" x-text="[s.form,s.dosage,s.frequency].filter(Boolean).join(' · ')"></div>
                                         </div>
                                     </template>
@@ -349,6 +352,7 @@
 @endphp
 <script>
 const RECENT_MEDS = @json($recentMedicines);
+const MY_MEDS     = @json($myMedicines);
 function rxForm() {
     return {
         patientId: '{{ $patient?->id ?? "" }}',
@@ -374,7 +378,12 @@ function rxForm() {
         searchMed(idx, val) {
             if (!val || val.length < 2) { this.medicines[idx].acList = []; return; }
             const q = val.toLowerCase();
-            this.medicines[idx].acList = RECENT_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q)).slice(0, 8);
+            const mine = MY_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q))
+                                 .map(m => ({ ...m, _mine: true }));
+            const mineNames = new Set(mine.map(m => m.medicine_name.toLowerCase()));
+            const recent = RECENT_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q) && !mineNames.has(m.medicine_name.toLowerCase()))
+                                       .slice(0, 8 - mine.length);
+            this.medicines[idx].acList = [...mine.slice(0, 8), ...recent].slice(0, 10);
             this.medicines[idx].acIdx = 0;
         },
         fillMed(idx, s) {

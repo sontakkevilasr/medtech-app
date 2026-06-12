@@ -12,6 +12,7 @@ use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\NotificationService;
+use App\Models\DoctorMedicine;
 
 class PrescriptionController extends Controller
 {
@@ -67,7 +68,12 @@ class PrescriptionController extends Controller
          ->orderByDesc('id')->limit(300)->get()
          ->unique('medicine_name')->take(60)->values();
 
-        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines'));
+        $myMedicines = DoctorMedicine::where('doctor_user_id', $doctor->id)
+            ->active()
+            ->orderBy('medicine_name')
+            ->get(['id','medicine_name','generic_name','form','dosage','frequency','timing','duration_days','special_instructions']);
+
+        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines','myMedicines'));
     }
 
     public function store(Request $request)

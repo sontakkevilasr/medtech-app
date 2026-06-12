@@ -10,6 +10,7 @@ use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\TimelineController;
 use App\Http\Controllers\Doctor\AnalyticsController;
 use App\Http\Controllers\Doctor\QuickRegisterController;
+use App\Http\Controllers\Doctor\MedicineController;
 use App\Http\Controllers\Payment\SubscriptionController;
 use App\Http\Controllers\Payment\RazorpayController;
 use \App\Http\Controllers\Doctor\ProfileSetupController;
@@ -193,6 +194,19 @@ Route::middleware('role:doctor')->group(function () {
     Route::post('/payments/webhook',          [RazorpayController::class, 'webhook'])
         ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
         ->name('payments.webhook');
+
+    /*
+    |----------------------------------------------------------------------
+    | Medicine Master List
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('medicines')->name('medicines.')->group(function () {
+        Route::get('/',          [MedicineController::class, 'index'])   ->name('index');
+        Route::get('/search',    [MedicineController::class, 'search'])  ->name('search');
+        Route::post('/',         [MedicineController::class, 'store'])   ->name('store');
+        Route::put('/{medicine}',    [MedicineController::class, 'update'])  ->name('update');
+        Route::delete('/{medicine}', [MedicineController::class, 'destroy']) ->name('destroy');
+    });
 
     // ── Profile ──────────────────────────────────────────────────────────────
     Route::get('/profile/edit',               [DashboardController::class, 'editProfile'])->name('profile.edit');
