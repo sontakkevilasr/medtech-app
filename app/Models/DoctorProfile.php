@@ -14,7 +14,7 @@ class DoctorProfile extends Model
         'registration_council', 'qualification', 'experience_years', 'clinic_name',
         'clinic_address', 'clinic_city', 'clinic_state', 'clinic_pincode',
         'consultation_fee', 'upi_id', 'upi_qr_image', 'languages_spoken',
-        'available_slots', 'bio', 'is_premium', 'is_verified',
+        'available_slots', 'blocked_dates', 'bio', 'is_premium', 'is_verified',
         'accept_online_appointments', 'whatsapp_number', 'whatsapp_country_code',
     ];
 
@@ -23,6 +23,7 @@ class DoctorProfile extends Model
         return [
             'languages_spoken'             => 'array',
             'available_slots'              => 'array',
+            'blocked_dates'                => 'array',
             'is_premium'                   => 'boolean',
             'is_verified'                  => 'boolean',
             'verified_at'                  => 'datetime',

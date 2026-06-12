@@ -114,9 +114,11 @@ Route::middleware('role:doctor')->group(function () {
         Route::post('/{appointment}/remind',  [AppointmentController::class, 'sendReminder'])  ->name('remind');
 
         // Slot management
-        Route::get('/slots/manage',           [AppointmentController::class, 'manageSlots'])   ->name('slots');
-        Route::post('/slots/save',            [AppointmentController::class, 'saveSlots'])     ->name('slots.save');
-        Route::get('/slots/available',        [AppointmentController::class, 'availableSlots'])->name('slots.available');
+        Route::get('/slots/manage',           [AppointmentController::class, 'manageSlots'])      ->name('slots');
+        Route::post('/slots/save',            [AppointmentController::class, 'saveSlots'])        ->name('slots.save');
+        Route::get('/slots/available',        [AppointmentController::class, 'availableSlots'])   ->name('slots.available');
+        Route::post('/slots/block',           [AppointmentController::class, 'saveBlockedDate'])  ->name('slots.block');
+        Route::post('/slots/unblock',         [AppointmentController::class, 'removeBlockedDate'])->name('slots.unblock');
     });
 
     /*

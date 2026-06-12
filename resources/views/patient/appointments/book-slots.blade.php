@@ -29,7 +29,7 @@
 
 <div style="display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start">
 
-{{-- ══ LEFT: Calendar + Slot Grid ═══════════════════════════════════════════ -- --}}
+{{-- ══ LEFT: Calendar + Slot Grid ═══════════════════════════════════════════ --}}
 <div style="display:flex;flex-direction:column;gap:18px">
 
     {{-- Doctor summary bar --}}
@@ -60,75 +60,94 @@
         @endif
     </div>
 
-    {{-- Calendar --}}
-    <div class="panel">
-        {{-- Month nav --}}
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--warm-bd)">
+    {{-- ── Calendar ──────────────────────────────────────────────────────── --}}
+    <div class="panel" style="overflow:hidden">
+
+        {{-- Month navigation --}}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 16px">
             <button type="button" x-on:click="prevMonth()"
                     :disabled="isCurrentMonth"
-                    style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--warm-bd);border-radius:8px;background:transparent;cursor:pointer;transition:all .15s"
-                    :style="isCurrentMonth ? 'opacity:.3;cursor:not-allowed' : ''"
-                    onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    class="cal-nav-btn"
+                    :style="isCurrentMonth ? 'opacity:.28;cursor:not-allowed;pointer-events:none' : ''">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <div style="font-family:'Lora',serif;font-size:1.1rem;color:var(--txt)" x-text="monthLabel"></div>
-            <button type="button" x-on:click="nextMonth()"
-                    style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--warm-bd);border-radius:8px;background:transparent;cursor:pointer;transition:all .15s"
-                    onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+
+            <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:'Lora',serif;font-size:1.15rem;font-weight:500;color:var(--txt)" x-text="monthLabel"></span>
+                <div x-show="loadingCalendar"
+                     style="width:14px;height:14px;border:2px solid var(--warm-bd);border-top-color:var(--plum);border-radius:50%;animation:spin .55s linear infinite;flex-shrink:0"></div>
+            </div>
+
+            <button type="button" x-on:click="nextMonth()" class="cal-nav-btn">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
         </div>
 
-        {{-- Day headers --}}
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:10px 16px 0">
-            @foreach(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] as $dh)
-            <div style="text-align:center;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);padding:6px 0">{{ $dh }}</div>
-            @endforeach
-        </div>
+        {{-- Calendar grid — headers + cells share ONE grid so columns always align --}}
+        <div style="padding:0 18px 20px">
+            <div class="cal-grid">
 
-        {{-- Calendar grid --}}
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px 16px 16px" x-ref="calendarGrid">
-            <template x-for="cell in calendarCells" :key="cell.key">
-                <div>
-                    {{-- Empty cell --}}
-                    <div x-show="!cell.date" style="padding:6px"></div>
-                    {{-- Date cell --}}
-                    <button x-show="cell.date" type="button"
-                            x-on:click="cell.available && selectDate(cell.date)"
-                            :disabled="!cell.available"
-                            style="width:100%;aspect-ratio:1;border:none;border-radius:10px;cursor:pointer;transition:all .15s;font-size:.875rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;position:relative"
-                            :style="
-                                cell.isSelected ? 'background:var(--plum);color:#fff;font-weight:700;box-shadow:0 3px 12px rgba(74,55,96,.35)' :
-                                cell.isToday    ? 'background:var(--parch);color:var(--plum);border:2px solid var(--plum);font-weight:700' :
-                                cell.available  ? 'background:var(--sage-lt,#edf6f4);color:var(--sage,#2d6a62);' :
-                                                  'background:transparent;color:var(--txt-lt);cursor:not-allowed;opacity:.4'
-                            ">
-                        <span x-text="cell.day"></span>
-                        <span x-show="cell.available && !cell.isSelected"
-                              style="width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.5"></span>
-                    </button>
-                </div>
-            </template>
+                {{-- ── Day-of-week headers (PHP, static) ── --}}
+                @foreach([['Mon',false],['Tue',false],['Wed',false],['Thu',false],['Fri',false],['Sat',true],['Sun',true]] as [$dh,$wknd])
+                <div class="cal-dow {{ $wknd ? 'cal-dow--wknd' : '' }}">{{ $dh }}</div>
+                @endforeach
+
+                {{-- ── Skeleton cells while loading ── --}}
+                <template x-if="loadingCalendar">
+                    <template x-for="n in 35" :key="'sk'+n">
+                        <div class="cal-skel"></div>
+                    </template>
+                </template>
+
+                {{-- ── Actual date cells ── --}}
+                <template x-if="!loadingCalendar">
+                    <template x-for="cell in calendarCells" :key="cell.key">
+                        <div>
+                            {{-- Leading empty spacer --}}
+                            <div x-show="!cell.date" class="cal-cell cal-cell--blank"></div>
+                            {{-- Date button --}}
+                            <button x-show="cell.date" type="button"
+                                    x-on:click="cell.available && selectDate(cell.date)"
+                                    :disabled="!cell.available"
+                                    :class="{
+                                        'cal-cell':           true,
+                                        'cal-cell--avail':    cell.available && !cell.isSelected && !cell.isToday,
+                                        'cal-cell--today':    cell.isToday   && !cell.isSelected,
+                                        'cal-cell--selected': cell.isSelected,
+                                        'cal-cell--past':     !cell.available && !cell.isToday,
+                                    }">
+                                <span x-text="cell.day" class="cal-day-num"></span>
+                                <span x-show="cell.available && !cell.isSelected" class="cal-dot"></span>
+                            </button>
+                        </div>
+                    </template>
+                </template>
+
+            </div>
         </div>
 
         {{-- Legend --}}
-        <div style="display:flex;gap:14px;padding:8px 20px 14px;border-top:1px solid var(--warm-bd);flex-wrap:wrap">
-            <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--txt-lt)">
-                <div style="width:10px;height:10px;border-radius:3px;background:var(--sage-lt,#edf6f4);border:1px solid var(--sage,#2d6a62)"></div>
+        <div style="display:flex;gap:18px;align-items:center;padding:11px 22px 13px;border-top:1px solid var(--warm-bd);flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--txt-lt)">
+                <div style="width:11px;height:11px;border-radius:4px;background:var(--sage-lt,#edf6f4);border:1.5px solid var(--sage,#2d6a62)"></div>
                 Available
             </div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--txt-lt)">
-                <div style="width:10px;height:10px;border-radius:3px;background:var(--plum)"></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--txt-lt)">
+                <div style="width:11px;height:11px;border-radius:4px;background:var(--plum)"></div>
                 Selected
             </div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--txt-lt)">
-                <div style="width:10px;height:10px;border-radius:3px;background:var(--parch);border:1.5px solid var(--plum)"></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--txt-lt)">
+                <div style="width:11px;height:11px;border-radius:4px;background:var(--parch);border:2px solid var(--plum)"></div>
                 Today
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--txt-lt)">
+                <div style="width:11px;height:11px;border-radius:4px;background:#f1f0ef"></div>
+                Unavailable
             </div>
         </div>
     </div>
 
-    {{-- Slot grid --}}
+    {{-- ── Slot grid ────────────────────────────────────────────────────── --}}
     <div class="panel" x-show="selectedDate">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--warm-bd)">
             <div style="font-family:'Lora',serif;font-size:1rem;color:var(--txt)">
@@ -139,17 +158,14 @@
         </div>
 
         <div style="padding:16px 20px">
-            {{-- No slots state --}}
             <div x-show="!loadingSlots && slots.length === 0"
                  style="text-align:center;padding:28px 16px;color:var(--txt-lt)">
                 <div style="font-size:.875rem;margin-bottom:4px">No available slots on this day.</div>
                 <div style="font-size:.78rem">Please try another date.</div>
             </div>
 
-            {{-- Slot chips grouped by time period --}}
             <div x-show="!loadingSlots && slots.length > 0" style="display:flex;flex-direction:column;gap:16px">
 
-                {{-- Morning --}}
                 <div x-show="groupedSlots.morning.length > 0">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                         <span style="font-size:.95rem">🌅</span>
@@ -158,16 +174,11 @@
                     </div>
                     <div style="display:flex;flex-wrap:wrap;gap:8px">
                         <template x-for="slot in groupedSlots.morning" :key="slot">
-                            <button type="button" x-on:click="selectSlot(slot)"
-                                    class="slot-chip"
-                                    :class="selectedSlot === slot ? 'slot-active' : ''"
-                                    x-text="formatTime(slot)">
-                            </button>
+                            <button type="button" x-on:click="selectSlot(slot)" class="slot-chip" :class="selectedSlot === slot ? 'slot-active' : ''" x-text="formatTime(slot)"></button>
                         </template>
                     </div>
                 </div>
 
-                {{-- Afternoon --}}
                 <div x-show="groupedSlots.afternoon.length > 0">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                         <span style="font-size:.95rem">☀️</span>
@@ -176,16 +187,11 @@
                     </div>
                     <div style="display:flex;flex-wrap:wrap;gap:8px">
                         <template x-for="slot in groupedSlots.afternoon" :key="slot">
-                            <button type="button" x-on:click="selectSlot(slot)"
-                                    class="slot-chip"
-                                    :class="selectedSlot === slot ? 'slot-active' : ''"
-                                    x-text="formatTime(slot)">
-                            </button>
+                            <button type="button" x-on:click="selectSlot(slot)" class="slot-chip" :class="selectedSlot === slot ? 'slot-active' : ''" x-text="formatTime(slot)"></button>
                         </template>
                     </div>
                 </div>
 
-                {{-- Evening --}}
                 <div x-show="groupedSlots.evening.length > 0">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                         <span style="font-size:.95rem">🌆</span>
@@ -194,17 +200,12 @@
                     </div>
                     <div style="display:flex;flex-wrap:wrap;gap:8px">
                         <template x-for="slot in groupedSlots.evening" :key="slot">
-                            <button type="button" x-on:click="selectSlot(slot)"
-                                    class="slot-chip"
-                                    :class="selectedSlot === slot ? 'slot-active' : ''"
-                                    x-text="formatTime(slot)">
-                            </button>
+                            <button type="button" x-on:click="selectSlot(slot)" class="slot-chip" :class="selectedSlot === slot ? 'slot-active' : ''" x-text="formatTime(slot)"></button>
                         </template>
                     </div>
                 </div>
             </div>
 
-            {{-- Slot count --}}
             <div x-show="!loadingSlots && slots.length > 0" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--warm-bd);display:flex;align-items:center;justify-content:space-between">
                 <span style="font-size:.75rem;color:var(--txt-lt)" x-text="slots.length + ' slots available'"></span>
                 <span x-show="selectedSlot" style="font-size:.75rem;font-weight:600;color:var(--plum)" x-text="'Selected: ' + formatTime(selectedSlot)"></span>
@@ -224,14 +225,12 @@
 
 </div>{{-- end left --}}
 
-{{-- ══ RIGHT: Booking Form ══════════════════════════════════════════════════ -- --}}
+{{-- ══ RIGHT: Booking Form ══════════════════════════════════════════════════ --}}
 <div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
-    {{-- Booking summary --}}
     <div class="panel" style="padding:18px 20px">
         <div style="font-family:'Lora',serif;font-size:1rem;color:var(--txt);margin-bottom:14px">Your Booking</div>
 
-        {{-- Date + Time display --}}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
             <div style="padding:10px 12px;border:1.5px solid var(--warm-bd);border-radius:10px;background:var(--parch)">
                 <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:3px">Date</div>
@@ -258,17 +257,11 @@
         </div>
         @endif
 
-        {{-- Booking form --}}
-        <form method="POST"
-              :action="storeUrl"
-              x-on:submit.prevent="submitBooking($el)"
-              id="booking-form">
+        <form method="POST" :action="storeUrl" x-on:submit.prevent="submitBooking($el)" id="booking-form">
             @csrf
-
             <input type="hidden" name="slot_date" :value="selectedDate">
             <input type="hidden" name="slot_time" :value="selectedSlot">
 
-            {{-- Visit type --}}
             <div style="margin-bottom:12px">
                 <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:6px">Visit Type</label>
                 <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -276,7 +269,7 @@
                     <label style="flex:1;min-width:80px">
                         <input type="radio" name="type" value="{{ $val }}" {{ $val === 'consultation' ? 'checked' : '' }} style="display:none" class="type-radio">
                         <div style="text-align:center;padding:7px 8px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .15s;color:var(--txt-md)"
-                             onclick="document.querySelectorAll('.type-pill').forEach(p=>p.style.background='transparent');document.querySelectorAll('.type-pill').forEach(p=>{p.style.color='var(--txt-md)';p.style.borderColor='var(--warm-bd)'});this.style.background='var(--plum)';this.style.color='#fff';this.style.borderColor='var(--plum)'"
+                             onclick="document.querySelectorAll('.type-pill').forEach(p=>{p.style.background='transparent';p.style.color='var(--txt-md)';p.style.borderColor='var(--warm-bd)'});this.style.background='var(--plum)';this.style.color='#fff';this.style.borderColor='var(--plum)'"
                              class="type-pill {{ $val === 'consultation' ? 'active-type' : '' }}">
                             {{ $lbl }}
                         </div>
@@ -285,7 +278,6 @@
                 </div>
             </div>
 
-            {{-- Reason --}}
             <div style="margin-bottom:14px">
                 <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:4px">
                     Reason <span style="font-weight:400;color:var(--txt-lt)">(optional)</span>
@@ -296,7 +288,6 @@
                           onfocus="this.style.borderColor='var(--plum)'" onblur="this.style.borderColor='var(--warm-bd)'"></textarea>
             </div>
 
-            {{-- Error message --}}
             <div x-show="bookingError" x-text="bookingError"
                  style="padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.8rem;color:#dc2626;margin-bottom:10px"></div>
 
@@ -311,7 +302,7 @@
         </form>
     </div>
 
-    {{-- Doctor availability summary --}}
+    {{-- Weekly schedule sidebar --}}
     <div class="panel" style="padding:14px 18px">
         <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">Weekly Schedule</div>
         @foreach(['monday' => 'Mon','tuesday' => 'Tue','wednesday' => 'Wed','thursday' => 'Thu','friday' => 'Fri','saturday' => 'Sat','sunday' => 'Sun'] as $day => $abbr)
@@ -341,7 +332,131 @@
 
 @push('styles')
 <style>
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes cal-pulse { 0%,100% { opacity:.55; } 50% { opacity:.25; } }
+
+/* ── Calendar nav button ── */
+.cal-nav-btn {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--warm-bd);
+    border-radius: 9px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--txt-md);
+    transition: all .15s;
+    flex-shrink: 0;
+}
+.cal-nav-btn:hover { background: var(--parch); border-color: var(--plum); color: var(--plum); }
+
+/* ── Unified calendar grid ──
+   Headers (PHP-rendered) and cells (Alpine) share ONE grid,
+   so column widths are always identical — no offset drift.    */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+/* ── Day-of-week header ── */
+.cal-dow {
+    text-align: center;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--txt-lt);
+    padding: 10px 0 9px;
+    user-select: none;
+}
+.cal-dow--wknd { color: var(--coral, #c0737a); }
+
+/* ── Skeleton cell (pulse while loading) ── */
+.cal-skel {
+    height: 44px;
+    border-radius: 9px;
+    background: var(--parch, #f6f3ef);
+    animation: cal-pulse 1.4s ease-in-out infinite;
+}
+
+/* ── Date cell base ── */
+.cal-cell {
+    width: 100%;
+    height: 44px;
+    border-radius: 9px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .14s, color .14s, box-shadow .14s, transform .12s;
+    position: relative;
+}
+.cal-cell--blank {
+    background: transparent !important;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ── Available ── */
+.cal-cell--avail {
+    background: var(--sage-lt, #edf6f4);
+    color: var(--sage, #2d6a62);
+    font-weight: 600;
+}
+.cal-cell--avail:hover {
+    background: var(--sage, #2d6a62);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45,106,98,.22);
+}
+
+/* ── Today ── */
+.cal-cell--today {
+    background: var(--parch, #faf7f4);
+    color: var(--plum, #4a3760);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 2px var(--plum, #4a3760);
+}
+.cal-cell--today:hover {
+    background: var(--plum, #4a3760);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(74,55,96,.28);
+}
+
+/* ── Selected ── */
+.cal-cell--selected {
+    background: var(--plum, #4a3760) !important;
+    color: #fff !important;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(74,55,96,.38);
+    transform: translateY(-1px);
+}
+
+/* ── Past / unavailable ── */
+.cal-cell--past {
+    background: transparent;
+    color: var(--txt-lt);
+    cursor: not-allowed;
+    opacity: .38;
+}
+
+/* ── Availability dot ── */
+.cal-day-num  { line-height: 1; }
+.cal-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .55;
+    flex-shrink: 0;
+}
+
+/* ── Slot chips ── */
 .active-type { background: var(--plum) !important; color: #fff !important; border-color: var(--plum) !important; }
 .slot-chip {
     padding: 8px 16px;
@@ -356,45 +471,26 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     white-space: nowrap;
 }
-.slot-chip:hover {
-    border-color: var(--plum);
-    color: var(--plum);
-    background: var(--parch);
-}
-.slot-chip.slot-active {
-    background: var(--plum);
-    color: #fff;
-    border-color: var(--plum);
-    box-shadow: 0 2px 10px rgba(74, 55, 96, .3);
-}
-.slot-chip.slot-active:hover {
-    background: var(--plum);
-    color: #fff;
-}
+.slot-chip:hover     { border-color: var(--plum); color: var(--plum); background: var(--parch); }
+.slot-chip.slot-active            { background: var(--plum); color: #fff; border-color: var(--plum); box-shadow: 0 2px 10px rgba(74,55,96,.3); }
+.slot-chip.slot-active:hover      { background: var(--plum); color: #fff; }
+
+/* ── Book button ── */
 .book-btn {
-    width: 100%;
-    padding: .85rem 1rem;
-    border: none;
-    border-radius: 11px;
-    font-size: .9375rem;
-    font-weight: 700;
-    cursor: pointer;
+    width: 100%; padding: .85rem 1rem;
+    border: none; border-radius: 11px;
+    font-size: .9375rem; font-weight: 700; cursor: pointer;
     font-family: 'Plus Jakarta Sans', sans-serif;
     transition: all .2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--plum);
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(74, 55, 96, .35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--plum); color: #fff;
+    box-shadow: 0 4px 16px rgba(74,55,96,.35);
 }
 .book-btn:hover { opacity: .9; }
 .book-btn-disabled {
     background: var(--warm-bd, #e2dcd5);
     color: var(--txt-lt, #a09890);
-    box-shadow: none;
-    cursor: not-allowed;
+    box-shadow: none; cursor: not-allowed;
 }
 .book-btn-disabled:hover { opacity: 1; }
 </style>
@@ -407,17 +503,18 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
         // Calendar state
         today:            new Date(),
         currentYear:      new Date().getFullYear(),
-        currentMonth:     new Date().getMonth(), // 0-indexed
+        currentMonth:     new Date().getMonth(),
         selectedDate:     null,
         availableDates:   [],
         calendarCells:    [],
+        loadingCalendar:  false,
 
         // Slot state
         slots:            [],
         selectedSlot:     null,
         loadingSlots:     false,
 
-        // Computed labels
+        // Labels
         monthLabel:       '',
         selectedDateLabel:'',
         isCurrentMonth:   true,
@@ -440,36 +537,49 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
 
         async init() {
             await this.buildCalendar();
-            // Highlight first pill
             const firstPill = document.querySelector('.type-pill');
             if (firstPill) {
-                firstPill.style.background = 'var(--plum)';
-                firstPill.style.color = '#fff';
-                firstPill.style.borderColor = 'var(--plum)';
+                firstPill.style.background   = 'var(--plum)';
+                firstPill.style.color        = '#fff';
+                firstPill.style.borderColor  = 'var(--plum)';
             }
+            // Re-fetch when page is restored from the browser's back-forward cache
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) this.buildCalendar();
+            });
         },
 
         async buildCalendar() {
-            const monthStr = `${this.currentYear}-${String(this.currentMonth+1).padStart(2,'0')}`;
-            this.monthLabel = new Date(this.currentYear, this.currentMonth, 1)
-                .toLocaleString('en-IN', { month: 'long', year: 'numeric' });
-            this.isCurrentMonth = (this.currentYear === this.today.getFullYear() && this.currentMonth === this.today.getMonth());
+            this.loadingCalendar = true;
 
-            // Fetch available dates from API
+            const monthStr = `${this.currentYear}-${String(this.currentMonth+1).padStart(2,'0')}`;
+            this.monthLabel    = new Date(this.currentYear, this.currentMonth, 1)
+                .toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+            this.isCurrentMonth = (
+                this.currentYear  === this.today.getFullYear() &&
+                this.currentMonth === this.today.getMonth()
+            );
+
+            // Fetch available dates (t= busts HTTP cache)
             try {
-                const r = await fetch(`${datesUrl}?month=${monthStr}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                const r = await fetch(
+                    `${datesUrl}?month=${monthStr}&t=${Date.now()}`,
+                    { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }
+                );
                 const d = await r.json();
                 this.availableDates = d.available_dates || [];
             } catch { this.availableDates = []; }
 
             // Build cells
             const firstDay  = new Date(this.currentYear, this.currentMonth, 1);
-            const daysInMon = new Date(this.currentYear, this.currentMonth+1, 0).getDate();
-            let startDow    = firstDay.getDay(); // 0=Sun
-            startDow        = startDow === 0 ? 6 : startDow - 1; // convert to Mon=0
+            const daysInMon = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+            let startDow    = firstDay.getDay(); // 0 = Sun
+            startDow        = startDow === 0 ? 6 : startDow - 1; // Mon = 0
 
             const cells = [];
-            for (let i = 0; i < startDow; i++) cells.push({ key: `e${i}`, date: null });
+            for (let i = 0; i < startDow; i++) {
+                cells.push({ key: `e${i}`, date: null });
+            }
             for (let d = 1; d <= daysInMon; d++) {
                 const dateStr = `${this.currentYear}-${String(this.currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const isToday = dateStr === this.today.toISOString().split('T')[0];
@@ -482,7 +592,8 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
                     available:  this.availableDates.includes(dateStr),
                 });
             }
-            this.calendarCells = cells;
+            this.calendarCells  = cells;
+            this.loadingCalendar = false;
         },
 
         async selectDate(dateStr) {
@@ -492,15 +603,17 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
             this.bookingError  = '';
 
             const d = new Date(dateStr + 'T00:00:00');
-            this.selectedDateLabel = d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+            this.selectedDateLabel = d.toLocaleDateString('en-IN', {
+                weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+            });
 
-            // Update isSelected in cells
             this.calendarCells = this.calendarCells.map(c => ({ ...c, isSelected: c.date === dateStr }));
 
-            // Fetch slots
             this.loadingSlots = true;
             try {
-                const r = await fetch(`${slotsUrl}?date=${dateStr}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                const r = await fetch(`${slotsUrl}?date=${dateStr}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
                 const d = await r.json();
                 this.slots = d.available || [];
             } catch { this.slots = []; }
@@ -509,7 +622,7 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
 
         selectSlot(slot) {
             this.selectedSlot = slot;
-            this.bookingError  = '';
+            this.bookingError = '';
         },
 
         formatTime(t) {
@@ -544,8 +657,11 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
 
             try {
                 const resp = await fetch(this.storeUrl, {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    method:  'POST',
+                    headers: {
+                        'Accept':       'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
                     body: fd,
                 });
 
@@ -557,23 +673,21 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
                     return;
                 }
 
-                // Validation errors
                 const data = await resp.json().catch(() => ({}));
                 if (data.errors?.slot_time) {
                     this.bookingError = data.errors.slot_time[0];
-                    // Remove that slot from grid
-                    this.slots = this.slots.filter(s => s !== this.selectedSlot);
+                    this.slots        = this.slots.filter(s => s !== this.selectedSlot);
                     this.selectedSlot = null;
                 } else {
                     this.bookingError = data.message || 'Something went wrong. Please try again.';
                 }
-            } catch (e) {
+            } catch {
                 this.bookingError = 'Network error. Please try again.';
             } finally {
                 this.submitting = false;
             }
         },
-    }
+    };
 }
 </script>
 @endpush

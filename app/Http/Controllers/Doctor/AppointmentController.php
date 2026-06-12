@@ -178,7 +178,94 @@ class AppointmentController extends Controller
         $profile = $doctor->doctorProfile;
         $slots   = $profile?->available_slots ?? $this->defaultSlots();
 
-        return view('doctor.appointments.slots', compact('slots'));
+        $blocked = $profile?->blocked_dates ?? [];
+        $today   = today()->format('Y-m-d');
+        $blocked = array_filter($blocked, fn($_, $d) => $d >= $today, ARRAY_FILTER_USE_BOTH);
+        ksort($blocked);
+
+        return view('doctor.appointments.slots', compact('slots', 'blocked'));
+    }
+
+    public function saveBlockedDate(Request $request)
+    {
+        $request->validate([
+            'date'    => ['required', 'date', 'after_or_equal:today'],
+            'type'    => ['required', 'in:full_day,partial'],
+            'slots'   => ['required_if:type,partial', 'array'],
+            'slots.*' => ['date_format:H:i'],
+            'reason'  => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $doctor = auth()->user();
+        $date   = Carbon::parse($request->date);
+
+        // Guard: no confirmed appointments on this date (full day)
+        if ($request->type === 'full_day') {
+            $count = Appointment::where('doctor_user_id', $doctor->id)
+                ->whereDate('slot_datetime', $date)
+                ->whereNotIn('status', ['cancelled'])
+                ->count();
+
+            if ($count > 0) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => "This date has {$count} confirmed appointment(s) on " .
+                                 $date->format('D, d M Y') .
+                                 '. Cancel or reschedule them before blocking the full day.',
+                ], 422);
+            }
+        }
+
+        // Guard: none of the chosen slots already have a booking
+        if ($request->type === 'partial' && !empty($request->slots)) {
+            $bookedTimes = Appointment::where('doctor_user_id', $doctor->id)
+                ->whereDate('slot_datetime', $date)
+                ->whereNotIn('status', ['cancelled'])
+                ->pluck('slot_datetime')
+                ->map(fn($dt) => $dt->format('H:i'))
+                ->toArray();
+
+            $conflicts = array_values(array_intersect($request->slots, $bookedTimes));
+
+            if (!empty($conflicts)) {
+                return response()->json([
+                    'success'           => false,
+                    'error'             => 'The following slots already have confirmed appointments and cannot be blocked: ' .
+                                          implode(', ', $conflicts) . '. Cancel them first.',
+                    'conflicting_slots' => $conflicts,
+                ], 422);
+            }
+        }
+
+        $profile = $doctor->doctorProfile;
+        $blocked = $profile->blocked_dates ?? [];
+
+        $entry = ['type' => $request->type, 'reason' => $request->reason ?? ''];
+        if ($request->type === 'partial') {
+            $entry['slots'] = $request->slots;
+        }
+
+        $blocked[$request->date] = $entry;
+        ksort($blocked);
+
+        $profile->update(['blocked_dates' => $blocked]);
+
+        return response()->json(['success' => true, 'blocked' => $blocked]);
+    }
+
+    public function removeBlockedDate(Request $request)
+    {
+        $request->validate(['date' => ['required', 'date']]);
+
+        $doctor  = auth()->user();
+        $profile = $doctor->doctorProfile;
+        $blocked = $profile->blocked_dates ?? [];
+
+        unset($blocked[$request->date]);
+
+        $profile->update(['blocked_dates' => $blocked]);
+
+        return response()->json(['success' => true]);
     }
 
     public function saveSlots(Request $request)

@@ -144,6 +144,13 @@ class AppointmentController extends Controller
         $slots = $profile->available_slots ?? [];
         $daySlots = $slots[$dayName] ?? []; // [["start":"09:00","end":"13:00"],...]
 
+        // Check if the entire day is blocked
+        $blockedDates = $profile->blocked_dates ?? [];
+        $dateStr      = $date->format('Y-m-d');
+        if (isset($blockedDates[$dateStr]) && $blockedDates[$dateStr]['type'] === 'full_day') {
+            return response()->json(['available' => [], 'date' => $request->date]);
+        }
+
         if (empty($daySlots)) {
             return response()->json(['available' => [], 'date' => $request->date]);
         }
@@ -169,6 +176,11 @@ class AppointmentController extends Controller
             ->pluck('slot_datetime')
             ->map(fn($dt) => $dt->format('H:i'))
             ->toArray();
+
+        // Merge doctor-blocked partial slots into the booked list
+        if (isset($blockedDates[$dateStr]) && $blockedDates[$dateStr]['type'] === 'partial') {
+            $booked = array_merge($booked, $blockedDates[$dateStr]['slots'] ?? []);
+        }
 
         $available = array_values(array_filter($allTimes, function ($t) use ($booked, $date) {
             if (in_array($t, $booked)) return false;
@@ -207,15 +219,21 @@ class AppointmentController extends Controller
         $start = Carbon::create($year, $month, 1)->max(today());
         $end   = Carbon::create($year, $month, 1)->endOfMonth();
 
+        $blockedDates = $profile->blocked_dates ?? [];
+
         $availableDates = [];
         $period = CarbonPeriod::create($start, $end);
         foreach ($period as $day) {
-            if (in_array(strtolower($day->format('l')), $availableDays)) {
-                $availableDates[] = $day->format('Y-m-d');
-            }
+            $dateStr = $day->format('Y-m-d');
+            if (!in_array(strtolower($day->format('l')), $availableDays)) continue;
+            // Skip fully blocked days
+            if (isset($blockedDates[$dateStr]) && $blockedDates[$dateStr]['type'] === 'full_day') continue;
+            $availableDates[] = $dateStr;
         }
 
-        return response()->json(['available_dates' => $availableDates]);
+        return response()->json(['available_dates' => $availableDates])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate')
+            ->header('Pragma', 'no-cache');
     }
 
     // ── Step 3: Store booking ────────────────────────────────────────────────
