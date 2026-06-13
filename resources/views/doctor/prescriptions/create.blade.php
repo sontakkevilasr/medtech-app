@@ -281,7 +281,7 @@
 
 {{-- RIGHT: Letterhead + summary + presets --}}
 <div style="position:sticky;top:calc(var(--topbar-h) + 16px)">
-    <div style="background:var(--white);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden;margin-bottom:14px">
+    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden;margin-bottom:14px">
         <div style="background:var(--ink);padding:16px 18px">
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#fff;font-weight:500">{{ $profile?->clinic_name ?? 'My Clinic' }}</div>
             <div style="font-size:.75rem;color:rgba(255,255,255,.6);margin-top:3px">{{ $profile?->clinic_address ?? '' }}{{ $profile?->clinic_city ? ', ' . $profile->clinic_city : '' }}</div>
@@ -297,7 +297,7 @@
         </div>
     </div>
 
-    <div style="background:var(--white);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
         <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:8px">Medicines Added</div>
         <template x-for="(m, i) in medicines.slice(0, 6)" :key="i">
             <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--parch);font-size:.78rem">
@@ -308,7 +308,7 @@
         <div x-show="medicines.length > 6" style="text-align:center;padding-top:4px;font-size:.72rem;color:var(--txt-lt)" x-text="'+ '+(medicines.length-6)+' more'"></div>
     </div>
 
-    <div style="background:var(--white);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px">
+    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px">
         <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:10px">Quick Combos</div>
         @foreach([
             ['name' => 'Fever / Viral', 'meds' => [['medicine_name' => 'Paracetamol','dosage' => '500mg','form' => 'Tablet','frequency' => 'Three times daily','duration_days' => 5,'timing' => 'after_food'],['medicine_name' => 'Cetirizine','dosage' => '10mg','form' => 'Tablet','frequency' => 'Once daily','duration_days' => 5,'timing' => 'bed_time']]],

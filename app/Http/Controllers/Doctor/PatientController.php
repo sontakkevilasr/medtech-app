@@ -10,6 +10,8 @@ use App\Models\MedicalRecord;
 use App\Models\Prescription;
 use App\Models\HealthLog;
 use App\Models\PatientTimeline;
+use App\Models\PatientHistoryDocument;
+use Illuminate\Support\Facades\Storage;
 use App\Services\AccessControlService;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
@@ -220,6 +222,22 @@ class PatientController extends Controller
         return response()->json($result);
     }
 
+    // ─── Doctor downloads a patient-uploaded document ────────────────────────
+
+    public function downloadPatientDocument(PatientHistoryDocument $document)
+    {
+        $doctor = auth()->user();
+
+        // Doctor must have active access to this patient
+        if (!$this->accessControl->doctorHasAccess($doctor, $document->patient_user_id)) {
+            abort(403, 'You do not have access to this patient\'s documents.');
+        }
+
+        if (!Storage::disk('local')->exists($document->file_path)) abort(404);
+
+        return Storage::disk('local')->download($document->file_path, $document->file_name);
+    }
+
     // ─── Full Patient History ────────────────────────────────────────────────
 
     public function history(Request $request, int $patientId)
@@ -298,6 +316,16 @@ class PatientController extends Controller
                 ])
             : collect();
 
+        // ── Patient-uploaded documents ────────────────────────────────────────
+        $patientDocuments = $hasAccess
+            ? PatientHistoryDocument::where('patient_user_id', $patientId)
+                ->when($familyMemberId, fn($q) => $q->where('family_member_id', $familyMemberId))
+                ->when(!$familyMemberId, fn($q) => $q->whereNull('family_member_id'))
+                ->orderByDesc('document_date')
+                ->orderByDesc('created_at')
+                ->get()
+            : collect();
+
         // ── Summary stats ─────────────────────────────────────────────────────
         $stats = $hasAccess ? [
             'total_visits'   => MedicalRecord::where('patient_user_id', $patientId)->count(),
@@ -312,7 +340,7 @@ class PatientController extends Controller
             'hasAccess', 'pendingReq', 'accessGrant',
             'viewingMember', 'familyMemberId',
             'records', 'prescriptions',
-            'vitalsData', 'timelines', 'stats'
+            'vitalsData', 'timelines', 'stats', 'patientDocuments'
         ));
     }
 }

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Patient\DashboardController;
 use App\Http\Controllers\Patient\FamilyMemberController;
 use App\Http\Controllers\Patient\MedicalHistoryController;
+use App\Http\Controllers\Patient\PatientHistoryDocumentController;
 use App\Http\Controllers\Patient\AppointmentController;
 use App\Http\Controllers\Patient\AccessPermissionController;
 use App\Http\Controllers\Patient\TimelineController;
@@ -71,6 +72,14 @@ Route::middleware('role:patient')->group(function () {
 
         // Prescription actions from patient side
         Route::get('/prescription/{prescription}/pdf', [MedicalHistoryController::class, 'downloadPdf'])->name('prescription.pdf');
+
+        // Patient-uploaded history documents
+        Route::prefix('documents')->name('documents.')->group(function () {
+            Route::get('/',              [PatientHistoryDocumentController::class, 'index'])    ->name('index');
+            Route::post('/',             [PatientHistoryDocumentController::class, 'store'])    ->name('store');
+            Route::get('/{document}/download', [PatientHistoryDocumentController::class, 'download'])->name('download');
+            Route::delete('/{document}',[PatientHistoryDocumentController::class, 'destroy'])  ->name('destroy');
+        });
     });
 
     /*

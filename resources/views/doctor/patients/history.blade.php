@@ -162,7 +162,7 @@
 @else
 {{-- ── Tabs ─────────────────────────────────────────────────────────────────── -- --}}
 <div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px">
-    @foreach(['records' => 'Medical Records', 'prescriptions' => 'Prescriptions', 'vitals' => 'Vitals & Charts', 'timelines' => 'Care Timelines'] as $t => $lbl)
+    @foreach(['records' => 'Medical Records', 'prescriptions' => 'Prescriptions', 'vitals' => 'Vitals & Charts', 'timelines' => 'Care Timelines', 'documents' => 'Documents'] as $t => $lbl)
     <a href="{{ route('doctor.patients.history', $patient->id) }}?tab={{ $t }}{{ $familyMemberId ? '&member='.$familyMemberId : '' }}"
        style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;
               {{ $activeTab === $t ? 'color:var(--ink);border-bottom-color:var(--ink);font-weight:600' : 'color:var(--txt-lt)' }}"
@@ -173,6 +173,9 @@
         @endif
         @if($t === 'prescriptions' && $prescriptions->total() > 0)
             <span style="font-size:.65rem;background:var(--parch);color:var(--txt-lt);padding:1px 6px;border-radius:20px;margin-left:4px">{{ $prescriptions->total() }}</span>
+        @endif
+        @if($t === 'documents' && $patientDocuments->isNotEmpty())
+            <span style="font-size:.65rem;background:#f4f0fa;color:#4a3760;padding:1px 6px;border-radius:20px;margin-left:4px">{{ $patientDocuments->count() }}</span>
         @endif
     </a>
     @endforeach
@@ -575,6 +578,62 @@
 @endforeach
 @endif
 @endif
+
+{{-- ══════════════════════════ TAB: DOCUMENTS ══════════════════════════════ --}}
+@if($activeTab === 'documents')
+@if($patientDocuments->isEmpty())
+<div class="panel" style="padding:44px 24px;text-align:center;color:var(--txt-lt)">
+    <svg width="38" height="38" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2" style="margin:0 auto 12px;display:block;opacity:.3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--txt-md)">No documents uploaded</div>
+    <p style="font-size:.78rem;margin-top:4px">{{ $patient->profile?->full_name ?? 'The patient' }} hasn't uploaded any documents yet.</p>
+</div>
+@else
+<div style="margin-bottom:10px;font-size:.75rem;color:var(--txt-lt)">
+    {{ $patientDocuments->count() }} document{{ $patientDocuments->count() > 1 ? 's' : '' }} uploaded by the patient · read-only
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+@foreach($patientDocuments as $doc)
+@php
+$typeLabels = ['prescription'=>'Prescription','lab_report'=>'Lab Report','discharge_summary'=>'Discharge Summary','scan_xray'=>'Scan / X-Ray','vaccination'=>'Vaccination','insurance'=>'Insurance','other'=>'Other'];
+$typeColors = ['prescription'=>['bg'=>'#f4f0fa','color'=>'#4a3760'],'lab_report'=>['bg'=>'#eef5f3','color'=>'#2a7a6a'],'discharge_summary'=>['bg'=>'#fce7ef','color'=>'#9d174d'],'scan_xray'=>['bg'=>'#eff6ff','color'=>'#1d4ed8'],'vaccination'=>['bg'=>'#ecfdf5','color'=>'#065f46'],'insurance'=>['bg'=>'#fffbeb','color'=>'#92400e'],'other'=>['bg'=>'var(--parch)','color'=>'var(--txt-md)']];
+$tc = $typeColors[$doc->document_type] ?? $typeColors['other'];
+$tl = $typeLabels[$doc->document_type] ?? 'Other';
+$isImage = str_starts_with($doc->mime_type ?? '', 'image/');
+@endphp
+<div class="panel" style="padding:14px 18px;display:flex;align-items:center;gap:14px">
+
+    {{-- Icon --}}
+    <div style="width:42px;height:42px;border-radius:11px;background:{{ $tc['bg'] }};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
+        {{ $isImage ? '🖼️' : '📄' }}
+    </div>
+
+    {{-- Info --}}
+    <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
+            <span style="font-weight:600;font-size:.9rem;color:var(--txt)">{{ $doc->title }}</span>
+            <span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:{{ $tc['bg'] }};color:{{ $tc['color'] }}">{{ $tl }}</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--txt-lt);display:flex;gap:10px;flex-wrap:wrap">
+            <span>{{ $doc->file_name }}</span>
+            <span>{{ $doc->file_size_human }}</span>
+            @if($doc->document_date)<span>📅 {{ $doc->document_date->format('d M Y') }}</span>@endif
+            @if($doc->notes)<span style="font-style:italic">{{ $doc->notes }}</span>@endif
+            <span>Uploaded {{ $doc->created_at->format('d M Y') }}</span>
+        </div>
+    </div>
+
+    {{-- Download --}}
+    <a href="{{ route('doctor.patients.documents.download', $doc->id) }}"
+       style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--ink,#2d2d2d);color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;text-decoration:none;flex-shrink:0;transition:opacity .12s"
+       onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download
+    </a>
+</div>
+@endforeach
+</div>
+@endif
+@endif {{-- end documents tab --}}
 
 @endif {{-- end hasAccess --}}
 @endsection

@@ -46,6 +46,7 @@ Route::middleware('role:doctor')->group(function () {
     Route::prefix('patients')->name('patients.')->group(function () {
         Route::get('/',                                   [PatientController::class, 'index'])          ->name('index');
         Route::get('/search',                             [PatientController::class, 'search'])         ->name('search');
+        Route::get('/documents/{document}/download',      [PatientController::class, 'downloadPatientDocument'])->name('documents.download');
         Route::post('/request-access',                   [PatientController::class, 'requestAccess'])  ->name('request-access');
         Route::post('/access/{accessRequest}/verify-otp',[PatientController::class, 'verifyAccessOtp'])->name('verify-otp');
         // History: access-gate UI is handled in controller (not middleware-redirect)
