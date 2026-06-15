@@ -58,11 +58,18 @@ class AppointmentController extends Controller
 
     public function showDoctors(Request $request)
     {
-        $patient    = auth()->user();
-        $search     = $request->get('q');
+        $patient        = auth()->user();
+        $search         = $request->get('q');
         $specialization = $request->get('spec');
+        $cityFilter     = $request->get('city'); // null = patient's city default, 'all' = no filter
 
-        // My existing doctors first (with active access)
+        $patientCity = $patient->profile?->city;
+        $activeCity  = match(true) {
+            $cityFilter === 'all' => null,
+            $cityFilter !== null  => $cityFilter,
+            default               => $patientCity,
+        };
+
         $myDoctorIds = \App\Models\DoctorAccessRequest::where('patient_user_id', $patient->id)
             ->active()
             ->pluck('doctor_user_id');
@@ -86,21 +93,49 @@ class AppointmentController extends Controller
                 $q->where('specialization', 'like', "%{$specialization}%"));
         }
 
-        $allDoctors = $query->get()->map(function ($doc) use ($myDoctorIds) {
-            $doc->is_my_doctor = $myDoctorIds->contains($doc->id);
+        if ($activeCity) {
+            $query->whereHas('doctorProfile', fn($q) =>
+                $q->where('clinic_city', 'like', "%{$activeCity}%"));
+        }
+
+        $allDoctors = $query->get();
+
+        // Batch-fetch completed appointment counts for popularity ranking
+        $completedCounts = Appointment::where('status', 'completed')
+            ->whereIn('doctor_user_id', $allDoctors->pluck('id'))
+            ->selectRaw('doctor_user_id, count(*) as count')
+            ->groupBy('doctor_user_id')
+            ->pluck('count', 'doctor_user_id');
+
+        $allDoctors = $allDoctors->map(function ($doc) use ($myDoctorIds, $completedCounts) {
+            $doc->completed_count = $completedCounts->get($doc->id, 0);
+            $doc->is_my_doctor    = $myDoctorIds->contains($doc->id);
             return $doc;
-        })->sortByDesc('is_my_doctor')->values();
+        });
 
-        // My doctors section (top)
-        $myDoctors  = $allDoctors->filter(fn($d) => $d->is_my_doctor)->values();
-        $otherDoctors = $allDoctors->filter(fn($d) => !$d->is_my_doctor)->values();
+        $myDoctors = $allDoctors->filter(fn($d) => $d->is_my_doctor)
+            ->sortByDesc('completed_count')->values();
 
-        // All specializations for filter chips
+        $nonMyDoctors = $allDoctors->filter(fn($d) => !$d->is_my_doctor)
+            ->sortByDesc('completed_count')->values();
+
+        // Top doctors: only when city is active, max 4, must have ≥1 completed appointment
+        $topDoctors   = $activeCity
+            ? $nonMyDoctors->where('completed_count', '>', 0)->take(4)->values()
+            : collect();
+        $topIds       = $topDoctors->pluck('id');
+        $otherDoctors = $nonMyDoctors->reject(fn($d) => $topIds->contains($d->id))->values();
+
+        $cities = DoctorProfile::where('is_verified', true)
+            ->whereNotNull('clinic_city')->where('clinic_city', '!=', '')
+            ->distinct()->pluck('clinic_city')->sort()->values();
+
         $specializations = DoctorProfile::whereNotNull('specialization')
             ->distinct()->pluck('specialization')->sort()->values();
 
         return view('patient.appointments.book-doctor', compact(
-            'myDoctors', 'otherDoctors', 'specializations', 'search', 'specialization'
+            'myDoctors', 'topDoctors', 'otherDoctors', 'specializations',
+            'search', 'specialization', 'cities', 'activeCity', 'patientCity', 'cityFilter'
         ));
     }
 

@@ -17,6 +17,7 @@ return new class extends Migration
                 'prescription', 'lab_report', 'discharge_summary',
                 'scan_xray', 'vaccination', 'insurance', 'other',
             ])->default('other');
+
             $table->text('notes')->nullable();
             $table->string('file_path', 500);
             $table->string('file_name', 255);

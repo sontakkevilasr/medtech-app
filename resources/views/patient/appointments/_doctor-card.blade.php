@@ -30,6 +30,10 @@
             <span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:{{ $color }}20;color:{{ $color }};white-space:nowrap;border:1px solid {{ $color }}44">
                 My Doctor
             </span>
+            @elseif($isTopDoctor ?? false)
+            <span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:#e8a02018;color:#b87010;white-space:nowrap;border:1px solid #e8a02044">
+                ★ Popular
+            </span>
             @endif
         </div>
     </div>
