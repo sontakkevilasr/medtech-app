@@ -31,6 +31,37 @@
     $timelineEmojis = ['obstetrics' => '🤰', 'pediatrics' => '💉', 'ivf' => '🧬', 'orthodontics' => '😁', 'default' => '📋'];
 @endphp
 
+{{-- ── Follow-up Reminders ──────────────────────────────────────────────────── -- --}}
+@foreach($followUpAlerts as $fu)
+@php
+    $fuDays   = today()->diffInDays($fu->follow_up_date, false);
+    $fuUrgent = $fuDays <= 2;
+    $fuNote   = $fu->follow_up_instructions ? mb_strimwidth($fu->follow_up_instructions, 0, 72, '…') : null;
+@endphp
+<div class="{{ $fuUrgent ? 'furem-alert furem-urgent' : 'furem-alert' }} fu">
+    <div class="furem-ic">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="{{ $fuUrgent ? '#d97706' : '#059669' }}" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+    </div>
+    <div style="flex:1;min-width:0">
+        <div class="furem-title" style="{{ $fuUrgent ? 'color:#78350f' : 'color:#14532d' }}">
+            Follow-up visit recommended &middot; Dr. {{ $fu->doctor->profile?->full_name }}
+        </div>
+        <div class="furem-sub" style="{{ $fuUrgent ? 'color:#92400e' : 'color:#166534' }}">
+            📅 {{ $fu->follow_up_date->format('d M Y') }} &middot;
+            {{ $fuDays === 0 ? 'Today' : ($fuDays === 1 ? 'Tomorrow' : "in {$fuDays} days") }}
+            @if($fu->follow_up_instructions)
+                &middot; {{ $fuNote }}
+            @endif
+        </div>
+    </div>
+    <a href="{{ route('patient.appointments.book') }}" class="furem-btn" style="{{ $fuUrgent ? 'background:#d97706' : 'background:#059669' }}">
+        Book Now
+    </a>
+</div>
+@endforeach
+
 {{-- ── Pending OTP Access Requests ─────────────────────────────────────────── -- --}}
 @foreach($pendingAccessReqs as $req)
 <div class="otp-alert fu">
@@ -525,6 +556,31 @@
 <style>
     @media (max-width: 900px) {
         #content-grid { grid-template-columns: 1fr !important; }
+    }
+    .furem-alert {
+        background: linear-gradient(135deg, #f0fdf4 0%, #f6fef9 100%);
+        border: 1.5px solid #86efac;
+        border-radius: 12px; padding: 14px 16px;
+        margin-bottom: 12px;
+        display: flex; align-items: flex-start; gap: 12px;
+    }
+    .furem-alert.furem-urgent {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef9ee 100%);
+        border-color: #fbbf24;
+    }
+    .furem-ic {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: #fff; display: flex; align-items: center;
+        justify-content: center; flex-shrink: 0;
+        border: 1px solid #86efac;
+    }
+    .furem-alert.furem-urgent .furem-ic { border-color: #fbbf24; }
+    .furem-title { font-size: .875rem; font-weight: 600; margin-bottom: 2px; }
+    .furem-sub   { font-size: .78rem; line-height: 1.4; }
+    .furem-btn {
+        flex-shrink: 0; padding: 6px 13px; color: #fff;
+        border-radius: 8px; font-size: .78rem; font-weight: 600;
+        text-decoration: none; white-space: nowrap; align-self: center;
     }
 </style>
 @endpush

@@ -148,6 +148,22 @@ class PrescriptionController extends Controller
 
         dispatch(new \App\Jobs\GeneratePrescriptionPdfJob($rx->id));
 
+        // Schedule WhatsApp follow-up reminder 3 days before the follow-up date at 9 AM
+        if ($rx->follow_up_date && $rx->follow_up_date->isFuture()) {
+            $rx->loadMissing('doctor.profile');
+            $remindAt = $rx->follow_up_date->copy()->subDays(3)->setTime(9, 0);
+            if ($remindAt->isFuture()) {
+                \App\Jobs\SendWhatsAppReminderJob::dispatch(
+                    userId:  $rx->patient_user_id,
+                    type:    'follow_up',
+                    payload: [
+                        'doctor_name'    => $rx->doctor->profile?->full_name ?? 'your doctor',
+                        'follow_up_date' => $rx->follow_up_date->format('d M Y'),
+                    ]
+                )->delay($remindAt);
+            }
+        }
+
         if ($request->get('action') === 'send_whatsapp') {
             return redirect()->route('doctor.prescriptions.send-whatsapp', $rx)
                 ->with('success', 'Prescription saved.');

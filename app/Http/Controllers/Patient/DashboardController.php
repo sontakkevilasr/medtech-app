@@ -120,6 +120,15 @@ class DashboardController extends Controller
             ->with(['doctor.profile', 'doctor.doctorProfile'])
             ->get();
 
+        // ── Upcoming follow-up reminders (prescriptions with future follow_up_date) ─
+        $followUpAlerts = Prescription::where('patient_user_id', $patient->id)
+            ->whereNotNull('follow_up_date')
+            ->whereDate('follow_up_date', '>=', today())
+            ->whereDate('follow_up_date', '<=', today()->addDays(30))
+            ->with(['doctor.profile', 'doctor.doctorProfile'])
+            ->orderBy('follow_up_date')
+            ->get();
+
         return view('patient.dashboard', compact(
             'patient', 'profile',
             'upcomingApts', 'nextApt',
@@ -128,7 +137,7 @@ class DashboardController extends Controller
             'latestVitals', 'bpTrend',
             'activeTimelines', 'activeDoctors',
             'totalVisits', 'totalPrescriptions',
-            'pendingAccessReqs'
+            'pendingAccessReqs', 'followUpAlerts'
         ));
     }
 
