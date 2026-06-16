@@ -21,20 +21,20 @@
     <!-- OTP Boxes -->
     <form method="POST" action="{{ route('auth.otp.verify.submit') }}" x-ref="otpForm" style="margin-bottom:1.25rem">
         @csrf
-        <input type="hidden" name="otp" :value="digits.join('')">
+        <input type="hidden" name="otp" id="otp-hidden">
 
         <div style="display:flex;justify-content:center;gap:10px;margin-bottom:1.5rem">
-            <template x-for="(d,i) in digits" :key="i">
-                <input
-                    type="tel" inputmode="numeric" maxlength="1"
-                    :value="d"
-                    :class="'otp-box' + (d ? ' filled' : '') + (hasError ? ' oerr' : '')"
-                    @input="onInput($event, i)"
-                    @keydown="onKey($event, i)"
-                    @paste.prevent="onPaste($event)"
-                    @focus="$event.target.select()"
-                    x-ref="'box'+i">
-            </template>
+            @for($i = 0; $i < 6; $i++)
+            <input
+                type="tel" inputmode="numeric" maxlength="1"
+                :class="'otp-box' + (hasError ? ' oerr' : '')"
+                data-idx="{{ $i }}"
+                autocomplete="{{ $i === 0 ? 'one-time-code' : 'off' }}"
+                @input="onInput($event, {{ $i }})"
+                @keydown="onKey($event, {{ $i }})"
+                @paste.prevent="onPaste($event)"
+                @focus="$event.target.select()">
+            @endfor
         </div>
 
         @error('otp')
@@ -143,58 +143,60 @@ function otpApp() {
                 }, 1000);
             }
 
-            // Auto-focus first empty box
-            this.$nextTick(() => {
-                const first = this.$el.querySelector('.otp-box');
-                if (first) first.focus();
-            });
+            // Auto-focus first box (inputs are static HTML — no $nextTick needed)
+            document.querySelector('.otp-box')?.focus();
+        },
+
+        _boxes() {
+            return document.querySelectorAll('.otp-box');
+        },
+
+        _syncHidden() {
+            const h = document.getElementById('otp-hidden');
+            if (h) h.value = this.digits.join('');
         },
 
         onInput(e, i) {
+            // Enforce single digit in DOM and state
             const val = e.target.value.replace(/\D/g,'').slice(-1);
+            e.target.value = val;
             this.digits[i] = val;
-            this.hasError   = false;
+            this.hasError = false;
+            this._syncHidden();
             if (val && i < 5) {
-                this.$nextTick(() => {
-                    const next = this.$el.querySelectorAll('.otp-box')[i+1];
-                    if (next) next.focus();
-                });
+                this._boxes()[i + 1]?.focus();
             }
             if (this.digits.every(d => d !== '')) this.submit();
         },
 
         onKey(e, i) {
             if (e.key === 'Backspace') {
+                e.preventDefault();
                 if (this.digits[i]) {
                     this.digits[i] = '';
+                    e.target.value = '';
                 } else if (i > 0) {
-                    this.digits[i-1] = '';
-                    this.$nextTick(() => {
-                        const prev = this.$el.querySelectorAll('.otp-box')[i-1];
-                        if (prev) prev.focus();
-                    });
+                    this.digits[i - 1] = '';
+                    const prev = this._boxes()[i - 1];
+                    if (prev) { prev.value = ''; prev.focus(); }
                 }
-                e.preventDefault();
+                this._syncHidden();
             }
-            if (e.key === 'ArrowLeft' && i > 0) {
-                const prev = this.$el.querySelectorAll('.otp-box')[i-1];
-                if (prev) prev.focus();
-            }
-            if (e.key === 'ArrowRight' && i < 5) {
-                const next = this.$el.querySelectorAll('.otp-box')[i+1];
-                if (next) next.focus();
-            }
+            if (e.key === 'ArrowLeft'  && i > 0) this._boxes()[i - 1]?.focus();
+            if (e.key === 'ArrowRight' && i < 5) this._boxes()[i + 1]?.focus();
         },
 
         onPaste(e) {
             const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
             if (text.length >= 6) {
-                for (let i = 0; i < 6; i++) this.digits[i] = text[i] || '';
-                this.$nextTick(() => {
-                    const boxes = this.$el.querySelectorAll('.otp-box');
-                    boxes[5]?.focus();
-                    if (this.digits.every(d => d !== '')) this.submit();
-                });
+                const boxes = this._boxes();
+                for (let i = 0; i < 6; i++) {
+                    this.digits[i] = text[i] || '';
+                    if (boxes[i]) boxes[i].value = text[i] || '';
+                }
+                this._syncHidden();
+                boxes[5]?.focus();
+                if (this.digits.every(d => d !== '')) this.submit();
             }
         },
 
@@ -205,7 +207,7 @@ function otpApp() {
             }
             if (this.submitting) return;
             this.submitting = true;
-            this.$refs.otpForm.querySelector('[name="otp"]').value = this.digits.join('');
+            this._syncHidden();
             this.$refs.otpForm.submit();
         },
 
@@ -223,24 +225,22 @@ function otpApp() {
                 const data = await res.json();
                 if (data.success) {
                     this.digits = ['','','','','',''];
+                    this._boxes().forEach(b => b.value = '');
+                    this._syncHidden();
                     this.countdown = {{ $expiresIn * 60 }};
                     this.resendCooldown = {{ $resendCooldown ?? 60 }};
                     this.hasError = false;
-                    // Restart timers
                     clearInterval(this.timer);
                     this.timer = setInterval(() => {
-                        if(this.countdown > 0) this.countdown--;
+                        if (this.countdown > 0) this.countdown--;
                         else clearInterval(this.timer);
                     }, 1000);
                     clearInterval(this.cdTimer);
                     this.cdTimer = setInterval(() => {
-                        if(this.resendCooldown > 0) this.resendCooldown--;
+                        if (this.resendCooldown > 0) this.resendCooldown--;
                         else clearInterval(this.cdTimer);
                     }, 1000);
-                    this.$nextTick(() => {
-                        const first = this.$el.querySelector('.otp-box');
-                        if (first) first.focus();
-                    });
+                    document.querySelector('.otp-box')?.focus();
                 } else {
                     alert(data.message || 'Could not resend OTP.');
                 }
