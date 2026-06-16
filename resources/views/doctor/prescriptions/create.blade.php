@@ -77,9 +77,9 @@
         <div style="margin-top:12px">
             <label>Prescribing For</label>
             <select name="family_member_id" class="inp">
-                <option value="">{{ $patient->profile?->full_name }} (Self)</option>
+                <option value="" @selected(!$familyMember)>{{ $patient->profile?->full_name }} (Self)</option>
                 @foreach($patient->familyMembers as $m)
-                <option value="{{ $m->id }}">{{ $m->full_name }} ({{ ucfirst($m->relation) }}) — {{ $m->sub_id }}</option>
+                <option value="{{ $m->id }}" @selected($familyMember && $m->id == $familyMember->id)>{{ $m->full_name }} ({{ ucfirst($m->relation) }}) — {{ $m->sub_id }}</option>
                 @endforeach
             </select>
         </div>
@@ -235,6 +235,16 @@
                             <label>Special Instructions</label>
                             <input type="text" :name="'medicines['+idx+'][special_instructions]'" class="inp" placeholder="e.g. Avoid in case of allergy…" x-model="med.special_instructions">
                         </div>
+                        <div style="margin-top:8px;display:flex;align-items:center;gap:10px" x-show="med.medicine_name.trim() && !isMine(med.medicine_name) && !med._addedToList">
+                            <button type="button" @click="addToMyList(idx)" :disabled="med._addingToList"
+                                    style="font-size:.72rem;font-weight:600;padding:4px 12px;border-radius:7px;border:1.5px solid var(--leaf);background:transparent;color:var(--leaf);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s"
+                                    :style="med._addingToList ? 'opacity:.6;cursor:not-allowed' : 'opacity:1'"
+                                    x-text="med._addingToList ? 'Adding…' : '＋ Add to My List'"></button>
+                            <span x-show="med._addError" style="font-size:.72rem;color:#ef4444">Failed to add. Try again.</span>
+                        </div>
+                        <div style="margin-top:8px" x-show="med._addedToList">
+                            <span style="font-size:.72rem;font-weight:600;color:var(--leaf)">✓ Added to My List</span>
+                        </div>
                     </div>
                     <button type="button" @click="removeMed(idx)" x-show="medicines.length > 1"
                             style="flex-shrink:0;margin-top:20px;width:28px;height:28px;border-radius:7px;border:1.5px solid #fecaca;background:transparent;color:#ef4444;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s"
@@ -376,19 +386,23 @@ function rxForm() {
         addMed() { this.medicines.push(newMed()); },
         removeMed(i) { this.medicines.splice(i, 1); },
         searchMed(idx, val) {
-            if (!val || val.length < 2) { this.medicines[idx].acList = []; return; }
+            const med = this.medicines[idx];
+            med._addedToList = false;
+            med._addingToList = false;
+            med._addError = false;
+            if (!val || val.length < 2) { med.acList = []; return; }
             const q = val.toLowerCase();
             const mine = MY_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q))
                                  .map(m => ({ ...m, _mine: true }));
             const mineNames = new Set(mine.map(m => m.medicine_name.toLowerCase()));
             const recent = RECENT_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q) && !mineNames.has(m.medicine_name.toLowerCase()))
                                        .slice(0, 8 - mine.length);
-            this.medicines[idx].acList = [...mine.slice(0, 8), ...recent].slice(0, 10);
-            this.medicines[idx].acIdx = 0;
+            med.acList = [...mine.slice(0, 8), ...recent].slice(0, 10);
+            med.acIdx = 0;
         },
         fillMed(idx, s) {
             const m = this.medicines[idx];
-            Object.assign(m, { medicine_name: s.medicine_name, generic_name: s.generic_name||'', form: s.form||'', dosage: s.dosage||'', frequency: s.frequency||'', timing: s.timing||'', duration_days: s.duration_days||'', acList: [] });
+            Object.assign(m, { medicine_name: s.medicine_name, generic_name: s.generic_name||'', form: s.form||'', dosage: s.dosage||'', frequency: s.frequency||'', timing: s.timing||'', duration_days: s.duration_days||'', acList: [], _addedToList: false, _addingToList: false, _addError: false });
         },
         loadPreset(meds) { this.medicines = meds.map((m, i) => ({ ...newMed(), ...m, key: Date.now()+i })); },
         submitForm(action) {
@@ -398,8 +412,46 @@ function rxForm() {
             document.getElementById('form-action').value = action;
             document.getElementById('rx-form').submit();
         },
+        isMine(name) {
+            if (!name) return false;
+            const n = name.trim().toLowerCase();
+            return MY_MEDS.some(m => m.medicine_name.toLowerCase() === n);
+        },
+        async addToMyList(idx) {
+            const med = this.medicines[idx];
+            med._addingToList = true;
+            med._addError = false;
+            try {
+                const token = document.querySelector('input[name="_token"]').value;
+                const body = new FormData();
+                body.append('_token', token);
+                body.append('medicine_name', med.medicine_name);
+                if (med.generic_name)         body.append('generic_name', med.generic_name);
+                if (med.form)                 body.append('form', med.form);
+                if (med.dosage)               body.append('dosage', med.dosage);
+                if (med.frequency)            body.append('frequency', med.frequency);
+                if (med.timing)               body.append('timing', med.timing);
+                if (med.duration_days)        body.append('duration_days', med.duration_days);
+                if (med.special_instructions) body.append('special_instructions', med.special_instructions);
+                const r = await fetch("{{ route('doctor.medicines.store') }}", {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': token },
+                    body,
+                });
+                const data = await r.json();
+                if (data.success) {
+                    MY_MEDS.push(data.medicine);
+                    med._addedToList = true;
+                } else {
+                    med._addError = true;
+                }
+            } catch(e) {
+                med._addError = true;
+            }
+            med._addingToList = false;
+        },
     };
 }
-function newMed() { return { key: Date.now()+Math.random(), medicine_name:'', generic_name:'', form:'', dosage:'', frequency:'', duration_days:'', timing:'', special_instructions:'', acList:[], acIdx:0 }; }
+function newMed() { return { key: Date.now()+Math.random(), medicine_name:'', generic_name:'', form:'', dosage:'', frequency:'', duration_days:'', timing:'', special_instructions:'', acList:[], acIdx:0, _addingToList:false, _addedToList:false, _addError:false }; }
 </script>
 @endpush

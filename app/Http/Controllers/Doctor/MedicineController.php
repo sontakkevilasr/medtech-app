@@ -44,10 +44,10 @@ class MedicineController extends Controller
             'special_instructions' => ['nullable', 'string', 'max:300'],
         ]);
 
-        $medicine = DoctorMedicine::create([
-            'doctor_user_id' => auth()->id(),
-            ...$data,
-        ]);
+        $medicine = DoctorMedicine::firstOrCreate(
+            ['doctor_user_id' => auth()->id(), 'medicine_name' => $data['medicine_name']],
+            $data,
+        );
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'medicine' => $medicine]);

@@ -57,7 +57,7 @@
         <button class="tab-btn" :class="tab==='professional' ? 'active' : ''" @click="tab='professional'">Professional</button>
         @endif
         <button class="tab-btn" :class="tab==='security' ? 'active' : ''" @click="tab='security'">Security</button>
-        <button class="tab-btn" :class="tab==='danger' ? 'active' : ''" @click="tab='danger'" style="margin-left:auto;color:#dc2626">Danger Zone</button>
+       {{-- <button class="tab-btn" :class="tab==='danger' ? 'active' : ''" @click="tab='danger'" style="margin-left:auto;color:#dc2626">Danger Zone</button> --}}
     </div>
 
     {{-- ── TAB: Personal ───────────────────────────────────────────────────── --}}

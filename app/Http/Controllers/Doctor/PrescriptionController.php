@@ -51,7 +51,7 @@ class PrescriptionController extends Controller
     {
         $doctor  = auth()->user();
         $profile = $doctor->doctorProfile;
-        $patient = $appointment = $record = null;
+        $patient = $appointment = $record = $familyMember = null;
 
         if ($pid = $request->get('patient')) {
             $patient = User::where('id', $pid)->where('role', 'patient')
@@ -60,6 +60,13 @@ class PrescriptionController extends Controller
         }
         if ($aid = $request->get('appointment')) {
             $appointment = Appointment::where('id', $aid)->where('doctor_user_id', $doctor->id)->first();
+        }
+        if ($mid = $request->get('member')) {
+            $familyMember = \App\Models\FamilyMember::find($mid);
+        }
+        // If no explicit member param but appointment has one, use it
+        if (!$familyMember && $appointment?->family_member_id) {
+            $familyMember = $appointment->familyMember;
         }
 
         $recentMedicines = PrescriptionMedicine::whereHas('prescription',
@@ -73,7 +80,7 @@ class PrescriptionController extends Controller
             ->orderBy('medicine_name')
             ->get(['id','medicine_name','generic_name','form','dosage','frequency','timing','duration_days','special_instructions']);
 
-        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines','myMedicines'));
+        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines','myMedicines','familyMember'));
     }
 
     public function store(Request $request)

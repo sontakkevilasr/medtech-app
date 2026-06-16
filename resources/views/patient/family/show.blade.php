@@ -74,27 +74,27 @@
 
     {{-- Recent appointments --}}
     @if($appointments->isNotEmpty())
-    <div class="panel">
-        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--warm-bd)">
+    <div class="panel" style="padding:18px 20px">
+        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--warm-bd)">
             Recent Appointments
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;flex-direction:column">
             @foreach($appointments as $apt)
             @php
                 $drName = $apt->doctor?->profile?->full_name ?? 'Doctor';
                 $stCfg  = match($apt->status) {
-                    'confirmed'  => 'color:#1a7a6a',
-                    'completed'  => 'color:#0369a1',
-                    'cancelled'  => 'color:#dc2626',
-                    default      => 'color:var(--txt-lt)',
+                    'confirmed'  => ['bg'=>'#dbeafe','color'=>'#1e40af'],
+                    'completed'  => ['bg'=>'#dcfce7','color'=>'#166534'],
+                    'cancelled'  => ['bg'=>'#fee2e2','color'=>'#991b1b'],
+                    default      => ['bg'=>'#f3f4f6','color'=>'#374151'],
                 };
             @endphp
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--parch);font-size:.8125rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--parch);font-size:.8125rem{{ $loop->last ? ';border-bottom:none' : '' }}">
                 <div>
                     <span style="font-weight:500;color:var(--txt)">Dr. {{ $drName }}</span>
-                    <span style="color:var(--txt-lt);margin-left:8px">{{ $apt->slot_datetime->format('d M Y, h:i A') }}</span>
+                    <span style="color:var(--txt-lt);margin-left:8px;font-size:.75rem">{{ $apt->slot_datetime?->format('d M Y, h:i A') }}</span>
                 </div>
-                <span style="font-size:.7rem;font-weight:600;{{ $stCfg }}">{{ ucfirst($apt->status) }}</span>
+                <span style="font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ $stCfg['bg'] }};color:{{ $stCfg['color'] }}">{{ ucfirst($apt->status) }}</span>
             </div>
             @endforeach
         </div>
@@ -103,18 +103,18 @@
 
     {{-- Recent prescriptions --}}
     @if($prescriptions->isNotEmpty())
-    <div class="panel">
-        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--warm-bd)">
+    <div class="panel" style="padding:18px 20px">
+        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--warm-bd)">
             Recent Prescriptions
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;flex-direction:column">
             @foreach($prescriptions as $rx)
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--parch);font-size:.8125rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--parch);font-size:.8125rem{{ $loop->last ? ';border-bottom:none' : '' }}">
                 <div>
-                    <span style="font-weight:500;color:var(--txt)">{{ $rx->rx_number }}</span>
-                    <span style="color:var(--txt-lt);margin-left:8px">Dr. {{ $rx->doctor?->profile?->full_name }}</span>
+                    <span style="font-weight:500;color:var(--txt)">{{ $rx->prescription_number }}</span>
+                    <span style="color:var(--txt-lt);margin-left:8px;font-size:.75rem">Dr. {{ $rx->doctor?->profile?->full_name ?? '—' }}</span>
                 </div>
-                <span style="font-size:.72rem;color:var(--txt-lt)">{{ \Carbon\Carbon::parse($rx->prescribed_date)->format('d M Y') }}</span>
+                <span style="font-size:.72rem;color:var(--txt-lt)">{{ $rx->prescribed_date?->format('d M Y') }}</span>
             </div>
             @endforeach
         </div>

@@ -8,10 +8,13 @@
 
 @section('content')
 @php
-    $patient  = $appointment->patient;
-    $profile  = $patient?->profile;
-    $member   = $appointment->familyMember;
-    $name     = $member?->full_name ?? $profile?->full_name ?? '—';
+    $patient     = $appointment->patient;
+    $profile     = $patient?->profile;
+    $member      = $appointment->familyMember;
+    $name        = $member?->full_name        ?? $profile?->full_name    ?? '—';
+    $age         = $member?->age              ?? $profile?->age;
+    $bloodGroup  = $member?->blood_group      ?? $profile?->blood_group;
+    $gender      = $member?->gender           ?? $profile?->gender;
     $statusColors = [
         'pending'   => ['bg'=>'#fef9c3','color'=>'#854d0e'],
         'confirmed' => ['bg'=>'#dbeafe','color'=>'#1e40af'],
@@ -36,12 +39,23 @@
             <div style="font-weight:600;color:var(--txt)">{{ $name }}</div>
             <div style="font-size:.75rem;color:var(--txt-lt);margin-top:2px">
                 {{ $patient?->country_code }} {{ $patient?->mobile_number }}
-                {{ $profile?->age ? ' · Age ' . $profile->age : '' }}
-                {{ $profile?->blood_group ? ' · ' . $profile->blood_group : '' }}
-                {{ $member ? ' · ' . ucfirst($member->relation) . ' (family)' : '' }}
+                {{ $age        ? ' · Age ' . $age        : '' }}
+                {{ $gender     ? ' · ' . ucfirst($gender)  : '' }}
+                {{ $bloodGroup ? ' · ' . $bloodGroup        : '' }}
+                {{ $member     ? ' · ' . ucfirst($member->relation) . ' of ' . ($profile?->full_name ?? 'account holder') : '' }}
             </div>
         </div>
-        <a href="{{ route('doctor.patients.show', $patient) }}" style="margin-left:auto;font-size:.8rem;padding:6px 14px;border:1.5px solid var(--warm-bd);border-radius:8px;color:var(--txt-md);text-decoration:none">View Patient</a>
+        @if($member)
+        <a href="{{ route('doctor.patients.show', [$patient->id, 'member' => $member->id]) }}"
+           style="margin-left:auto;font-size:.8rem;padding:6px 14px;border:1.5px solid var(--warm-bd);border-radius:8px;color:var(--txt-md);text-decoration:none;white-space:nowrap">
+            View {{ $member->full_name }}
+        </a>
+        @else
+        <a href="{{ route('doctor.patients.show', $patient) }}"
+           style="margin-left:auto;font-size:.8rem;padding:6px 14px;border:1.5px solid var(--warm-bd);border-radius:8px;color:var(--txt-md);text-decoration:none;white-space:nowrap">
+            View Patient
+        </a>
+        @endif
     </div>
 </div>
 
@@ -99,7 +113,7 @@
         <button type="submit" style="padding:9px 18px;background:transparent;color:#ef4444;border:1.5px solid #ef4444;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif">Cancel</button>
     </form>
     @endif
-    <a href="{{ route('doctor.prescriptions.create', ['patient' => $patient?->id, 'appointment' => $appointment->id]) }}"
+    <a href="{{ route('doctor.prescriptions.create', array_filter(['patient' => $patient?->id, 'appointment' => $appointment->id, 'member' => $member?->id])) }}"
        style="padding:9px 18px;background:var(--leaf);color:#fff;border-radius:10px;font-size:.875rem;font-weight:600;text-decoration:none">Write Prescription</a>
 </div>
 @endif

@@ -32,8 +32,8 @@
 @section('content')
 @php
     $vitals = [
-        'bp'          => ['label'=>'Blood Pressure', 'icon'=>'❤️',  'unit'=>'mmHg', 'two'=>true,  'color'=>'#c0737a', 'bg'=>'#fce7ef'],
-        'sugar'       => ['label'=>'Blood Sugar',    'icon'=>'🩸',  'unit'=>'mg/dL','two'=>false, 'color'=>'#c98a3a', 'bg'=>'#fdf5e8'],
+        'bp'          => ['label'=>'BP', 'icon'=>'❤️',  'unit'=>'mmHg', 'two'=>true,  'color'=>'#c0737a', 'bg'=>'#fce7ef'],
+        'sugar'       => ['label'=>'Sugar',    'icon'=>'🩸',  'unit'=>'mg/dL','two'=>false, 'color'=>'#c98a3a', 'bg'=>'#fdf5e8'],
         'weight'      => ['label'=>'Weight',         'icon'=>'⚖️',  'unit'=>'kg',   'two'=>false, 'color'=>'#4a3760', 'bg'=>'#f0ecf7'],
         'oxygen'      => ['label'=>'Oxygen (SpO₂)',  'icon'=>'💨',  'unit'=>'%',    'two'=>false, 'color'=>'#3d7a8a', 'bg'=>'#e8f5f9'],
         'temperature' => ['label'=>'Temperature',    'icon'=>'🌡️', 'unit'=>'°C',   'two'=>false, 'color'=>'#6a9e8e', 'bg'=>'#eef5f3'],

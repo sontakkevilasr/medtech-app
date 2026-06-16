@@ -204,7 +204,9 @@ Route::middleware('role:patient')->group(function () {
     });
 
     // ── Profile / Settings ───────────────────────────────────────────────────
-    Route::get('/profile/edit',               [DashboardController::class, 'editProfile'])    ->name('profile.edit');
-    Route::put('/profile',                    [DashboardController::class, 'updateProfile'])  ->name('profile.update');
+    Route::get('/profile/edit',               [DashboardController::class, 'editProfile'])      ->name('profile.edit');
+    Route::put('/profile/personal',           [DashboardController::class, 'updatePersonalInfo'])->name('profile.personal');
+    Route::put('/profile',                    [DashboardController::class, 'updateProfile'])     ->name('profile.update');
+    Route::put('/profile/password',           [DashboardController::class, 'updatePassword'])    ->name('profile.password');
 
 });

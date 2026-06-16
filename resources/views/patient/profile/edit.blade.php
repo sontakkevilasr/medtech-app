@@ -1,69 +1,243 @@
 @extends('layouts.patient')
-@section('title', 'Edit Profile')
+@section('title', 'My Profile')
 @section('page-title', 'My Profile')
+
+@push('styles')
+<style>
+    .pf-card { background:var(--white);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:20px;overflow:hidden; }
+    .pf-head { padding:13px 20px;border-bottom:1px solid var(--warm-bd);display:flex;align-items:center;gap:8px;font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt); }
+    .pf-body { padding:20px; }
+    .pf-grid  { display:grid;gap:16px; }
+    .pf-row2  { grid-template-columns:1fr 1fr; }
+    .pf-row3  { grid-template-columns:1fr 2fr; }
+    .pf-label { font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px; }
+    .pf-inp   { width:100%;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.875rem;font-family:'Outfit',sans-serif;color:var(--txt);background:var(--cream);box-sizing:border-box;outline:none;transition:border-color .15s; }
+    .pf-inp:focus { border-color:var(--plum,#6b4fa0); }
+    select.pf-inp { cursor:pointer; }
+    .pf-btn   { padding:9px 22px;background:var(--plum,#6b4fa0);color:#fff;border:none;border-radius:9px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s; }
+    .pf-btn:hover { opacity:.88; }
+    .pf-err   { font-size:.73rem;color:#dc2626;margin-top:4px; }
+    .bg-pill  { padding:6px 13px;border:1.5px solid var(--warm-bd);border-radius:8px;font-size:.8rem;font-weight:600;color:var(--txt-md);background:var(--cream);cursor:pointer;transition:all .15s; }
+    .rel-pill { text-align:center;padding:8px 6px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.8rem;font-weight:500;color:var(--txt-md);background:var(--cream);cursor:pointer;transition:all .15s; }
+</style>
+@endpush
 
 @section('content')
 <div style="max-width:580px">
 
 @if(session('success'))
-<div style="padding:10px 16px;background:#dcfce7;border:1px solid #bbf7d0;border-radius:10px;color:#166534;font-size:.875rem;margin-bottom:16px">
+<div style="padding:11px 16px;background:#dcfce7;border:1px solid #bbf7d0;border-radius:10px;color:#166534;font-size:.85rem;margin-bottom:18px;display:flex;align-items:center;gap:8px">
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
     {{ session('success') }}
 </div>
 @endif
+@if(session('error'))
+<div style="padding:11px 16px;background:#fee2e2;border:1px solid #fecaca;border-radius:10px;color:#991b1b;font-size:.85rem;margin-bottom:18px">
+    {{ session('error') }}
+</div>
+@endif
 
-<form method="POST" action="{{ route('patient.profile.update') }}">
+{{-- ① Personal Details --}}
+<form method="POST" action="{{ route('patient.profile.personal') }}">
     @csrf @method('PUT')
 
-    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px">
-        <div style="padding:13px 20px;border-bottom:1px solid var(--warm-bd);font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--txt)">Personal Details</div>
-        <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="pf-card">
+        <div class="pf-head">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--plum,#6b4fa0)"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            Personal Details
+        </div>
+        <div class="pf-body pf-grid">
 
-            <div style="grid-column:1/-1">
-                <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-lt);display:block;margin-bottom:5px">Full Name</label>
-                <input type="text" name="full_name" value="{{ old('full_name', $profile?->full_name) }}"
-                       style="width:100%;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.9rem;font-family:'Outfit',sans-serif;color:var(--txt);background:#fff;box-sizing:border-box"
-                       required>
-                @error('full_name')<div style="font-size:.75rem;color:#ef4444;margin-top:3px">{{ $message }}</div>@enderror
+            <div>
+                <label class="pf-label">Full Name <span style="color:#dc2626">*</span></label>
+                <input type="text" name="full_name" class="pf-inp"
+                       value="{{ old('full_name', $profile?->full_name) }}"
+                       placeholder="As it appears on official documents" required>
+                @error('full_name')<div class="pf-err">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="pf-grid pf-row2">
+                <div>
+                    <label class="pf-label">Date of Birth</label>
+                    <input type="date" name="dob" class="pf-inp"
+                           value="{{ old('dob', $profile?->dob?->format('Y-m-d')) }}"
+                           max="{{ today()->format('Y-m-d') }}">
+                    @error('dob')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+                <div>
+                    <label class="pf-label">Gender</label>
+                    <select name="gender" class="pf-inp">
+                        <option value="">— Select —</option>
+                        @foreach(['male'=>'Male','female'=>'Female','other'=>'Other'] as $val => $lbl)
+                        <option value="{{ $val }}" @selected(old('gender', $profile?->gender) === $val)>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
             <div>
-                <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-lt);display:block;margin-bottom:5px">Date of Birth</label>
-                <input type="date" name="date_of_birth" value="{{ old('date_of_birth', $profile?->date_of_birth?->format('Y-m-d')) }}"
-                       style="width:100%;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.9rem;font-family:'Outfit',sans-serif;color:var(--txt);background:#fff;box-sizing:border-box">
-            </div>
-
-            <div>
-                <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-lt);display:block;margin-bottom:5px">Gender</label>
-                <select name="gender" style="width:100%;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.9rem;font-family:'Outfit',sans-serif;color:var(--txt);background:#fff;box-sizing:border-box">
-                    <option value="">— Select —</option>
-                    @foreach(['male'=>'Male','female'=>'Female','other'=>'Other'] as $val => $label)
-                    <option value="{{ $val }}" {{ old('gender', $profile?->gender) === $val ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-lt);display:block;margin-bottom:5px">Blood Group</label>
-                <select name="blood_group" style="width:100%;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.9rem;font-family:'Outfit',sans-serif;color:var(--txt);background:#fff;box-sizing:border-box">
-                    <option value="">— Select —</option>
+                <label class="pf-label">Blood Group</label>
+                <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:2px">
                     @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bg)
-                    <option value="{{ $bg }}" {{ old('blood_group', $profile?->blood_group) === $bg ? 'selected' : '' }}>{{ $bg }}</option>
+                    @php $bgSel = old('blood_group', $profile?->blood_group) === $bg; @endphp
+                    <label style="cursor:pointer">
+                        <input type="radio" name="blood_group" value="{{ $bg }}" {{ $bgSel ? 'checked' : '' }} style="display:none" class="bgr">
+                        <div class="bg-pill" style="{{ $bgSel ? 'background:#fce7ef;color:var(--rose,#e05c7a);border-color:var(--rose,#e05c7a)' : '' }}"
+                             onclick="document.querySelectorAll('.bg-pill').forEach(p=>{p.style.background='var(--cream)';p.style.color='var(--txt-md)';p.style.borderColor='var(--warm-bd)'}); this.style.background='#fce7ef'; this.style.color='var(--rose,#e05c7a)'; this.style.borderColor='var(--rose,#e05c7a)'">
+                            {{ $bg }}
+                        </div>
+                    </label>
                     @endforeach
-                </select>
-            </div>
-
-            <div style="grid-column:1/-1">
-                <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-lt);display:block;margin-bottom:5px">Address</label>
-                <textarea name="address" rows="3"
-                          style="width:100%;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.9rem;font-family:'Outfit',sans-serif;color:var(--txt);background:#fff;box-sizing:border-box;resize:vertical">{{ old('address', $profile?->address) }}</textarea>
+                </div>
             </div>
 
         </div>
     </div>
 
-    <button type="submit" style="padding:10px 24px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif">
-        Save Changes
-    </button>
+    {{-- Location --}}
+    <div class="pf-card">
+        <div class="pf-head">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--plum,#6b4fa0)"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Location
+        </div>
+        <div class="pf-body pf-grid">
+
+            <div class="pf-grid pf-row2">
+                <div>
+                    <label class="pf-label">City</label>
+                    <input type="text" name="city" class="pf-inp"
+                           value="{{ old('city', $profile?->city) }}" placeholder="e.g. Mumbai">
+                    @error('city')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+                <div>
+                    <label class="pf-label">State</label>
+                    <input type="text" name="state" class="pf-inp"
+                           value="{{ old('state', $profile?->state) }}" placeholder="e.g. Maharashtra">
+                    @error('state')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+            </div>
+
+            <div class="pf-grid pf-row3">
+                <div>
+                    <label class="pf-label">Pincode</label>
+                    <input type="text" name="pincode" class="pf-inp"
+                           value="{{ old('pincode', $profile?->pincode) }}" placeholder="400001" maxlength="10">
+                    @error('pincode')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+                <div>
+                    <label class="pf-label">Address</label>
+                    <input type="text" name="address" class="pf-inp"
+                           value="{{ old('address', $profile?->address) }}" placeholder="Street / area / landmark">
+                    @error('address')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div style="margin-bottom:30px">
+        <button type="submit" class="pf-btn">Save Personal Details</button>
+    </div>
+</form>
+
+{{-- ② Account Info --}}
+<form method="POST" action="{{ route('patient.profile.update') }}">
+    @csrf @method('PUT')
+
+    <div class="pf-card">
+        <div class="pf-head">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--plum,#6b4fa0)"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Account Info
+        </div>
+        <div class="pf-body pf-grid">
+
+            <div>
+                <label class="pf-label">
+                    Mobile Number
+                    <span style="font-size:.65rem;font-weight:400;text-transform:none;letter-spacing:0;margin-left:4px">(used to log in)</span>
+                </label>
+                <div style="display:flex;gap:8px">
+                    <select name="country_code" class="pf-inp" style="width:100px;flex-shrink:0">
+                        @php
+                            $codes = ['+91'=>'+91 🇮🇳','+1'=>'+1 🇺🇸','+44'=>'+44 🇬🇧','+61'=>'+61 🇦🇺','+971'=>'+971 🇦🇪','+65'=>'+65 🇸🇬','+60'=>'+60 🇲🇾','+92'=>'+92 🇵🇰'];
+                            $current = old('country_code', $patient->country_code ?? '+91');
+                            if (!array_key_exists($current, $codes)) $codes[$current] = $current;
+                        @endphp
+                        @foreach($codes as $code => $label)
+                        <option value="{{ $code }}" @selected($current === $code)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <input type="tel" name="mobile_number" class="pf-inp"
+                           value="{{ old('mobile_number', $patient->mobile_number) }}"
+                           placeholder="Mobile number" required>
+                </div>
+                @error('mobile_number')<div class="pf-err">{{ $message }}</div>@enderror
+                @error('country_code')<div class="pf-err">{{ $message }}</div>@enderror
+            </div>
+
+            <div>
+                <label class="pf-label">
+                    Email Address
+                    <span style="font-size:.65rem;font-weight:400;text-transform:none;letter-spacing:0;margin-left:4px">(optional)</span>
+                </label>
+                <input type="email" name="email" class="pf-inp"
+                       value="{{ old('email', $patient->email) }}" placeholder="your@email.com">
+                @error('email')<div class="pf-err">{{ $message }}</div>@enderror
+            </div>
+
+        </div>
+    </div>
+
+    <div style="margin-bottom:30px">
+        <button type="submit" class="pf-btn">Save Account Info</button>
+    </div>
+</form>
+
+{{-- ③ Change Password --}}
+<form method="POST" action="{{ route('patient.profile.password') }}" x-data="{show:false}">
+    @csrf @method('PUT')
+
+    <div class="pf-card">
+        <div class="pf-head">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--plum,#6b4fa0)"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            Change Password
+        </div>
+        <div class="pf-body pf-grid">
+
+            <div>
+                <label class="pf-label">Current Password</label>
+                <input :type="show ? 'text' : 'password'" name="current_password" class="pf-inp"
+                       autocomplete="current-password" required>
+                @error('current_password')<div class="pf-err">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="pf-grid pf-row2">
+                <div>
+                    <label class="pf-label">New Password</label>
+                    <input :type="show ? 'text' : 'password'" name="password" class="pf-inp"
+                           autocomplete="new-password" required>
+                    @error('password')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+                <div>
+                    <label class="pf-label">Confirm New Password</label>
+                    <input :type="show ? 'text' : 'password'" name="password_confirmation" class="pf-inp"
+                           autocomplete="new-password" required>
+                </div>
+            </div>
+
+            <div>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.8rem;color:var(--txt-lt);font-weight:400">
+                    <input type="checkbox" @change="show = !show" style="accent-color:var(--plum,#6b4fa0);width:14px;height:14px">
+                    Show passwords
+                </label>
+            </div>
+
+        </div>
+    </div>
+
+    <div style="margin-bottom:10px">
+        <button type="submit" class="pf-btn">Update Password</button>
+    </div>
 </form>
 
 </div>

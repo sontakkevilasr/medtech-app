@@ -147,10 +147,11 @@ class AppointmentController extends Controller
             ->with(['profile', 'doctorProfile'])
             ->firstOrFail();
 
-        $patient      = auth()->user();
-        $familyMember = null;
+        $patient       = auth()->user();
+        $familyMember  = null;
+        $familyMembers = $patient->familyMembers()->active()->orderBy('full_name')->get();
 
-        return view('patient.appointments.book-slots', compact('doctor', 'patient', 'familyMember'));
+        return view('patient.appointments.book-slots', compact('doctor', 'patient', 'familyMember', 'familyMembers'));
     }
 
     public function showSlotsForMember(Request $request, int $doctor, int $member)
@@ -158,10 +159,11 @@ class AppointmentController extends Controller
         $doctor = User::where('id', $doctor)->where('role', 'doctor')
             ->with(['profile', 'doctorProfile'])->firstOrFail();
 
-        $familyMember = auth()->user()->familyMembers()->where('id', $member)->firstOrFail();
+        $patient       = auth()->user();
+        $familyMember  = $patient->familyMembers()->where('id', $member)->firstOrFail();
+        $familyMembers = $patient->familyMembers()->active()->orderBy('full_name')->get();
 
-        return view('patient.appointments.book-slots', compact('doctor', 'familyMember')
-            + ['patient' => auth()->user()]);
+        return view('patient.appointments.book-slots', compact('doctor', 'patient', 'familyMember', 'familyMembers'));
     }
 
     // ── AJAX: Available slots for a given date ───────────────────────────────

@@ -12,6 +12,9 @@ use App\Models\PatientTimeline;
 use App\Enums\HealthLogType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
@@ -136,23 +139,63 @@ class DashboardController extends Controller
         return view('patient.profile.edit', compact('patient', 'profile'));
     }
 
+    public function updatePersonalInfo(Request $request)
+    {
+        $patient = auth()->user();
+
+        $request->validate([
+            'full_name'   => ['required', 'string', 'max:100'],
+            'dob'         => ['nullable', 'date', 'before:today'],
+            'gender'      => ['nullable', 'in:male,female,other'],
+            'blood_group' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'city'        => ['nullable', 'string', 'max:100'],
+            'state'       => ['nullable', 'string', 'max:100'],
+            'pincode'     => ['nullable', 'string', 'max:10'],
+            'address'     => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $patient->profile()->updateOrCreate(
+            ['user_id' => $patient->id],
+            $request->only('full_name', 'dob', 'gender', 'blood_group', 'city', 'state', 'pincode', 'address')
+        );
+
+        return redirect()->route('patient.profile.edit')->with('success', 'Personal details updated.');
+    }
+
     public function updateProfile(Request $request)
     {
         $patient = auth()->user();
 
         $request->validate([
-            'full_name'    => ['required', 'string', 'max:100'],
-            'date_of_birth'=> ['nullable', 'date'],
-            'gender'       => ['nullable', 'in:male,female,other'],
-            'blood_group'  => ['nullable', 'string', 'max:5'],
-            'address'      => ['nullable', 'string', 'max:300'],
+            'country_code'  => ['required', 'string', 'max:5'],
+            'mobile_number' => ['required', 'string', 'max:20', Rule::unique('users')->ignore($patient->id)],
+            'email'         => ['nullable', 'email', 'max:150', Rule::unique('users')->ignore($patient->id)],
         ]);
 
-        $patient->profile()->updateOrCreate(
-            ['user_id' => $patient->id],
-            $request->only('full_name', 'date_of_birth', 'gender', 'blood_group', 'address')
-        );
+        $patient->update([
+            'country_code'  => $request->country_code,
+            'mobile_number' => $request->mobile_number,
+            'email'         => $request->email ?: null,
+        ]);
 
-        return redirect()->route('patient.profile.edit')->with('success', 'Profile updated.');
+        return redirect()->route('patient.profile.edit')->with('success', 'Account details updated.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $patient = auth()->user();
+
+        $request->validate([
+            'current_password' => ['required'],
+            'password'         => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        if (! Hash::check($request->current_password, $patient->password)) {
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+        }
+
+        $patient->update(['password' => Hash::make($request->password)]);
+
+        return redirect()->route('patient.profile.edit')->with('success', 'Password updated successfully.');
     }
 }

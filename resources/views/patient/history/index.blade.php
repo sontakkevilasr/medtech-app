@@ -242,10 +242,11 @@ $vtColors = [
     {{-- Documents list --}}
     <div x-show="loading" style="padding:20px;text-align:center;color:var(--txt-lt);font-size:.8rem">Loading…</div>
 
-    <div x-show="!loading && docs.length === 0 && !showPanel"
-         class="panel" style="padding:20px 18px;display:flex;align-items:center;gap:12px;color:var(--txt-lt)">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;opacity:.4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        <span style="font-size:.8rem">No documents uploaded yet. Upload old prescriptions or reports to keep them in one place.</span>
+    <div x-show="!loading && docs.length === 0 && !showPanel" class="panel">
+        <div style="padding:20px 18px;display:flex;align-items:center;gap:12px;color:var(--txt-lt)">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;opacity:.4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span style="font-size:.8rem">No documents uploaded yet. Upload old prescriptions or reports to keep them in one place.</span>
+        </div>
     </div>
 
     <div x-show="!loading && docs.length > 0" style="display:flex;flex-direction:column;gap:6px">

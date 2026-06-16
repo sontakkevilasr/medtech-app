@@ -18,13 +18,24 @@
     $availDays = array_values(array_filter($dayFull, fn($d) => !empty($slots[$d])));
 @endphp
 
+@php
+$memberUrlMap = $familyMembers->mapWithKeys(
+    fn($m) => [$m->id => route('patient.appointments.store.member', [$doctor->id, $m->id])]
+)->toArray();
+$memberList = $familyMembers->map(
+    fn($m) => ['id' => $m->id, 'name' => $m->full_name, 'relation' => ucfirst($m->relation)]
+)->values()->toArray();
+@endphp
 <div x-data="bookingFlow({
-    doctorId:     {{ $doctor->id }},
-    slotsUrl:     '{{ route('patient.appointments.slots', $doctor->id) }}',
-    datesUrl:     '{{ route('patient.appointments.dates', $doctor->id) }}',
-    availDays:    {{ json_encode($availDays) }},
-    fee:          {{ $dp?->consultation_fee ?? 0 }},
-    storeUrl:     '{{ $familyMember ? route('patient.appointments.store.member', [$doctor->id, $familyMember->id]) : route('patient.appointments.store', $doctor->id) }}',
+    doctorId:        {{ $doctor->id }},
+    slotsUrl:        '{{ route('patient.appointments.slots', $doctor->id) }}',
+    datesUrl:        '{{ route('patient.appointments.dates', $doctor->id) }}',
+    availDays:       {{ json_encode($availDays) }},
+    fee:             {{ $dp?->consultation_fee ?? 0 }},
+    selfUrl:         '{{ route('patient.appointments.store', $doctor->id) }}',
+    memberUrls:      {{ Js::from($memberUrlMap) }},
+    members:         {{ Js::from($memberList) }},
+    initialMemberId: {{ $familyMember?->id ?? 'null' }},
 })" x-init="init()" class="fade-in">
 
 <div style="display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start">
@@ -52,12 +63,14 @@
             </div>
             @endif
         </div>
-        @if($familyMember ?? false)
-        <div style="margin-top:10px;padding:8px 12px;background:var(--parch);border-radius:8px;font-size:.8125rem;color:var(--txt-md);display:flex;align-items:center;gap:6px">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Booking for <strong style="color:var(--txt)">{{ $familyMember->full_name }}</strong> ({{ $familyMember->relation }})
-        </div>
-        @endif
+        <template x-if="selectedMemberId !== null">
+            <div style="margin-top:10px;padding:8px 12px;background:var(--parch);border-radius:8px;font-size:.8125rem;color:var(--txt-md);display:flex;align-items:center;gap:6px">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Booking for
+                <strong style="color:var(--txt)" x-text="members.find(m => m.id === selectedMemberId)?.name"></strong>
+                <span style="color:var(--txt-lt)" x-text="'(' + (members.find(m => m.id === selectedMemberId)?.relation ?? '') + ')'"></span>
+            </div>
+        </template>
     </div>
 
     {{-- ── Calendar ──────────────────────────────────────────────────────── --}}
@@ -229,6 +242,57 @@
 <div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
     <div class="panel" style="padding:18px 20px">
+
+        {{-- Who is this for? --}}
+        <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--warm-bd)">
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:12px">Who is this for?</div>
+
+            <div style="overflow-x:auto;padding-bottom:2px;margin:0 -2px;padding:0 2px 2px">
+                <div style="display:flex;gap:14px;width:max-content">
+
+                    {{-- Myself --}}
+                    <button type="button" x-on:click="selectedMemberId = null"
+                            class="patient-avatar-btn"
+                            :class="selectedMemberId === null ? 'pab--active' : ''">
+                        <div class="pab__ring" :class="selectedMemberId === null ? 'pab__ring--active' : ''">
+                            <div class="pab__circle" :style="selectedMemberId === null ? 'background:var(--plum)' : 'background:#d4cfc9'">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                        </div>
+                        <span class="pab__name" :style="selectedMemberId === null ? 'color:var(--plum);font-weight:700' : 'color:var(--txt-md)'">Myself</span>
+                    </button>
+
+                    {{-- Family members --}}
+                    <template x-for="(m, idx) in members" :key="m.id">
+                        <button type="button" x-on:click="selectedMemberId = m.id"
+                                class="patient-avatar-btn"
+                                :class="selectedMemberId === m.id ? 'pab--active' : ''">
+                            <div class="pab__ring" :class="selectedMemberId === m.id ? 'pab__ring--active' : ''">
+                                <div class="pab__circle"
+                                     :style="selectedMemberId === m.id ? 'background:var(--plum)' : memberColor(idx)"
+                                     x-text="initials(m.name)">
+                                </div>
+                            </div>
+                            <span class="pab__name"
+                                  :style="selectedMemberId === m.id ? 'color:var(--plum);font-weight:700' : 'color:var(--txt-md)'"
+                                  x-text="m.name.split(' ')[0]"></span>
+                        </button>
+                    </template>
+
+                    {{-- Add member shortcut --}}
+                    <a href="{{ route('patient.family.index') }}" class="patient-avatar-btn" style="text-decoration:none">
+                        <div class="pab__ring">
+                            <div class="pab__circle" style="background:var(--parch);border:2px dashed var(--warm-bd)">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--txt-lt)" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            </div>
+                        </div>
+                        <span class="pab__name" style="color:var(--txt-lt)">Add</span>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
         <div style="font-family:'Lora',serif;font-size:1rem;color:var(--txt);margin-bottom:14px">Your Booking</div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
@@ -475,6 +539,53 @@
 .slot-chip.slot-active            { background: var(--plum); color: #fff; border-color: var(--plum); box-shadow: 0 2px 10px rgba(74,55,96,.3); }
 .slot-chip.slot-active:hover      { background: var(--plum); color: #fff; }
 
+/* ── Patient avatar picker ── */
+.patient-avatar-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 2px;
+    min-width: 54px;
+}
+.pab__ring {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    padding: 3px;
+    border: 2.5px solid transparent;
+    transition: border-color .2s;
+    flex-shrink: 0;
+}
+.pab__ring--active {
+    border-color: var(--plum);
+}
+.pab__circle {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #fff;
+    transition: background .2s;
+}
+.pab__name {
+    font-size: .7rem;
+    font-weight: 500;
+    color: var(--txt-md);
+    max-width: 58px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    transition: color .2s, font-weight .2s;
+}
+
 /* ── Book button ── */
 .book-btn {
     width: 100%; padding: .85rem 1rem;
@@ -498,7 +609,7 @@
 
 @push('scripts')
 <script>
-function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl }) {
+function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, selfUrl, memberUrls, members, initialMemberId }) {
     return {
         // Calendar state
         today:            new Date(),
@@ -522,7 +633,19 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
         // Form state
         submitting:       false,
         bookingError:     '',
-        storeUrl,
+        selfUrl,
+        memberUrls,
+        members,
+        selectedMemberId: initialMemberId,
+
+        memberColor(idx) {
+            const palette = ['#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a','#5c7a3d','#7a3d6a'];
+            return `background:${palette[idx % palette.length]}`;
+        },
+
+        initials(name) {
+            return (name || '').split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+        },
 
         get groupedSlots() {
             const morning = [], afternoon = [], evening = [];
@@ -651,12 +774,16 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, storeUrl })
             this.submitting   = true;
             this.bookingError = '';
 
+            const storeUrl = this.selectedMemberId
+                ? this.memberUrls[this.selectedMemberId]
+                : this.selfUrl;
+
             const fd = new FormData(form);
             fd.set('slot_date', this.selectedDate);
             fd.set('slot_time', this.selectedSlot);
 
             try {
-                const resp = await fetch(this.storeUrl, {
+                const resp = await fetch(storeUrl, {
                     method:  'POST',
                     headers: {
                         'Accept':       'application/json',
