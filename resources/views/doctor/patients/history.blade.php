@@ -9,7 +9,6 @@
 @section('content')
 @php
     $name     = $patient->profile?->full_name ?? 'Unknown';
-    $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
     $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
     $color    = $colors[$patient->id % count($colors)];
 
@@ -22,9 +21,8 @@
     <div style="padding:20px 24px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
 
         {{-- Avatar --}}
-        <div style="width:56px;height:56px;border-radius:14px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;color:#fff;flex-shrink:0">
-            {{ $initials }}
-        </div>
+        <x-avatar name="{{ $name }}" :photo="$patient->profile?->profile_photo"
+                   :size="56" :radius="14" :bg="$color" font-size="1.25rem" />
 
         {{-- Identity --}}
         <div style="flex:1;min-width:200px">

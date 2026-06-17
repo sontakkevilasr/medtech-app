@@ -26,7 +26,6 @@
     @foreach($pending as $req)
     @php
         $drName   = $req->doctor?->profile?->full_name ?? 'Doctor';
-        $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
         $dp       = $req->doctor?->doctorProfile;
         $expiresIn= now()->diffInMinutes($req->otp_expires_at, false);
         $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
@@ -38,9 +37,8 @@
 
         <div style="display:flex;align-items:flex-start;gap:14px">
             {{-- Doctor avatar --}}
-            <div style="width:46px;height:46px;border-radius:12px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $drName }}" :photo="$req->doctor?->profile?->profile_photo"
+                       :size="46" :radius="12" :bg="$color" font-size="1rem" />
 
             {{-- Info --}}
             <div style="flex:1;min-width:0">
@@ -159,7 +157,6 @@
             @foreach($active as $grant)
             @php
                 $drName   = $grant->doctor?->profile?->full_name ?? 'Doctor';
-                $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
                 $dp       = $grant->doctor?->doctorProfile;
                 $daysLeft = now()->diffInDays($grant->access_expires_at, false);
                 $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
@@ -170,9 +167,8 @@
                  x-data="{ revoking: false, revoked: false }"
                  x-show="!revoked" x-transition>
 
-                <div style="width:40px;height:40px;border-radius:10px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0">
-                    {{ $initials }}
-                </div>
+                <x-avatar name="{{ $drName }}" :photo="$grant->doctor?->profile?->profile_photo"
+                           :size="40" :radius="10" :bg="$color" font-size=".9rem" />
 
                 <div style="flex:1;min-width:0">
                     <div style="font-weight:600;font-size:.875rem;color:var(--txt)">Dr. {{ $drName }}</div>
@@ -281,7 +277,6 @@
             @foreach($recentClosed as $req)
             @php
                 $drName   = $req->doctor?->profile?->full_name ?? 'Doctor';
-                $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
                 $color    = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'][$req->doctor_user_id % 5];
                 $stCfg    = match($req->status) {
                     'denied'  => ['bg'=>'#fef2f2','color'=>'#dc2626','label'=>'Denied'],
@@ -290,9 +285,8 @@
                 };
             @endphp
             <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--parch)">
-                <div style="width:30px;height:30px;border-radius:8px;background:{{ $color }}22;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:{{ $color }};flex-shrink:0">
-                    {{ $initials }}
-                </div>
+                <x-avatar name="{{ $drName }}" :photo="$req->doctor?->profile?->profile_photo"
+                           :size="30" :radius="8" :bg="$color.'22'" :color="$color" font-size=".72rem" />
                 <div style="flex:1;min-width:0">
                     <div style="font-size:.8125rem;font-weight:500;color:var(--txt-md)">Dr. {{ $drName }}</div>
                     @if($req->familyMember)

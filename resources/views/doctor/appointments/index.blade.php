@@ -43,7 +43,7 @@
     @php
         $cfg      = $statusColors[$apt->status] ?? $statusColors['booked'];
         $pName    = $apt->familyMember?->full_name ?? $apt->patient?->profile?->full_name ?? 'Unknown';
-        $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$pName),0,2))));
+        $pPhoto   = $apt->familyMember?->profile_photo ?? $apt->patient?->profile?->profile_photo;
         $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
         $pColor   = $colors[$apt->patient_user_id % count($colors)];
     @endphp
@@ -64,9 +64,8 @@
         </div>
 
         {{-- Patient avatar --}}
-        <div style="width:38px;height:38px;border-radius:10px;background:{{ $pColor }};display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;color:#fff;flex-shrink:0">
-            {{ $initials }}
-        </div>
+        <x-avatar name="{{ $pName }}" :photo="$pPhoto"
+                   :size="38" :radius="10" :bg="$pColor" font-size=".875rem" />
 
         {{-- Info --}}
         <div style="flex:1;min-width:0">

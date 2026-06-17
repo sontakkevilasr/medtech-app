@@ -1,6 +1,5 @@
 @php
     $name     = $doc->profile?->full_name ?? 'Doctor';
-    $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
     $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
     $color    = $colors[$doc->id % count($colors)];
     $dp       = $doc->doctorProfile;
@@ -12,9 +11,8 @@
     {{-- Top bar --}}
     <div style="background:{{ $color }}18;padding:16px 18px 12px;border-bottom:1px solid {{ $color }}22">
         <div style="display:flex;gap:12px;align-items:flex-start">
-            <div style="width:44px;height:44px;border-radius:11px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $name }}" :photo="$doc->profile?->profile_photo"
+                       :size="44" :radius="11" :bg="$color" font-size="1rem" />
             <div style="flex:1;min-width:0">
                 <div style="font-size:.9375rem;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                     {{ $name }}

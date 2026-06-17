@@ -96,7 +96,6 @@
             @foreach($todayApts as $apt)
             @php
                 $name     = $apt->patient->profile?->full_name ?? 'Patient';
-                $initials = strtoupper(implode('', array_map(fn($p) => $p[0], array_slice(explode(' ', $name), 0, 2))));
                 $time     = $apt->slot_datetime;
                 $isPast   = $time->isPast();
             @endphp
@@ -108,7 +107,7 @@
 
                 <div class="apt-divider"></div>
 
-                <div class="apt-avatar">{{ $initials }}</div>
+                <x-avatar name="{{ $name }}" :photo="$apt->patient->profile?->profile_photo" class="apt-avatar" />
 
                 <div class="apt-info">
                     <div class="apt-name">{{ $name }}</div>
@@ -189,7 +188,6 @@
             @foreach($upcomingApts as $apt)
             @php
                 $name     = $apt->patient->profile?->full_name ?? 'Patient';
-                $initials = strtoupper(implode('', array_map(fn($p) => $p[0], array_slice(explode(' ', $name), 0, 2))));
                 $time     = $apt->slot_datetime;
                 $isToday  = $time->isToday();
                 $dayLabel = $time->isToday() ? 'Today' : ($time->isTomorrow() ? 'Tomorrow' : $time->format('D, d M'));
@@ -203,7 +201,7 @@
                 </div>
 
                 <div class="apt-divider"></div>
-                <div class="apt-avatar">{{ $initials }}</div>
+                <x-avatar name="{{ $name }}" :photo="$apt->patient->profile?->profile_photo" class="apt-avatar" />
 
                 <div class="apt-info">
                     <div class="apt-name">{{ $name }}</div>

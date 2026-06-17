@@ -212,5 +212,6 @@ Route::middleware('role:doctor')->group(function () {
     // ── Profile ──────────────────────────────────────────────────────────────
     Route::get('/profile/edit',               [DashboardController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile',                    [DashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/logo',              [DashboardController::class, 'updateLogo'])->name('profile.logo');
 
 });

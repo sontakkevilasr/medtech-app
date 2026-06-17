@@ -106,7 +106,6 @@
         @foreach($topPatients as $i => $tp)
         @php
             $name     = $tp->patient?->profile?->full_name ?? 'Unknown';
-            $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$name),0,2))));
             $colors   = ['#3d7a6e','#4a3760','#c98a3a','#3d5e7a','#c0737a','#6b7280'];
             $color    = $colors[$i % count($colors)];
         @endphp
@@ -114,9 +113,8 @@
             <td style="padding:11px 18px;font-size:.85rem;color:var(--txt-lt);font-weight:500">{{ $i + 1 }}</td>
             <td style="padding:11px 18px">
                 <div style="display:flex;align-items:center;gap:10px">
-                    <div style="width:34px;height:34px;border-radius:9px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0">
-                        {{ $initials }}
-                    </div>
+                    <x-avatar name="{{ $name }}" :photo="$tp->patient?->profile?->profile_photo"
+                               :size="34" :radius="9" :bg="$color" font-size=".8rem" />
                     <div style="font-weight:500;font-size:.875rem;color:var(--txt)">{{ $name }}</div>
                 </div>
             </td>

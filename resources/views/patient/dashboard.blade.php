@@ -262,12 +262,11 @@
             @foreach($upcomingApts as $apt)
             @php
                 $drName   = $apt->doctor->profile?->full_name ?? 'Doctor';
-                $initials = strtoupper(implode('', array_map(fn($p) => $p[0], array_slice(explode(' ', $drName), 0, 2))));
                 $daysAway = now()->diffInDays($apt->slot_datetime, false);
                 $isSoon   = $daysAway <= 1;
             @endphp
             <div class="apt-r">
-                <div class="dr-avatar">{{ $initials }}</div>
+                <x-avatar name="{{ $drName }}" :photo="$apt->doctor->profile?->profile_photo" class="dr-avatar" />
                 <div class="apt-info">
                     <div class="apt-dr-name">Dr. {{ $drName }}</div>
                     <div class="apt-meta">

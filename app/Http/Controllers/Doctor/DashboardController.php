@@ -9,6 +9,7 @@ use App\Models\Prescription;
 use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -152,5 +153,28 @@ class DashboardController extends Controller
         );
 
         return redirect()->route('doctor.profile.edit')->with('success', 'Profile updated.');
+    }
+
+    public function updateLogo(Request $request)
+    {
+        $request->validate([
+            'clinic_logo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+        ]);
+
+        $doctor = auth()->user();
+        $dp     = $doctor->doctorProfile;
+
+        if ($dp?->clinic_logo) {
+            Storage::disk('public')->delete($dp->clinic_logo);
+        }
+
+        $path = $request->file('clinic_logo')->store("clinic-logos/{$doctor->id}", 'public');
+
+        $doctor->doctorProfile()->updateOrCreate(
+            ['user_id' => $doctor->id],
+            ['clinic_logo' => $path]
+        );
+
+        return redirect()->route('doctor.profile.edit')->with('success', 'Clinic logo updated.');
     }
 }

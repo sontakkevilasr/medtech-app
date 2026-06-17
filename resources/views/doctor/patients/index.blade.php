@@ -107,7 +107,6 @@
     @foreach($patients as $p)
     @php
         $name     = $p->profile?->full_name ?? 'Unknown';
-        $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
         $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
         $color    = $colors[$p->id % count($colors)];
     @endphp
@@ -116,9 +115,8 @@
 
         {{-- Name + family count --}}
         <div style="display:flex;align-items:center;gap:11px;min-width:0">
-            <div style="width:36px;height:36px;border-radius:10px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;color:#fff;flex-shrink:0">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $name }}" :photo="$p->profile?->profile_photo"
+                       :size="36" :radius="10" :bg="$color" font-size=".875rem" />
             <div style="min-width:0">
                 <div style="font-size:.9rem;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                     {{ $name }}

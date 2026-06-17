@@ -176,6 +176,38 @@
     {{-- ── TAB: Professional (doctor only) ───────────────────────────────── --}}
     @if($role === 'doctor')
     <div x-show="tab === 'professional'" x-transition>
+
+        {{-- Clinic Logo (separate form — must stay outside the form below; HTML forbids nested forms) --}}
+        <div class="pf-card">
+            <div class="pf-head">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--leaf)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16l5-5 4 4 5-6 4 5M4 19h16"/></svg>
+                Clinic Logo
+            </div>
+            <div class="pf-body" style="display:flex;align-items:center;gap:16px">
+                @php $logoUrl = $dp?->clinic_logo ? Storage::disk('public')->url($dp->clinic_logo) : null; @endphp
+                <div style="width:64px;height:64px;border-radius:10px;border:1.5px solid var(--warm-bd);background:var(--parch);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                    @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="Clinic logo" style="width:100%;height:100%;object-fit:contain">
+                    @else
+                    <span style="font-size:.7rem;color:var(--txt-lt)">No logo</span>
+                    @endif
+                </div>
+                <div>
+                    <form method="POST" action="{{ route('doctor.profile.logo') }}" enctype="multipart/form-data" id="logo-form">
+                        @csrf
+                        <label style="cursor:pointer;font-size:.8rem;padding:7px 16px;border:1.5px solid var(--warm-bd);border-radius:9px;color:var(--txt-md);background:var(--parch);transition:background .12s;display:inline-block"
+                               onmouseover="this.style.background='var(--warm-bd)'" onmouseout="this.style.background='var(--parch)'">
+                            🖼️ {{ $logoUrl ? 'Change Logo' : 'Upload Logo' }}
+                            <input type="file" name="clinic_logo" accept="image/*" style="display:none"
+                                   onchange="document.getElementById('logo-form').submit()">
+                        </label>
+                    </form>
+                    <div style="font-size:.72rem;color:var(--txt-lt);margin-top:6px">PNG/JPG/WEBP, max 1MB. Shown on prescription PDFs.</div>
+                    @error('clinic_logo')<div class="pf-err">{{ $message }}</div>@enderror
+                </div>
+            </div>
+        </div>
+
         <form method="POST" action="{{ route('profile.update') }}">
             @csrf @method('PUT')
 
@@ -327,7 +359,7 @@
         @php
             $name     = $profile?->full_name ?? 'User';
             $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$name),0,2))));
-            $photoUrl = $profile?->profile_photo ? Storage::url($profile->profile_photo) : null;
+            $photoUrl = $profile?->profile_photo ? Storage::disk('public')->url($profile->profile_photo) : null;
         @endphp
 
         <div style="display:inline-block;margin-bottom:12px">

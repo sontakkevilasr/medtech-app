@@ -26,8 +26,9 @@
         display: table;
         width: 100%;
     }
-    .lh-left  { display: table-cell; vertical-align: top; width: 70%; }
-    .lh-right { display: table-cell; vertical-align: top; width: 30%; text-align: right; }
+    .lh-left  { display: table-cell; vertical-align: top; width: 42%; }
+    .lh-logo  { display: table-cell; vertical-align: middle; width: 16%; text-align: center; }
+    .lh-right { display: table-cell; vertical-align: top; width: 42%; text-align: right; }
 
     .dr-name {
         font-size: 16pt;
@@ -228,6 +229,13 @@
     $patientAge  = $member ? $member->age : $patient->profile?->age;
     $patientGen  = $member ? $member->gender : $patient->profile?->gender;
     $patientBg   = $patient->profile?->blood_group;
+
+    $logoData = null;
+    if ($profile?->clinic_logo && \Storage::disk('public')->exists($profile->clinic_logo)) {
+        $logoFile = \Storage::disk('public')->path($profile->clinic_logo);
+        $logoMime = mime_content_type($logoFile) ?: 'image/png';
+        $logoData = 'data:' . $logoMime . ';base64,' . base64_encode(file_get_contents($logoFile));
+    }
 @endphp
 
 <div class="letterhead">
@@ -244,6 +252,11 @@
                 <div class="dr-reg">Reg. No: {{ $profile->registration_number }}
                     @if($profile?->registration_council) | {{ $profile->registration_council }} @endif
                 </div>
+            @endif
+        </div>
+        <div class="lh-logo">
+            @if($logoData)
+            <img src="{{ $logoData }}" style="width:140px;height:120px;object-fit:contain">
             @endif
         </div>
         <div class="lh-right">

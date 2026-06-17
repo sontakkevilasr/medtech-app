@@ -9,7 +9,6 @@
 @section('content')
 @php
     $name     = $user->profile?->full_name ?? 'Unknown';
-    $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$name),0,2))));
     $palette  = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6'];
     $color    = $palette[$user->id % count($palette)];
     $dp       = $user->doctorProfile;
@@ -23,9 +22,8 @@
     {{-- Header card --}}
     <div class="card" style="padding:22px 24px">
         <div style="display:flex;gap:16px;align-items:flex-start">
-            <div style="width:58px;height:58px;border-radius:14px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $name }}" :photo="$user->profile?->profile_photo"
+                       :size="58" :radius="14" :bg="$color" font-size="1.3rem" />
             <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                     <h1 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500;color:var(--txt)">

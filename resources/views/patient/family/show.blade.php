@@ -10,7 +10,6 @@
 @php
     $relationColors = ['self'=>'#4a3760','spouse'=>'#7a3d6e','child'=>'#3d7a6e','parent'=>'#7a6e3d','sibling'=>'#3d5e7a','grandparent'=>'#6e3d7a','other'=>'#5a6e7a'];
     $relColor = $relationColors[$member->relation] ?? '#5a6e7a';
-    $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$member->full_name),0,2))));
 @endphp
 <div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
@@ -21,9 +20,8 @@
     <div class="panel" style="padding:0;overflow:hidden">
         {{-- Coloured banner --}}
         <div style="background:linear-gradient(135deg,{{ $relColor }} 0%,{{ $relColor }}bb 100%);padding:22px 24px;display:flex;align-items:center;gap:16px">
-            <div style="width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $member->full_name }}" :photo="$member->profile_photo"
+                       :size="56" :radius="14" bg="rgba(255,255,255,.2)" font-size="1.3rem" />
             <div style="flex:1">
                 <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
                     <span style="font-family:'Lora',serif;font-size:1.3rem;font-weight:500;color:#fff">{{ $member->full_name }}</span>

@@ -97,7 +97,6 @@
     @foreach($active as $member)
     @php
         $relColor = $relationColors[$member->relation] ?? '#5a6e7a';
-        $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$member->full_name),0,2))));
     @endphp
     <div class="panel" style="padding:0;overflow:hidden;transition:box-shadow .15s"
          onmouseover="this.style.boxShadow='0 4px 20px rgba(74,55,96,.1)'" onmouseout="this.style.boxShadow='none'">
@@ -105,9 +104,8 @@
         {{-- Top colour bar with avatar --}}
         <div style="background:linear-gradient(135deg,{{ $relColor }} 0%,{{ $relColor }}bb 100%);padding:18px 20px 16px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <div style="width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff">
-                    {{ $initials }}
-                </div>
+                <x-avatar name="{{ $member->full_name }}" :photo="$member->profile_photo"
+                           :size="42" :radius="11" bg="rgba(255,255,255,.2)" font-size="1rem" />
                 <span style="font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff;text-transform:uppercase;letter-spacing:.06em">
                     {{ $member->relation }}
                 </span>

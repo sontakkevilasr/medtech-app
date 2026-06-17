@@ -10,7 +10,6 @@
 @php
     $dp       = $doctor->doctorProfile;
     $name     = preg_replace('/^Dr\.?\s*/i', '', $doctor->profile?->full_name ?? 'Doctor');
-    $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ',$name),0,2))));
     $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
     $color    = $colors[$doctor->id % count($colors)];
     $slots    = $dp?->available_slots ?? [];
@@ -23,7 +22,12 @@ $memberUrlMap = $familyMembers->mapWithKeys(
     fn($m) => [$m->id => route('patient.appointments.store.member', [$doctor->id, $m->id])]
 )->toArray();
 $memberList = $familyMembers->map(
-    fn($m) => ['id' => $m->id, 'name' => $m->full_name, 'relation' => ucfirst($m->relation)]
+    fn($m) => [
+        'id'        => $m->id,
+        'name'      => $m->full_name,
+        'relation'  => ucfirst($m->relation),
+        'photo_url' => $m->profile_photo ? \Storage::disk('public')->url($m->profile_photo) : null,
+    ]
 )->values()->toArray();
 @endphp
 <div x-data="bookingFlow({
@@ -46,9 +50,8 @@ $memberList = $familyMembers->map(
     {{-- Doctor summary bar --}}
     <div class="panel" style="padding:16px 22px">
         <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:46px;height:46px;border-radius:12px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $name }}" :photo="$doctor->profile?->profile_photo"
+                       :size="46" :radius="12" :bg="$color" font-size="1rem" />
             <div style="flex:1;min-width:0">
                 <div style="font-family:'Lora',serif;font-size:1.1rem;color:var(--txt)">Dr. {{ $name }}</div>
                 <div style="font-size:.8rem;color:var(--txt-md)">{{ $dp?->specialization }}</div>
@@ -268,10 +271,15 @@ $memberList = $familyMembers->map(
                                 class="patient-avatar-btn"
                                 :class="selectedMemberId === m.id ? 'pab--active' : ''">
                             <div class="pab__ring" :class="selectedMemberId === m.id ? 'pab__ring--active' : ''">
-                                <div class="pab__circle"
-                                     :style="selectedMemberId === m.id ? 'background:var(--plum)' : memberColor(idx)"
-                                     x-text="initials(m.name)">
-                                </div>
+                                <template x-if="m.photo_url">
+                                    <img :src="m.photo_url" class="pab__circle" style="object-fit:cover">
+                                </template>
+                                <template x-if="!m.photo_url">
+                                    <div class="pab__circle"
+                                         :style="selectedMemberId === m.id ? 'background:var(--plum)' : memberColor(idx)"
+                                         x-text="initials(m.name)">
+                                    </div>
+                                </template>
                             </div>
                             <span class="pab__name"
                                   :style="selectedMemberId === m.id ? 'color:var(--plum);font-weight:700' : 'color:var(--txt-md)'"

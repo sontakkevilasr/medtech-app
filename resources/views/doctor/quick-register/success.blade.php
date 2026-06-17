@@ -5,7 +5,6 @@
 @section('content')
 @php
     $name    = $patient->profile?->full_name ?? 'Patient';
-    $initials= strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
     $age     = $patient->profile?->dob?->age;
     $gender  = ucfirst($patient->profile?->gender ?? '');
 @endphp
@@ -16,9 +15,9 @@
     <div style="background:linear-gradient(135deg,#3d7a6e 0%,#2a5e54 100%);border-radius:18px;padding:30px 32px;text-align:center;color:#fff;margin-bottom:22px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
         <div style="position:relative;z-index:1">
-            <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;margin:0 auto 14px">
-                {{ $initials }}
-            </div>
+            <x-avatar name="{{ $name }}" :photo="$patient->profile?->profile_photo"
+                       :size="60" :radius="30" bg="rgba(255,255,255,.2)" font-size="1.5rem"
+                       style="margin:0 auto 14px" />
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:500;margin-bottom:4px">
                 {{ $name }}
             </div>

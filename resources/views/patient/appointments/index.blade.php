@@ -46,7 +46,6 @@
         $drName   = $apt->doctor?->profile?->full_name ?? 'Doctor';
         $drSpec   = $apt->doctor?->doctorProfile?->specialization;
         $patName  = $apt->familyMember?->full_name ?? auth()->user()->profile?->full_name;
-        $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ',$drName),0,2))));
         $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
         $color    = $colors[$apt->doctor_user_id % count($colors)];
         $status   = $apt->status;
@@ -65,9 +64,8 @@
 
             <div style="flex:1;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
                 {{-- Doctor avatar --}}
-                <div style="width:44px;height:44px;border-radius:11px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0">
-                    {{ $initials }}
-                </div>
+                <x-avatar name="{{ $drName }}" :photo="$apt->doctor?->profile?->profile_photo"
+                           :size="44" :radius="11" :bg="$color" font-size="1rem" />
 
                 {{-- Main info --}}
                 <div style="flex:1;min-width:160px">
