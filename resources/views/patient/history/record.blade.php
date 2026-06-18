@@ -129,15 +129,20 @@ $vitalUnits = ['height'=>'','weight'=>'kg','bp'=>'mmHg','pulse'=>'bpm','temperat
             Documents ({{ count($record->attachments) }})
         </div>
         @foreach($record->attachments as $att)
-        @php $isPdf = str_contains($att['type'] ?? '', 'pdf'); $isImg = str_contains($att['type'] ?? '', 'image'); @endphp
-        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--parch);border-radius:9px;margin-bottom:6px;border:1px solid var(--warm-bd)">
+        @php
+            $isPdf   = str_contains($att['type'] ?? '', 'pdf');
+            $isImg   = str_contains($att['type'] ?? '', 'image');
+            $attType = $isPdf ? 'pdf' : ($isImg ? 'image' : 'other');
+            $ap      = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2);
+            $attUrl  = route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']);
+        @endphp
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--parch);border-radius:9px;margin-bottom:6px;border:1px solid var(--warm-bd)" x-data>
             <span style="font-size:1.2rem">{{ $isPdf ? '📄' : ($isImg ? '🖼️' : '📎') }}</span>
             <div style="flex:1;min-width:0;font-size:.8rem;color:var(--txt-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $att['name'] }}</div>
-            @php $ap = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2); @endphp
-            <a href="{{ route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']) }}" target="_blank" download="{{ $att['name'] }}"
-               style="padding:5px 12px;background:var(--plum);color:#fff;border-radius:7px;font-size:.72rem;font-weight:600;text-decoration:none;white-space:nowrap">
-                Download
-            </a>
+            <button type="button" @click="$store.attachmentPreview.show(@js($attUrl), @js($attUrl), @js($att['name']), @js($attType))"
+                    style="padding:5px 12px;background:var(--plum);color:#fff;border:none;border-radius:7px;font-size:.72rem;font-weight:600;white-space:nowrap;cursor:pointer">
+                View
+            </button>
         </div>
         @endforeach
     </div>

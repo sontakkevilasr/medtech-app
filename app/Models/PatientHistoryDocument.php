@@ -51,6 +51,11 @@ class PatientHistoryDocument extends Model
         return route('patient.history.documents.download', $this->id);
     }
 
+    public function getViewUrlAttribute(): string
+    {
+        return route('patient.history.documents.view', $this->id);
+    }
+
     public function deleteFile(): void
     {
         if ($this->file_path && Storage::disk('local')->exists($this->file_path)) {

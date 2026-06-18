@@ -129,18 +129,20 @@ $vt = $vtCfg[$record->visit_type] ?? $vtCfg['consultation'];
             @php
             $isImage = str_contains($att['type'] ?? '', 'image');
             $isPdf   = str_contains($att['type'] ?? '', 'pdf');
+            $attType = $isPdf ? 'pdf' : ($isImage ? 'image' : 'other');
+            $ap      = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2);
+            $attUrl  = route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']);
             @endphp
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--parch);border-radius:10px;border:1px solid var(--warm-bd)">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--parch);border-radius:10px;border:1px solid var(--warm-bd)" x-data>
                 <span style="font-size:1.3rem">{{ $isPdf ? '📄' : ($isImage ? '🖼️' : '📎') }}</span>
                 <div style="flex:1;min-width:0">
                     <div style="font-size:.8125rem;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $att['name'] }}</div>
                     @if(isset($att['size']))<div style="font-size:.7rem;color:var(--txt-lt)">{{ round($att['size']/1024) }} KB</div>@endif
                 </div>
-                @php $ap = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2); @endphp
-                <a href="{{ route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']) }}" target="_blank" download="{{ $att['name'] }}"
-                   style="padding:6px 14px;background:var(--plum);color:#fff;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">
-                    Download
-                </a>
+                <button type="button" @click="$store.attachmentPreview.show(@js($attUrl), @js($attUrl), @js($att['name']), @js($attType))"
+                        style="padding:6px 14px;background:var(--plum);color:#fff;border:none;border-radius:8px;font-size:.75rem;font-weight:600;white-space:nowrap;cursor:pointer">
+                    View
+                </button>
             </div>
             @endforeach
         </div>

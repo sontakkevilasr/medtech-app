@@ -42,6 +42,7 @@ class PatientHistoryDocumentController extends Controller
             'document_date' => $d->document_date?->format('d M Y'),
             'created_at'    => $d->created_at->format('d M Y'),
             'download_url'  => $d->download_url,
+            'view_url'      => $d->view_url,
             'is_image'      => str_starts_with($d->mime_type ?? '', 'image/'),
         ])->values());
     }
@@ -95,6 +96,7 @@ class PatientHistoryDocumentController extends Controller
             'document_date' => $doc->document_date?->format('d M Y'),
             'created_at'    => $doc->created_at->format('d M Y'),
             'download_url'  => $doc->download_url,
+            'view_url'      => $doc->view_url,
             'is_image'      => str_starts_with($doc->mime_type ?? '', 'image/'),
         ], 201);
     }
@@ -106,6 +108,18 @@ class PatientHistoryDocumentController extends Controller
         if (!Storage::disk('local')->exists($document->file_path)) abort(404);
 
         return Storage::disk('local')->download(
+            $document->file_path,
+            $document->file_name
+        );
+    }
+
+    public function view(PatientHistoryDocument $document)
+    {
+        if ($document->patient_user_id !== auth()->id()) abort(403);
+
+        if (!Storage::disk('local')->exists($document->file_path)) abort(404);
+
+        return Storage::disk('local')->response(
             $document->file_path,
             $document->file_name
         );

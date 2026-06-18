@@ -64,22 +64,28 @@ Route::middleware('role:patient')->group(function () {
     Route::prefix('history')->name('history.')->group(function () {
         // Own history
         Route::get('/',                       [MedicalHistoryController::class, 'index'])            ->name('index');
-        Route::get('/{record}',               [MedicalHistoryController::class, 'show'])             ->name('show');
 
         // Family member history
         Route::get('/member/{member}',        [MedicalHistoryController::class, 'memberHistory'])    ->name('member');
         Route::get('/member/{member}/{record}',[MedicalHistoryController::class, 'memberRecord'])    ->name('member.record');
 
         // Prescription actions from patient side
-        Route::get('/prescription/{prescription}/pdf', [MedicalHistoryController::class, 'downloadPdf'])->name('prescription.pdf');
+        Route::get('/prescription/{prescription}/pdf',  [MedicalHistoryController::class, 'downloadPdf'])->name('prescription.pdf');
+        Route::get('/prescription/{prescription}/view', [MedicalHistoryController::class, 'viewPdf'])    ->name('prescription.view');
 
         // Patient-uploaded history documents
+        // NOTE: must be registered before the catch-all '/{record}' below, otherwise
+        // GET /history/documents gets matched as {record} = "documents" instead.
         Route::prefix('documents')->name('documents.')->group(function () {
             Route::get('/',              [PatientHistoryDocumentController::class, 'index'])    ->name('index');
             Route::post('/',             [PatientHistoryDocumentController::class, 'store'])    ->name('store');
             Route::get('/{document}/download', [PatientHistoryDocumentController::class, 'download'])->name('download');
+            Route::get('/{document}/view',     [PatientHistoryDocumentController::class, 'view'])    ->name('view');
             Route::delete('/{document}',[PatientHistoryDocumentController::class, 'destroy'])  ->name('destroy');
         });
+
+        // Catch-all single record view — must stay last among GET routes in this group.
+        Route::get('/{record}',               [MedicalHistoryController::class, 'show'])             ->name('show');
     });
 
     /*

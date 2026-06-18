@@ -158,10 +158,13 @@ $isMyRecord = $record->doctor_user_id === auth()->id();
         </div>
         <div style="display:flex;flex-direction:column;gap:7px">
             @foreach($record->attachments as $i => $att)
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--parch);border-radius:10px;border:1px solid var(--warm-bd)">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--parch);border-radius:10px;border:1px solid var(--warm-bd)" x-data>
                 @php
                 $isImage = str_contains($att['type'] ?? '', 'image');
                 $isPdf   = str_contains($att['type'] ?? '', 'pdf');
+                $attType = $isPdf ? 'pdf' : ($isImage ? 'image' : 'other');
+                $ap      = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2);
+                $attUrl  = route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']);
                 @endphp
                 <span style="font-size:1.3rem">{{ $isPdf ? '📄' : ($isImage ? '🖼️' : '📎') }}</span>
                 <div style="flex:1;min-width:0">
@@ -171,11 +174,10 @@ $isMyRecord = $record->doctor_user_id === auth()->id();
                         @if(isset($att['uploaded_at'])) · {{ \Carbon\Carbon::parse($att['uploaded_at'])->format('d M Y') }} @endif
                     </div>
                 </div>
-                @php $ap = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2); @endphp
-                <a href="{{ route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']) }}" target="_blank"
-                   style="padding:5px 12px;background:var(--leaf);color:#fff;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">
-                    {{ $isImage ? 'View' : 'Download' }}
-                </a>
+                <button type="button" @click="$store.attachmentPreview.show(@js($attUrl), @js($attUrl), @js($att['name']), @js($attType))"
+                        style="padding:5px 12px;background:var(--leaf);color:#fff;border:none;border-radius:8px;font-size:.75rem;font-weight:600;white-space:nowrap;cursor:pointer">
+                    View
+                </button>
                 @if($isMyRecord)
                 <form method="POST" action="{{ route('doctor.records.attachment', $record) }}?_method=DELETE"
                       onsubmit="return confirm('Remove this attachment?')">

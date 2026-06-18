@@ -2,6 +2,46 @@
 @section('title', isset($fm) ? $fm->full_name.'\'s History' : 'Medical History')
 @section('page-title', isset($fm) ? $fm->full_name.'\'s History' : 'Medical History')
 
+@push('styles')
+<style>
+    /* ── Family member switcher ─────────────────────────────────────── */
+    #fm-switcher::-webkit-scrollbar { height: 5px; }
+    #fm-switcher::-webkit-scrollbar-thumb { background: var(--warm-bd); border-radius: 10px; }
+    .fm-switcher-item {
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        flex-shrink: 0;
+    }
+    .fm-switcher-ring {
+        width: 60px; height: 60px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 2.5px solid transparent; padding: 3px;
+        box-sizing: border-box; transition: border-color .15s;
+    }
+    .fm-switcher-name {
+        font-size: .72rem; font-weight: 500; color: var(--txt-md);
+        max-width: 64px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        text-align: center;
+    }
+
+    /* ── Stat cards ──────────────────────────────────────────────────── */
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74,55,96,.1); }
+
+    /* ── Timeline rows ───────────────────────────────────────────────── */
+    .timeline-row { transition: box-shadow .15s, transform .15s; }
+    .timeline-row:hover { box-shadow: 0 4px 18px rgba(74,55,96,.1); transform: translateY(-1px); }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+        #stats-strip { grid-template-columns: repeat(3, 1fr) !important; }
+        #filter-bar { flex-direction: column; align-items: stretch !important; gap: 8px !important; }
+        .filter-date-group { margin-left: 0 !important; }
+    }
+    @media (max-width: 480px) {
+        #stats-strip { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    }
+</style>
+@endpush
+
 @section('content')
 @php
 $vtColors = [
@@ -17,39 +57,49 @@ $vtColors = [
 
 {{-- ── Family member switcher ───────────────────────────────────────────────── --}}
 @if($patient->familyMembers->isNotEmpty())
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px">
-    <a href="{{ route('patient.history.index') }}"
-       style="padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:500;text-decoration:none;border:1.5px solid {{ !isset($fm) ? 'var(--plum)' : 'var(--warm-bd)' }};background:{{ !isset($fm) ? 'var(--plum)' : 'transparent' }};color:{{ !isset($fm) ? '#fff' : 'var(--txt-md)' }}">
-        {{ $patient->profile?->full_name ?? 'Me' }}
+@php
+    $fmColors = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
+@endphp
+<div id="fm-switcher" style="display:flex;gap:16px;margin-bottom:20px;overflow-x:auto;padding:2px 2px 8px">
+    <a href="{{ route('patient.history.index') }}" class="fm-switcher-item" style="text-decoration:none">
+        <div class="fm-switcher-ring" style="{{ !isset($fm) ? 'border-color:var(--plum)' : '' }}">
+            <x-avatar name="{{ $patient->profile?->full_name ?? 'Me' }}" :photo="$patient->profile?->profile_photo"
+                       :size="54" :radius="27" bg="var(--plum)" font-size=".85rem" />
+        </div>
+        <span class="fm-switcher-name" style="{{ !isset($fm) ? 'color:var(--plum);font-weight:700' : '' }}">Myself</span>
     </a>
-    @foreach($patient->familyMembers as $member)
-    <a href="{{ route('patient.history.member', $member->id) }}"
-       style="padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:500;text-decoration:none;border:1.5px solid {{ (isset($fm) && $fm->id === $member->id) ? 'var(--plum)' : 'var(--warm-bd)' }};background:{{ (isset($fm) && $fm->id === $member->id) ? 'var(--plum)' : 'transparent' }};color:{{ (isset($fm) && $fm->id === $member->id) ? '#fff' : 'var(--txt-md)' }}">
-        {{ $member->full_name }}
+    @foreach($patient->familyMembers as $i => $member)
+    @php $active = isset($fm) && $fm->id === $member->id; @endphp
+    <a href="{{ route('patient.history.member', $member->id) }}" class="fm-switcher-item" style="text-decoration:none">
+        <div class="fm-switcher-ring" style="{{ $active ? 'border-color:var(--plum)' : '' }}">
+            <x-avatar name="{{ $member->full_name }}" :photo="$member->profile_photo"
+                       :size="54" :radius="27" :bg="$fmColors[$i % count($fmColors)]" font-size=".85rem" />
+        </div>
+        <span class="fm-switcher-name" style="{{ $active ? 'color:var(--plum);font-weight:700' : '' }}">{{ Str::limit($member->full_name, 12) }}</span>
     </a>
     @endforeach
 </div>
 @endif
 
 {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px">
+<div id="stats-strip" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px">
     @php
     $strips = [
-        ['v' => $stats['total_visits'],        'l' => 'Total Visits',       'icon' => '🏥'],
-        ['v' => $stats['visits_this_year'],     'l' => 'This Year',          'icon' => '📅'],
-        ['v' => $stats['total_prescriptions'],  'l' => 'Prescriptions',      'icon' => '📋'],
-        ['v' => $stats['doctors_seen'],         'l' => 'Doctors Seen',       'icon' => '👨‍⚕️'],
+        ['v' => $stats['total_visits'],        'l' => 'Total Visits',       'icon' => '🏥', 'bg' => '#eef5f3'],
+        ['v' => $stats['visits_this_year'],     'l' => 'This Year',          'icon' => '📅', 'bg' => '#e8f0f9'],
+        ['v' => $stats['total_prescriptions'],  'l' => 'Prescriptions',      'icon' => '📋', 'bg' => '#f4f0fa'],
+        ['v' => $stats['doctors_seen'],         'l' => 'Doctors Seen',       'icon' => '👨‍⚕️', 'bg' => '#fce7ef'],
         ['v' => $stats['last_visit'] ? \Carbon\Carbon::parse($stats['last_visit'])->format('d M') : '—',
-         'l' => 'Last Visit', 'icon' => '🕐', 'raw' => true],
+         'l' => 'Last Visit', 'icon' => '🕐', 'raw' => true, 'bg' => '#fef9ec'],
     ];
     @endphp
     @foreach($strips as $s)
-    <div class="panel" style="padding:12px 14px;text-align:center">
-        <div style="font-size:1.1rem;margin-bottom:4px">{{ $s['icon'] }}</div>
+    <div class="panel stat-card" style="padding:14px 14px 12px;text-align:center;transition:transform .15s,box-shadow .15s">
+        <div style="width:30px;height:30px;border-radius:9px;background:{{ $s['bg'] }};display:flex;align-items:center;justify-content:center;font-size:1rem;margin:0 auto 7px">{{ $s['icon'] }}</div>
         <div style="font-family:'Lora',serif;font-size:{{ ($s['raw'] ?? false) ? '1rem' : '1.6rem' }};font-weight:500;color:var(--txt);line-height:1.1">
             {{ $s['v'] }}
         </div>
-        <div style="font-size:.68rem;font-weight:600;color:var(--txt-lt);margin-top:3px;text-transform:uppercase;letter-spacing:.04em">{{ $s['l'] }}</div>
+        <div style="font-size:.66rem;font-weight:600;color:var(--txt-lt);margin-top:3px;text-transform:uppercase;letter-spacing:.04em">{{ $s['l'] }}</div>
     </div>
     @endforeach
 </div>
@@ -273,11 +323,16 @@ $vtColors = [
 
                 {{-- Actions --}}
                 <div style="display:flex;gap:6px;flex-shrink:0">
+                    <button type="button"
+                            @click="$store.attachmentPreview.show(doc.view_url, doc.download_url, doc.file_name, doc.is_image ? 'image' : (doc.mime_type === 'application/pdf' ? 'pdf' : 'other'))"
+                            style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:var(--plum,#4a3760);color:#fff;border:none;border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer;transition:opacity .12s"
+                            onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+                        View
+                    </button>
                     <a :href="doc.download_url"
-                       style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:var(--plum,#4a3760);color:#fff;border-radius:7px;font-size:.72rem;font-weight:600;text-decoration:none;transition:opacity .12s"
-                       onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
-                        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Download
+                       style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1.5px solid var(--warm-bd);border-radius:7px;color:var(--txt-md);text-decoration:none;flex-shrink:0"
+                       title="Download">
+                        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     </a>
                     <button type="button" @click="confirmDelete(doc)"
                             style="padding:5px 10px;border:1.5px solid #fecaca;border-radius:7px;background:transparent;font-size:.72rem;color:#dc2626;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .12s"
@@ -316,23 +371,23 @@ $vtColors = [
 
 {{-- ── Filter bar ───────────────────────────────────────────────────────────── --}}
 @php $baseParams = isset($fm) ? ['member' => $fm->id] : []; @endphp
-<div style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+<div id="filter-bar" style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
 
     {{-- Type filter --}}
-    <div style="display:flex;gap:5px">
+    <div class="filter-group" style="display:flex;gap:5px;overflow-x:auto">
         @foreach([null => 'All', 'record' => '🏥 Visits', 'prescription' => '📋 Prescriptions'] as $val => $lbl)
         <a href="{{ route(isset($fm) ? 'patient.history.member' : 'patient.history.index', array_filter(array_merge($baseParams, ['type'=>$val,'filter'=>$filter]))) }}"
-           style="padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:500;text-decoration:none;border:1.5px solid {{ $type===$val ? 'var(--plum)' : 'var(--warm-bd)' }};background:{{ $type===$val ? 'var(--plum)' : 'transparent' }};color:{{ $type===$val ? '#fff' : 'var(--txt-md)' }};transition:all .12s">
+           style="padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;border:1.5px solid {{ $type===$val ? 'var(--plum)' : 'var(--warm-bd)' }};background:{{ $type===$val ? 'var(--plum)' : 'transparent' }};color:{{ $type===$val ? '#fff' : 'var(--txt-md)' }};transition:all .12s">
             {{ $lbl }}
         </a>
         @endforeach
     </div>
 
     {{-- Date filter --}}
-    <div style="display:flex;gap:5px;margin-left:auto">
+    <div class="filter-group filter-date-group" style="display:flex;gap:5px;margin-left:auto;overflow-x:auto">
         @foreach([null => 'All time', 'thisYear' => 'This year', 'last6m' => 'Last 6m', 'last30d' => 'Last 30d'] as $val => $lbl)
         <a href="{{ route(isset($fm) ? 'patient.history.member' : 'patient.history.index', array_filter(array_merge($baseParams, ['type'=>$type,'filter'=>$val]))) }}"
-           style="padding:5px 12px;border-radius:7px;font-size:.75rem;font-weight:500;text-decoration:none;border:1.5px solid {{ $filter===$val ? 'var(--plum)' : 'var(--warm-bd)' }};background:{{ $filter===$val ? 'var(--plum)' : 'transparent' }};color:{{ $filter===$val ? '#fff' : 'var(--txt-md)' }};transition:all .12s">
+           style="padding:5px 12px;border-radius:7px;font-size:.75rem;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;border:1.5px solid {{ $filter===$val ? 'var(--plum)' : 'var(--warm-bd)' }};background:{{ $filter===$val ? 'var(--plum)' : 'transparent' }};color:{{ $filter===$val ? '#fff' : 'var(--txt-md)' }};transition:all .12s">
             {{ $lbl }}
         </a>
         @endforeach
@@ -371,8 +426,7 @@ $grouped = $timeline->groupBy(fn($item) => $item['date']->format('M Y'));
     @php $vt = $vtColors[$item['object']->visit_type] ?? $vtColors['consultation']; @endphp
     <a href="{{ route(isset($fm) ? 'patient.history.member.record' : 'patient.history.show', isset($fm) ? [$fm->id, $item['object']->id] : $item['object']->id) }}"
        style="text-decoration:none">
-    <div class="panel" style="padding:14px 18px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s"
-         onmouseover="this.style.boxShadow='0 3px 16px rgba(74,55,96,.1)'" onmouseout="this.style.boxShadow='none'">
+    <div class="panel timeline-row" style="padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
 
         {{-- Icon --}}
         <div style="width:42px;height:42px;border-radius:11px;background:{{ $vt['bg'] }};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
@@ -413,7 +467,7 @@ $grouped = $timeline->groupBy(fn($item) => $item['date']->format('M Y'));
 
     @else
     {{-- ── Prescription row ─────────────────────────────────────────────────── --}}
-    <div class="panel" style="padding:14px 18px;display:flex;align-items:center;gap:14px">
+    <div class="panel timeline-row" style="padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
 
         {{-- Icon --}}
         <div style="width:42px;height:42px;border-radius:11px;background:#f4f0fa;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
@@ -448,17 +502,29 @@ $grouped = $timeline->groupBy(fn($item) => $item['date']->format('M Y'));
             @endif
         </div>
 
-        {{-- Date + download --}}
-        <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        {{-- Date + view/download --}}
+        @php
+            $rxViewUrl     = route('patient.history.prescription.view', $item['object']->id);
+            $rxDownloadUrl = route('patient.history.prescription.pdf', $item['object']->id);
+            $rxName        = $item['object']->prescription_number . '.pdf';
+        @endphp
+        <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px" x-data>
             <div>
                 <div style="font-size:.75rem;font-weight:600;color:var(--txt-md)">{{ $item['date']->format('d M') }}</div>
                 <div style="font-size:.68rem;color:var(--txt-lt)">{{ $item['date']->format('Y') }}</div>
             </div>
-            <a href="{{ route('patient.history.prescription.pdf', $item['object']->id) }}"
-               style="font-size:.7rem;padding:4px 11px;background:var(--plum);color:#fff;border-radius:7px;text-decoration:none;font-weight:600;transition:opacity .12s"
-               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-                ↓ PDF
-            </a>
+            <div style="display:flex;gap:5px">
+                <button type="button" @click="$store.attachmentPreview.show(@js($rxViewUrl), @js($rxDownloadUrl), @js($rxName), 'pdf')"
+                        style="font-size:.7rem;padding:4px 11px;background:var(--plum);color:#fff;border:none;border-radius:7px;font-weight:600;cursor:pointer;transition:opacity .12s"
+                        onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                    View
+                </button>
+                <a href="{{ $rxDownloadUrl }}" download="{{ $rxName }}"
+                   style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid var(--warm-bd);border-radius:7px;color:var(--txt-md);text-decoration:none"
+                   title="Download">
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                </a>
+            </div>
         </div>
     </div>
     @endif

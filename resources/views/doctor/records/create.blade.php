@@ -254,10 +254,14 @@
         <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:16px 18px">
             <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">Attachments</div>
             @foreach($record->attachments as $i => $att)
-            <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--parch);border-radius:8px;font-size:.78rem;margin-bottom:5px">
+            @php
+                $ap      = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2);
+                $attUrl  = route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']);
+                $attType = str_contains($att['type'] ?? '', 'pdf') ? 'pdf' : (str_starts_with($att['type'] ?? '', 'image/') ? 'image' : 'other');
+            @endphp
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--parch);border-radius:8px;font-size:.78rem;margin-bottom:5px" x-data>
                 <span style="flex:1;color:var(--txt-md)">{{ $att['name'] }}</span>
-                @php $ap = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2); @endphp
-                <a href="{{ route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']) }}" target="_blank"
+                <a href="javascript:void(0)" @click="$store.attachmentPreview.show(@js($attUrl), @js($attUrl), @js($att['name']), @js($attType))"
                    style="color:var(--leaf);text-decoration:none;font-size:.72rem">View</a>
             </div>
             @endforeach

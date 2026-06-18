@@ -111,6 +111,14 @@ class MedicalHistoryController extends Controller
         return $this->pdfService->downloadPrescription($prescription);
     }
 
+    public function viewPdf(Prescription $prescription)
+    {
+        // Patient can only view their own prescriptions
+        if ($prescription->patient_user_id !== auth()->id()) abort(403);
+
+        return $this->pdfService->streamPrescription($prescription);
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**
