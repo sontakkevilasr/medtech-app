@@ -18,7 +18,7 @@ $vtCfg = [
 $vt = $vtCfg[$record->visit_type] ?? $vtCfg['consultation'];
 @endphp
 
-<div class="fade-slide" style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+<div class="fade-slide rcs-grid" style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
 
 {{-- ── LEFT ─────────────────────────────────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -152,7 +152,7 @@ $vt = $vtCfg[$record->visit_type] ?? $vtCfg['consultation'];
 </div>
 
 {{-- ── RIGHT sidebar ───────────────────────────────────────────────────────── --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:13px">
+<div class="rcs-sidebar" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:13px">
 
     <div class="panel" style="padding:15px 17px">
         <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">Visit Details</div>
@@ -189,3 +189,13 @@ $vt = $vtCfg[$record->visit_type] ?? $vtCfg['consultation'];
 
 </div>
 @endsection
+
+@push('styles')
+<style>
+@@media (max-width: 900px) {
+    .rcs-grid    { grid-template-columns: 1fr !important; }
+    .rcs-sidebar { position: static !important; }
+    .rcs-grid > div { min-width: 0; }
+}
+</style>
+@endpush

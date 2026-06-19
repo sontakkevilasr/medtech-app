@@ -47,6 +47,12 @@
 
 @keyframes fadeSlide { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 .fade-slide { animation: fadeSlide .22s ease; }
+
+@media (max-width: 900px) {
+    .tls-grid    { grid-template-columns: 1fr !important; }
+    .tls-sidebar { position: static !important; }
+    .tls-grid > div { min-width: 0; }
+}
 </style>
 @endpush
 
@@ -68,7 +74,7 @@ $typeMeta = [
 ];
 @endphp
 
-<div class="fade-slide" style="display:grid;grid-template-columns:1fr 280px;gap:22px;align-items:start">
+<div class="fade-slide tls-grid" style="display:grid;grid-template-columns:1fr 280px;gap:22px;align-items:start">
 
 {{-- ── LEFT: Vertical timeline ─────────────────────────────────────────────── -- --}}
 <div>
@@ -236,7 +242,7 @@ $typeMeta = [
 </div>{{-- end LEFT --}}
 
 {{-- ── RIGHT: Info sidebar ─────────────────────────────────────────────────── -- --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div class="tls-sidebar" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
     {{-- Timeline info --}}
     <div class="panel" style="padding:16px 18px">

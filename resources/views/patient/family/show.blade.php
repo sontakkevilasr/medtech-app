@@ -11,7 +11,7 @@
     $relationColors = ['self'=>'#4a3760','spouse'=>'#7a3d6e','child'=>'#3d7a6e','parent'=>'#7a6e3d','sibling'=>'#3d5e7a','grandparent'=>'#6e3d7a','other'=>'#5a6e7a'];
     $relColor = $relationColors[$member->relation] ?? '#5a6e7a';
 @endphp
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
+<div class="fade-in fm-grid" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
 {{-- ── LEFT ─────────────────────────────────────────────────────────────────── -- --}}
 <div style="display:flex;flex-direction:column;gap:18px">
@@ -48,7 +48,7 @@
         </div>
 
         {{-- Details grid --}}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div id="fm-details-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0">
             @php
             $details = [
                 'Full Name'    => $member->full_name,
@@ -122,7 +122,7 @@
 </div>
 
 {{-- ── RIGHT: Sub-ID card + actions ──────────────────────────────────────────── -- --}}
-<div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
+<div class="fm-sidebar" style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
     {{-- Sub-ID card --}}
     <div style="background:linear-gradient(135deg,{{ $relColor }} 0%,{{ $relColor }}88 100%);border-radius:16px;padding:22px 20px;color:#fff">
@@ -233,3 +233,17 @@
 
 </div>
 @endsection
+
+@push('styles')
+<style>
+@@media (max-width: 900px) {
+    .fm-grid    { grid-template-columns: 1fr !important; }
+    .fm-sidebar { position: static !important; }
+    .fm-grid > div { min-width: 0; }
+}
+@@media (max-width: 480px) {
+    #fm-details-grid { grid-template-columns: 1fr !important; }
+    #fm-details-grid > div { border-right: none !important; }
+}
+</style>
+@endpush

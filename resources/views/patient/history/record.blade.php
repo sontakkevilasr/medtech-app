@@ -20,7 +20,7 @@ $vitalIcons = ['height'=>'📏','weight'=>'⚖️','bp'=>'❤️','pulse'=>'💓
 $vitalUnits = ['height'=>'','weight'=>'kg','bp'=>'mmHg','pulse'=>'bpm','temperature'=>'°C','spo2'=>'%'];
 @endphp
 
-<div class="fade-slide" style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+<div class="fade-slide rec-grid" style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
 
 {{-- ── LEFT ─────────────────────────────────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -151,7 +151,7 @@ $vitalUnits = ['height'=>'','weight'=>'kg','bp'=>'mmHg','pulse'=>'bpm','temperat
 </div>
 
 {{-- ── RIGHT sidebar ───────────────────────────────────────────────────────── --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:13px">
+<div class="rec-sidebar" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:13px">
 
     <div class="panel" style="padding:15px 17px">
         <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">Visit Info</div>
@@ -186,3 +186,13 @@ $vitalUnits = ['height'=>'','weight'=>'kg','bp'=>'mmHg','pulse'=>'bpm','temperat
 
 </div>
 @endsection
+
+@push('styles')
+<style>
+@@media (max-width: 900px) {
+    .rec-grid    { grid-template-columns: 1fr !important; }
+    .rec-sidebar { position: static !important; }
+    .rec-grid > div { min-width: 0; }
+}
+</style>
+@endpush

@@ -13,6 +13,9 @@
     .panel { border: 1px solid #ddd !important; box-shadow: none !important; }
     body { background: #fff !important; }
 }
+@media (max-width: 480px) {
+    #receipt-apt-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush
 
@@ -55,7 +58,7 @@
         <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-lt);margin-bottom:12px">Appointment Details</div>
         @php $apt = $payment->appointment; @endphp
         @if($apt)
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div id="receipt-apt-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             @foreach([
                 'Appointment No.' => $apt->appointment_number,
                 'Doctor'          => 'Dr. '.($apt->doctor?->profile?->full_name ?? ''),

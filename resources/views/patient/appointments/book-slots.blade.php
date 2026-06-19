@@ -42,7 +42,7 @@ $memberList = $familyMembers->map(
     initialMemberId: {{ $familyMember?->id ?? 'null' }},
 })" x-init="init()" class="fade-in">
 
-<div style="display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start">
+<div class="book-grid" style="display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start">
 
 {{-- ══ LEFT: Calendar + Slot Grid ═══════════════════════════════════════════ --}}
 <div style="display:flex;flex-direction:column;gap:18px">
@@ -242,7 +242,7 @@ $memberList = $familyMembers->map(
 </div>{{-- end left --}}
 
 {{-- ══ RIGHT: Booking Form ══════════════════════════════════════════════════ --}}
-<div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
+<div class="book-sidebar" style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
     <div class="panel" style="padding:18px 20px">
 
@@ -612,6 +612,17 @@ $memberList = $familyMembers->map(
     box-shadow: none; cursor: not-allowed;
 }
 .book-btn-disabled:hover { opacity: 1; }
+
+/* ── Mobile: stack calendar/slots above booking form ── */
+@@media (max-width: 900px) {
+    .book-grid    { grid-template-columns: 1fr !important; }
+    .book-sidebar { position: static !important; }
+    .book-grid > div { min-width: 0; }
+}
+@@media (max-width: 480px) {
+    .cal-cell, .cal-skel { height: 38px; }
+    .pab__ring  { width: 48px; height: 48px; }
+}
 </style>
 @endpush
 

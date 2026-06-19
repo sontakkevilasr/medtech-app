@@ -35,6 +35,8 @@
         #stats-strip { grid-template-columns: repeat(3, 1fr) !important; }
         #filter-bar { flex-direction: column; align-items: stretch !important; gap: 8px !important; }
         .filter-date-group { margin-left: 0 !important; }
+        #upload-guide-grid { grid-template-columns: 1fr !important; }
+        #upload-meta-grid  { grid-template-columns: 1fr !important; }
     }
     @media (max-width: 480px) {
         #stats-strip { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
@@ -134,7 +136,7 @@ $vtColors = [
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#6d5fa6" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span style="font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6d5fa6">Upload Guide</span>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div id="upload-guide-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
 
                 {{-- Accepted formats --}}
                 <div>
@@ -233,7 +235,7 @@ $vtColors = [
         </div>
 
         {{-- Meta fields --}}
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div id="upload-meta-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px">
             <div>
                 <label style="display:block;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:4px">Title *</label>
                 <input type="text" x-model="form.title"

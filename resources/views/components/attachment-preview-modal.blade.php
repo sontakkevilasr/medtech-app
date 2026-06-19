@@ -63,6 +63,10 @@ document.addEventListener('alpine:init', () => {
             this.h = Math.min(window.innerHeight - this.y - 10, Math.max(280, this.resize.origH + (p.y - this.resize.startY)));
         },
         stopResize() { this.resize = null; },
+
+        pdfInlineSupported() {
+            return typeof navigator.pdfViewerEnabled !== 'undefined' ? navigator.pdfViewerEnabled : window.innerWidth > 768;
+        },
      }"
      x-show="$store.attachmentPreview.open"
      x-cloak
@@ -103,8 +107,18 @@ document.addEventListener('alpine:init', () => {
                 <img :src="$store.attachmentPreview.url" :alt="$store.attachmentPreview.name"
                      style="max-width:100%;max-height:100%;object-fit:contain">
             </template>
-            <template x-if="$store.attachmentPreview.type === 'pdf'">
+            <template x-if="$store.attachmentPreview.type === 'pdf' && pdfInlineSupported()">
                 <iframe :src="$store.attachmentPreview.url" style="width:100%;height:100%;border:none"></iframe>
+            </template>
+            <template x-if="$store.attachmentPreview.type === 'pdf' && !pdfInlineSupported()">
+                <div style="text-align:center;padding:40px;color:var(--txt-lt)">
+                    <div style="font-size:2.5rem;margin-bottom:10px">📄</div>
+                    <div style="font-size:.875rem;margin-bottom:14px;word-break:break-word" x-text="$store.attachmentPreview.name"></div>
+                    <a :href="$store.attachmentPreview.url" target="_blank" rel="noopener"
+                       style="display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;color:#fff;background:var(--plum,#4a3760);border-radius:9px;padding:9px 18px;text-decoration:none">
+                        Open PDF
+                    </a>
+                </div>
             </template>
             <template x-if="$store.attachmentPreview.type === 'other'">
                 <div style="text-align:center;padding:40px;color:var(--txt-lt)">

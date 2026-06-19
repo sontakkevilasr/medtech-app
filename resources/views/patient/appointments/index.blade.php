@@ -6,21 +6,31 @@
 <div class="fade-in">
 
 {{-- Tabs --}}
-<div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px">
+<div class="apt-tabs-row" style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px">
+    <div class="apt-tabs-scroll" style="display:flex;gap:2px;overflow-x:auto">
     @foreach(['upcoming' => "Upcoming ({$upcomingCount})", 'past' => "Past ({$pastCount})", 'cancelled' => "Cancelled ({$cancelledCount})"] as $t => $lbl)
     <a href="{{ route('patient.appointments.index', ['tab' => $t]) }}"
-       style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;
+       style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;
               {{ $tab === $t ? 'color:var(--plum);border-bottom-color:var(--plum);font-weight:600' : 'color:var(--txt-lt)' }}"
        onmouseover="if('{{$tab}}' !== '{{$t}}') this.style.color='var(--txt)'" onmouseout="if('{{$tab}}' !== '{{$t}}') this.style.color='var(--txt-lt)'">
         {{ $lbl }}
     </a>
     @endforeach
+    </div>
     <a href="{{ route('patient.appointments.book') }}"
-       style="margin-left:auto;display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--plum);color:#fff;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;align-self:center;margin-bottom:4px">
+       style="margin-left:auto;display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--plum);color:#fff;border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none;align-self:center;margin-bottom:4px;flex-shrink:0">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
         Book New
     </a>
 </div>
+@push('styles')
+<style>
+@@media (max-width: 560px) {
+    .apt-tabs-row    { flex-wrap: wrap; }
+    .apt-tabs-scroll { flex: 1 1 100%; }
+}
+</style>
+@endpush
 
 @if($appointments->isEmpty())
 <div style="text-align:center;padding:52px 24px;color:var(--txt-lt)">

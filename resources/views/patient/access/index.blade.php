@@ -127,7 +127,7 @@
 @endif
 
 {{-- ══ MAIN GRID ═══════════════════════════════════════════════════════════════ -- --}}
-<div style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
+<div class="access-grid" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
 {{-- ── LEFT: Active grants + History ──────────────────────────────────────── -- --}}
 <div style="display:flex;flex-direction:column;gap:20px">
@@ -304,7 +304,7 @@
 </div>{{-- end left --}}
 
 {{-- ── RIGHT: Global settings + info ────────────────────────────────────────── -- --}}
-<div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
+<div class="access-sidebar" style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
     {{-- Global access type --}}
     <div class="panel" style="padding:18px 20px">
@@ -370,6 +370,12 @@
 <style>
 @keyframes spin   { to { transform: rotate(360deg); } }
 @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+@@media (max-width: 900px) {
+    .access-grid    { grid-template-columns: 1fr !important; }
+    .access-sidebar { position: static !important; }
+    .access-grid > div { min-width: 0; }
+}
 </style>
 @endpush
 

@@ -203,7 +203,7 @@
 {{-- ══ WHAT IS A SUB-ID? INFO CARD ════════════════════════════════════════════ -- --}}
 <div class="panel" style="padding:18px 22px;background:var(--parch)">
     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">About Sub-IDs</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+    <div id="about-subid-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
         @foreach([
             ['🏷️', 'Unique identifier', 'Every person in your family gets a permanent ID like MED-00001-A that stays with them forever.'],
             ['🔒', 'Privacy first',     'Doctors search by Sub-ID instead of your mobile number — no personal data is exposed during lookup.'],
@@ -220,3 +220,11 @@
 
 </div>
 @endsection
+
+@push('styles')
+<style>
+@media (max-width: 600px) {
+    #about-subid-grid { grid-template-columns: 1fr !important; }
+}
+</style>
+@endpush

@@ -33,13 +33,14 @@ $vitals = ['bp'=>['❤️','Blood Pressure'],'sugar'=>['🩸','Blood Sugar'],'we
         No readings found. <a href="{{ route('patient.health.index') }}" style="color:var(--plum)">Log one →</a>
     </div>
     @else
+    <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse">
         <thead><tr style="border-bottom:1.5px solid var(--warm-bd)">
-            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Type</th>
-            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Reading</th>
-            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Context</th>
-            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Notes</th>
-            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Date</th>
+            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Type</th>
+            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Reading</th>
+            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Context</th>
+            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Notes</th>
+            <th style="padding:9px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Date</th>
             <th style="padding:9px 16px"></th>
         </tr></thead>
         <tbody>
@@ -81,6 +82,7 @@ $vitals = ['bp'=>['❤️','Blood Pressure'],'sugar'=>['🩸','Blood Sugar'],'we
         @endforeach
         </tbody>
     </table>
+    </div>
 
     {{-- Pagination --}}
     @if($logs->hasPages())

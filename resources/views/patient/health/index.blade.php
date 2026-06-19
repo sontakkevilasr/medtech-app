@@ -26,6 +26,17 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeSlide { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
 .fade-slide { animation: fadeSlide .22s ease; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    #health-grid    { grid-template-columns: 1fr !important; }
+    #health-sidebar { position: static !important; }
+    #health-grid > div { min-width: 0; }
+}
+@media (max-width: 768px) {
+    #health-stats-strip { grid-template-columns: repeat(2, 1fr) !important; }
+    #vital-cards-grid   { grid-template-columns: repeat(2, 1fr) !important; }
+}
 </style>
 @endpush
 
@@ -62,7 +73,7 @@
 @endif
 
 {{-- ── Stats strip ──────────────────────────────────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px">
+<div id="health-stats-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px">
     @php
     $strips = [
         ['v'=>$stats['logs_7d'],      'l'=>'Last 7 days',    'sub'=>'readings logged'],
@@ -84,13 +95,13 @@
 </div>
 
 {{-- ── Main grid: LEFT charts + RIGHT log form ─────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+<div id="health-grid" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
 {{-- ─── LEFT ────────────────────────────────────────────────────────────────── -- --}}
 <div style="display:flex;flex-direction:column;gap:18px">
 
     {{-- 6 vital summary cards (clickable → loads chart) --}}
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+    <div id="vital-cards-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
         @foreach($vitals as $key => $cfg)
         @php
             $reading = $latestReadings[$key] ?? null;
@@ -183,13 +194,14 @@
             No readings logged yet.
         </div>
         @else
+        <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse">
             <thead>
                 <tr style="border-bottom:1.5px solid var(--warm-bd)">
-                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Type</th>
-                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Reading</th>
-                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Context</th>
-                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Date & Time</th>
+                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Type</th>
+                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Reading</th>
+                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Context</th>
+                    <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Date & Time</th>
                     <th style="padding:8px 16px"></th>
                 </tr>
             </thead>
@@ -233,12 +245,13 @@
             @endforeach
             </tbody>
         </table>
+        </div>
         @endif
     </div>
 </div>
 
 {{-- ─── RIGHT: Log entry form ────────────────────────────────────────────────── -- --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div id="health-sidebar" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
     <div class="panel" style="padding:20px 22px">
         <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:4px">Log a Reading</div>
         <div style="font-size:.75rem;color:var(--txt-lt);margin-bottom:16px">Record your latest vital sign</div>

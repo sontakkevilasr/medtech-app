@@ -23,6 +23,10 @@
     background: #fff; border-radius: 18px; padding: 28px 30px;
     width: 420px; max-width: 94vw; box-shadow: 0 20px 60px rgba(0,0,0,.2);
 }
+
+@media (max-width: 480px) {
+    #pay-stats-strip { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush
 
@@ -30,7 +34,7 @@
 <div class="fade-slide" x-data="payments()">
 
 {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
+<div id="pay-stats-strip" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
     <div class="panel" style="padding:16px 18px;text-align:center">
         <div style="font-family:'Lora',serif;font-size:1.8rem;font-weight:500;color:var(--txt)">
             ₹{{ number_format($totalPaid, 0) }}
@@ -107,13 +111,14 @@
 </div>
 @else
 <div class="panel" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse">
         <thead><tr style="border-bottom:1.5px solid var(--warm-bd)">
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Doctor</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Appointment</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Amount</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Status</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">Date</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Doctor</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Appointment</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Amount</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Status</th>
+            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Date</th>
             <th style="padding:9px 18px"></th>
         </tr></thead>
         <tbody>
@@ -155,6 +160,7 @@
         @endforeach
         </tbody>
     </table>
+    </div>
 
     @if($payments->hasPages())
     <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:12px 16px;border-top:1px solid var(--warm-bd)">

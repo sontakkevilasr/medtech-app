@@ -266,7 +266,7 @@
         }
         .apt-meta {
             font-size: .75rem; color: var(--txt-lt);
-            margin-top: 2px; display: flex; gap: 7px; align-items: center;
+            margin-top: 2px; display: flex; gap: 7px; align-items: center; flex-wrap: wrap;
         }
         .apt-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--warm-bd); }
         .apt-date-badge {

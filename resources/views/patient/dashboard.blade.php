@@ -222,7 +222,7 @@
 </div>
 
 {{-- ── Two column layout ────────────────────────────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
+<div id="content-grid" style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
 
     {{-- LEFT --}}
     <div style="display:flex;flex-direction:column;gap:18px">
@@ -555,6 +555,7 @@
 <style>
     @media (max-width: 900px) {
         #content-grid { grid-template-columns: 1fr !important; }
+        #content-grid > div { min-width: 0; }
     }
     .furem-alert {
         background: linear-gradient(135deg, #f0fdf4 0%, #f6fef9 100%);
