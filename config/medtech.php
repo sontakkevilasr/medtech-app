@@ -75,6 +75,7 @@ return [
         'oxygen'       => ['normal' => [95, 100],  'warning' => [90, 94],  'danger' => [0, 89]],
         'pulse'        => ['normal' => [60, 100],  'warning' => [101, 120],'danger' => [121, 999]],
         'temperature'  => ['normal' => [36.1,37.2],'warning' => [37.3,38.0],'danger'=> [38.1, 99]],
+        'weight'       => ['normal' => [40, 90],   'warning' => [90.01, 120],'danger' => [120.01, 999]],
     ],
 
 ];
