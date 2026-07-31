@@ -13,6 +13,15 @@
 .inp:focus { border-color:var(--leaf); }
 .inp.err { border-color:#ef4444; }
 select.inp { cursor:pointer; }
+.med-fg-3 { grid-template-columns:2fr 1.5fr 1fr; }
+.med-fg-5 { grid-template-columns:1fr 1fr 1fr 1fr 2fr; }
+.med-fg-7 { grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 1fr 1fr; }
+@media (max-width:900px) {
+    .med-fg-3, .med-fg-5, .med-fg-7 { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:500px) {
+    .med-fg-3, .med-fg-5, .med-fg-7 { grid-template-columns:1fr; }
+}
 </style>
 @endpush
 
@@ -58,7 +67,7 @@ select.inp { cursor:pointer; }
      class="panel" style="padding:20px 22px;margin-bottom:18px;border:1.5px solid var(--leaf,#3d7a5c)">
     <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--leaf);margin-bottom:14px">New Medicine</div>
     <form @submit.prevent="submitAdd()">
-        <div style="display:grid;grid-template-columns:2fr 1.5fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="med-fg-3" style="display:grid;gap:12px;margin-bottom:12px">
             <div>
                 <label style="display:block;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:4px">Medicine Name *</label>
                 <input type="text" x-model="addForm.medicine_name" class="inp" :class="addErr.medicine_name?'err':''" placeholder="e.g. Paracetamol" autocomplete="off">
@@ -79,7 +88,7 @@ select.inp { cursor:pointer; }
                 </select>
             </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 2fr;gap:12px;margin-bottom:14px">
+        <div class="med-fg-5" style="display:grid;gap:12px;margin-bottom:14px">
             <div>
                 <label style="display:block;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:4px">Dosage</label>
                 <input type="text" x-model="addForm.dosage" class="inp" placeholder="500mg">
@@ -173,7 +182,8 @@ select.inp { cursor:pointer; }
         <p style="font-size:.78rem;margin-top:4px">Click <strong>Add Medicine</strong> above to build your personal fast-fill library.</p>
     </div>
     @else
-    <table style="width:100%;border-collapse:collapse" class="med-table">
+    <div class="dr-table-wrap">
+    <table style="width:100%;border-collapse:collapse;min-width:720px" class="med-table">
         <thead>
             <tr style="background:var(--parch)">
                 <th style="text-align:left">Medicine</th>
@@ -216,7 +226,7 @@ select.inp { cursor:pointer; }
 
                 {{-- Edit mode (inline, spans all columns) --}}
                 <td x-show="editing" colspan="7" style="padding:14px 16px;background:var(--parch)">
-                    <div style="display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+                    <div class="med-fg-7" style="display:grid;gap:8px;margin-bottom:8px">
                         <div>
                             <label style="display:block;font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:3px">Name *</label>
                             <input type="text" x-model="form.medicine_name" class="inp" style="font-size:.82rem" placeholder="Medicine name">
@@ -288,6 +298,7 @@ select.inp { cursor:pointer; }
             @endforeach
         </tbody>
     </table>
+    </div>
 
     {{-- Pagination --}}
     @if($medicines->hasPages())

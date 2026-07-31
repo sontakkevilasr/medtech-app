@@ -57,7 +57,7 @@
 
     {{-- Body --}}
     <div style="padding:14px 18px">
-        <div style="display:flex;gap:14px;margin-bottom:10px">
+        <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap">
             <div>
                 <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--txt-lt);margin-bottom:2px">Started</div>
                 <div style="font-size:.8125rem;font-weight:500;color:var(--txt-md)">{{ $pt->start_date->format('d M Y') }}</div>

@@ -27,7 +27,7 @@
     <div id="slots-hidden-inputs"></div>
 </form>
 
-<div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
 
 {{-- ── LEFT: Day blocks ─────────────────────────────────────────────────────── --}}
 <div class="panel">
@@ -68,7 +68,7 @@
     <div style="border-bottom:1px solid var(--warm-bd);padding:14px 22px;transition:background .15s"
          :style="{ background: schedule['{{ $dayKey }}'].enabled ? '' : '#fdfcfb', opacity: schedule['{{ $dayKey }}'].enabled ? '1' : '.75' }">
 
-        <div style="display:flex;align-items:flex-start;gap:14px">
+        <div class="dr-day-row" style="display:flex;align-items:flex-start;gap:14px">
 
             {{-- Toggle --}}
             <div style="padding-top:2px;flex-shrink:0">
@@ -171,7 +171,7 @@
 </div>
 
 {{-- ── RIGHT sidebar ───────────────────────────────────────────────────────── --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div class="dr-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
     <div class="panel" style="padding:16px 18px">
         <div style="font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:12px">Weekly Summary</div>
@@ -258,7 +258,7 @@
     <div x-show="showBlockForm"
          style="padding:18px 22px;border-bottom:1px solid var(--warm-bd);background:var(--parch)">
 
-        <div style="display:grid;grid-template-columns:180px auto 1fr;gap:14px;align-items:start">
+        <div class="dr-block-form-grid" style="display:grid;grid-template-columns:180px auto 1fr;gap:14px;align-items:start">
 
             {{-- Date --}}
             <div>
@@ -475,6 +475,10 @@
 @push('styles')
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 640px) {
+    .dr-day-row { flex-wrap: wrap; }
+    .dr-block-form-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush
 

@@ -5,7 +5,7 @@
 @section('content')
 
 {{-- Search --}}
-<form method="GET" style="margin-bottom:18px;display:flex;gap:10px">
+<form method="GET" style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap">
     <input type="text" name="search" value="{{ request('search') }}"
            placeholder="Search by patient name…"
            style="flex:1;padding:9px 14px;border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.875rem;font-family:'Outfit',sans-serif;color:var(--txt);background:#fff">
@@ -21,7 +21,8 @@
 </div>
 @else
 <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden">
-    <table style="width:100%;border-collapse:collapse">
+    <div class="dr-table-wrap">
+    <table style="width:100%;border-collapse:collapse;min-width:640px">
         <thead>
             <tr style="border-bottom:1px solid var(--warm-bd)">
                 <th style="padding:11px 18px;text-align:left;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-lt)">Patient</th>
@@ -62,6 +63,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 
 {{-- Pagination --}}

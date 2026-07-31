@@ -24,6 +24,14 @@
     .tab-btn  { padding:9px 18px;font-size:.85rem;font-weight:500;border:none;background:transparent;cursor:pointer;border-bottom:2.5px solid transparent;color:var(--txt-lt);font-family:'Outfit',sans-serif;transition:all .15s; }
     .tab-btn.active { color:var(--leaf);border-bottom-color:var(--leaf);font-weight:600; }
     .lang-wrap { display:flex;flex-wrap:wrap;gap:6px;padding:9px 12px;border:1.5px solid var(--warm-bd);border-radius:10px;background:var(--parch); }
+    .pf-outer-grid { grid-template-columns:1fr 300px; }
+    @media (max-width:900px) {
+        .pf-outer-grid { grid-template-columns:1fr !important; }
+        .pf-sidebar-sticky { position:static !important; }
+    }
+    @media (max-width:640px) {
+        .pf-2, .pf-3, .pf-21, .pf-12 { grid-template-columns:1fr !important; }
+    }
 </style>
 @endpush
 
@@ -37,7 +45,7 @@
 </div>
 @endif
 
-<div style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
+<div class="pf-outer-grid" style="display:grid;gap:22px;align-items:start">
 
 {{-- ── LEFT ────────────────────────────────────────────────────────────────── --}}
 <div>
@@ -352,7 +360,7 @@
 </div>
 
 {{-- ── RIGHT: Avatar + status cards ───────────────────────────────────────── --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div class="pf-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
     {{-- Avatar --}}
     <div class="pf-card" style="overflow:hidden;text-align:center;padding:22px">

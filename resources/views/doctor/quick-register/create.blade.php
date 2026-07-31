@@ -38,11 +38,14 @@
 .pill-opt input:checked + .pill-lbl {
     background: var(--leaf); color: #fff; border-color: var(--leaf);
 }
+@media (max-width: 500px) {
+    .qr-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush
 
 @section('content')
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+<div class="fade-in dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
 {{-- ── LEFT: Form ───────────────────────────────────────────────────────────── --}}
 <div>
@@ -106,7 +109,7 @@
             Basic Details
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="qr-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
             {{-- DOB --}}
             <div>
                 <label class="field-label">Date of Birth</label>
@@ -154,7 +157,7 @@
                    class="field-inp" placeholder="House / Flat, Street, Area">
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="qr-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
                 <label class="field-label">City</label>
                 <input type="text" name="city" value="{{ old('city') }}"
@@ -180,7 +183,7 @@
             <span style="font-size:.7rem;font-weight:400;color:var(--txt-lt);margin-left:4px">optional</span>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="qr-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
                 <label class="field-label">Contact Name</label>
                 <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}"
@@ -211,7 +214,7 @@
 </div>
 
 {{-- ── RIGHT: Info panel ────────────────────────────────────────────────────── --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div class="dr-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
     {{-- What happens --}}
     <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:18px 20px">

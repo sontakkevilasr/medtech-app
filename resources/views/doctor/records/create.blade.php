@@ -52,6 +52,12 @@
     transition: all .2s; background: var(--parch);
 }
 .drop-zone.over { border-color: var(--leaf); background: #eef5f3; }
+@media (max-width: 640px) {
+    .rc-grid-3 { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 420px) {
+    .rc-grid-3 { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush
 
@@ -74,7 +80,7 @@
     </div>
     @endif
 
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
+    <div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
 
     {{-- ── LEFT column ──────────────────────────────────────────────────────── -- --}}
     <div style="display:flex;flex-direction:column;gap:18px">
@@ -83,7 +89,7 @@
         <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:20px 22px">
             <div class="section-head">Visit Information</div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="rc-grid-3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
                 <div>
                     <label class="field-label">Visit Date *</label>
                     <input type="date" name="visit_date" class="field-inp"
@@ -130,7 +136,7 @@
         {{-- Vitals --}}
         <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:20px 22px">
             <div class="section-head">Vitals</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div class="rc-grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
                 @php
                 $vitals = [
                     'height'      => ['Height',      'cm  / ft-in', 'e.g. 165cm'],
@@ -183,7 +189,7 @@
     </div>
 
     {{-- ── RIGHT column ─────────────────────────────────────────────────────── -- --}}
-    <div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+    <div class="dr-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
         {{-- Patient card --}}
         <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:16px 18px">

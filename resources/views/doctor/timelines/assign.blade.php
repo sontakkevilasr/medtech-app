@@ -63,7 +63,7 @@ $specMeta = TimelineTemplate::SPECIALTIES;
 @endif
 
 {{-- ── Main layout ──────────────────────────────────────────────────────────── --}}
-<div class="fade-in"
+<div class="fade-in dr-grid-2col"
      style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start"
      x-data="{
          selected:  '{{ $preselectedId ?? '' }}',
@@ -175,7 +175,7 @@ $specMeta = TimelineTemplate::SPECIALTIES;
                     Assignment Details
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                <div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
                     <div>
                         <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px">
                             Start Date *
@@ -237,7 +237,7 @@ $specMeta = TimelineTemplate::SPECIALTIES;
     </div>
 
     {{-- ── RIGHT: Patient info sidebar ─────────────────────────────────────── --}}
-    <div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+    <div class="dr-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
         {{-- Patient card --}}
         <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:18px 20px">

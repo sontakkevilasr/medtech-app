@@ -19,7 +19,7 @@ $typeMeta = [
 ];
 @endphp
 
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+<div class="fade-in dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
 {{-- ── Milestones list ──────────────────────────────────────────────────────── -- --}}
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -66,7 +66,7 @@ $typeMeta = [
         <div id="add-milestone-form" class="hidden" style="padding:14px 18px;border-bottom:1.5px solid var(--warm-bd);background:var(--parch)">
             <form method="POST" action="{{ route('doctor.timelines.milestones.store', $template) }}">
                 @csrf
-                <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;align-items:end">
+                <div class="tl-ms-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;align-items:end">
                     <div>
                         <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:4px">Title *</label>
                         <input type="text" name="title" class="dr-inp" placeholder="e.g. First consultation" required>
@@ -92,7 +92,7 @@ $typeMeta = [
                         </select>
                     </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+                <div class="tl-ms-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
                     <textarea name="description" class="dr-inp" rows="2" placeholder="Description..." style="resize:none"></textarea>
                     <textarea name="precautions" class="dr-inp" rows="2" placeholder="Precautions..." style="resize:none"></textarea>
                 </div>
@@ -107,7 +107,8 @@ $typeMeta = [
         @endif
 
         {{-- Milestone rows --}}
-        <table style="width:100%;border-collapse:collapse">
+        <div class="dr-table-wrap">
+        <table style="width:100%;border-collapse:collapse;min-width:600px">
             <thead><tr style="border-bottom:1.5px solid var(--warm-bd)">
                 <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">When</th>
                 <th style="padding:8px 16px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">Milestone</th>
@@ -152,11 +153,12 @@ $typeMeta = [
             @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
 {{-- ── RIGHT sidebar ───────────────────────────────────────────────────────── -- --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div class="dr-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
     {{-- Active assignments --}}
     <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:16px 18px">
@@ -196,5 +198,11 @@ $typeMeta = [
 .hidden { display: none !important; }
 .dr-inp { width:100%;padding:.5rem .7rem;border:1.5px solid var(--warm-bd);border-radius:8px;font-size:.8rem;color:var(--txt);background:#fff;outline:none;font-family:inherit; }
 .dr-inp:focus { border-color:var(--leaf); }
+@media (max-width: 700px) {
+    .tl-ms-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 420px) {
+    .tl-ms-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush

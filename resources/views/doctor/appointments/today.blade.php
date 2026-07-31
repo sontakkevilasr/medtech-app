@@ -16,7 +16,7 @@
         $statusColors = ['pending'=>['#fef9c3','#854d0e'],'confirmed'=>['#dbeafe','#1e40af'],'completed'=>['#dcfce7','#166534'],'cancelled'=>['#fee2e2','#991b1b']];
         $sc = $statusColors[$apt->status] ?? ['#f3f4f6','#374151'];
     @endphp
-    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px">
+    <div class="dr-row-wrap" style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px">
         <div style="font-size:1.1rem;font-weight:700;color:var(--txt);min-width:60px">{{ $apt->slot_datetime?->format('h:i') }}<span style="font-size:.7rem;font-weight:400;color:var(--txt-lt)"> {{ $apt->slot_datetime?->format('A') }}</span></div>
         <div style="width:1px;height:36px;background:var(--warm-bd)"></div>
         <div style="flex:1">

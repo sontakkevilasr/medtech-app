@@ -22,7 +22,7 @@ $vt = $vtCfg[$record->visit_type] ?? $vtCfg['consultation'];
 $isMyRecord = $record->doctor_user_id === auth()->id();
 @endphp
 
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+<div class="fade-in dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
 {{-- ── LEFT ─────────────────────────────────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -197,7 +197,7 @@ $isMyRecord = $record->doctor_user_id === auth()->id();
 </div>
 
 {{-- ── RIGHT sidebar ───────────────────────────────────────────────────────── --}}
-<div style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
+<div class="dr-sidebar-sticky" style="position:sticky;top:78px;display:flex;flex-direction:column;gap:14px">
 
     {{-- Key dates --}}
     <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:16px 18px">

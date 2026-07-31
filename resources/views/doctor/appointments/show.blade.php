@@ -25,7 +25,7 @@
     $sc = $statusColors[$appointment->status] ?? ['bg'=>'#f3f4f6','color'=>'#374151'];
 @endphp
 
-<div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
+<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
 
 {{-- Left --}}
 <div>
@@ -62,7 +62,7 @@
 {{-- Appointment details --}}
 <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px">
     <div style="padding:13px 20px;border-bottom:1px solid var(--warm-bd);font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--txt)">Details</div>
-    <div style="padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="dr-grid-2col" style="padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
             <div style="font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:4px">Date & Time</div>
             <div style="font-size:.95rem;color:var(--txt)">{{ $appointment->slot_datetime?->format('d M Y, h:i A') }}</div>

@@ -64,7 +64,7 @@ $specMeta = TimelineTemplate::SPECIALTIES;
 </div>
 
 {{-- ── Active Assignments ───────────────────────────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px">
+<div class="dr-grid-2col" style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px">
 
 <div>
     <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--txt);margin-bottom:14px">

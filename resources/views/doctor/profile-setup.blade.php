@@ -3,7 +3,7 @@
 @section('page-title', 'Complete Your Profile')
 
 @section('content')
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
+<div class="fade-in dr-grid-2col" style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
 
 {{-- ── Form ─────────────────────────────────────────────────────────────────── --}}
 <div>
@@ -39,7 +39,7 @@
             Professional Credentials
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="ps-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
                 {!! $fLabel('Specialization', true) !!}
                 <select name="specialization" style="{{ $fInp }}" required>
@@ -64,7 +64,7 @@
                    placeholder="e.g. MBBS, MD (OBG), DNB" required>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="ps-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
             <div>
                 {!! $fLabel('Registration Number', true) !!}
                 <input type="text" name="registration_number" style="{{ $fInp }}font-family:monospace;"
@@ -98,7 +98,7 @@
             Clinic &amp; Practice
         </div>
 
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="ps-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px">
             <div>
                 {!! $fLabel('Clinic / Hospital Name') !!}
                 <input type="text" name="clinic_name" style="{{ $fInp }}"
@@ -120,7 +120,7 @@
                    placeholder="Street, Area, Landmark">
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="ps-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
                 {!! $fLabel('City') !!}
                 <input type="text" name="clinic_city" style="{{ $fInp }}"
@@ -138,7 +138,7 @@
             </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="ps-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
                 {!! $fLabel('UPI ID') !!}
                 <input type="text" name="upi_id" style="{{ $fInp }}"
@@ -178,7 +178,7 @@
 </div>
 
 {{-- ── Right: status panel ──────────────────────────────────────────────────── --}}
-<div style="position:sticky;top:78px">
+<div class="dr-sidebar-sticky" style="position:sticky;top:78px">
     <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:13px;padding:16px 18px">
         <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">Verification Status</div>
         <div style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:9px;background:{{ $profile->is_verified ? '#eef5f3' : '#fef9ec' }};border:1px solid {{ $profile->is_verified ? '#b5ddd5' : '#fde68a' }}">
@@ -200,4 +200,12 @@
 </div>
 
 </div>
+
+@push('styles')
+<style>
+    @media (max-width: 640px) {
+        .ps-grid { grid-template-columns: 1fr !important; }
+    }
+</style>
+@endpush
 @endsection

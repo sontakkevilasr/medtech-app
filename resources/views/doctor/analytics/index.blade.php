@@ -6,7 +6,7 @@
 <div class="fade-in">
 
 {{-- ── KPI row ──────────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+<div class="an-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
 @php $kpiCards = [
     ['label'=>'Total Patients',       'val'=>$kpis['total_patients'],       'sub'=>$kpis['patients_this_month'].' this month',    'color'=>'#3d7a6e'],
     ['label'=>'Total Appointments',   'val'=>$kpis['total_appointments'],   'sub'=>$kpis['apts_this_month'].' this month',        'color'=>'#4a3760'],
@@ -27,7 +27,7 @@
 </div>
 
 {{-- ── Revenue + Completion row ────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px">
+<div class="an-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px">
     <div style="background:linear-gradient(135deg,#1c2b2a 0%,#263635 100%);border-radius:14px;padding:18px 20px;color:#fff">
         <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-bottom:6px">Revenue This Month</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:#d4a853">
@@ -57,7 +57,7 @@
 </div>
 
 {{-- ── Charts row ───────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:22px">
+<div class="an-charts" style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:22px">
 
     {{-- Appointment 6-month trend --}}
     <div style="background:#fff;border:1.5px solid var(--warm-bd);border-radius:14px;padding:0;overflow:hidden">
@@ -94,7 +94,8 @@
         No patient visit data yet.
     </div>
     @else
-    <table style="width:100%;border-collapse:collapse">
+    <div class="dr-table-wrap">
+    <table style="width:100%;border-collapse:collapse;min-width:560px">
         <thead><tr style="border-bottom:1.5px solid var(--warm-bd)">
             <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">#</th>
             <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt)">Patient</th>
@@ -138,10 +139,24 @@
         @endforeach
         </tbody>
     </table>
+    </div>
     @endif
 </div>
 
 </div>
+
+@push('styles')
+<style>
+    @media (max-width: 1024px) {
+        .an-kpi { grid-template-columns: 1fr 1fr !important; }
+        .an-3col { grid-template-columns: 1fr !important; }
+        .an-charts { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 480px) {
+        .an-kpi { grid-template-columns: 1fr !important; }
+    }
+</style>
+@endpush
 @endsection
 
 @push('scripts')

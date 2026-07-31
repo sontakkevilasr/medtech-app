@@ -407,9 +407,27 @@
             .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
             #main { padding: 16px; }
             .today-badge { display: none; }
+            .apt-row { flex-wrap: wrap; row-gap: 8px; }
+            .apt-actions { margin-left: auto; }
+            .dr-row-wrap { flex-wrap: wrap; row-gap: 8px; }
+            .dr-row-wrap > *:last-child { margin-left: auto; }
         }
         @media (max-width: 480px) {
             .stat-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* ── Shared responsive helpers: 2-col content grid + sticky sidebar ── */
+        /* Add class="dr-grid-2col" to a `display:grid;grid-template-columns:1fr <px>` container,
+           and class="dr-sidebar-sticky" to its `position:sticky` sidebar child. */
+        @media (max-width: 900px) {
+            .dr-grid-2col { grid-template-columns: 1fr !important; }
+            .dr-sidebar-sticky { position: static !important; }
+        }
+        /* Add class="dr-table-wrap" around a header+rows grid-based table, with
+           class="dr-table-min" on the header row and each data row. */
+        @media (max-width: 900px) {
+            .dr-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .dr-table-min { min-width: 640px; }
         }
 
         /* ── Overlay for mobile ─────────────────────────────────────── */

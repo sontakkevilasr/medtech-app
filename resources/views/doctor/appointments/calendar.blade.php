@@ -54,7 +54,7 @@
 
 <div class="panel">
     {{-- Day headers --}}
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1.5px solid var(--warm-bd)">
+    <div class="dr-cal-head" style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1.5px solid var(--warm-bd)">
         @foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dh)
         <div style="padding:10px;text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);
                     {{ in_array($dh,['Saturday','Sunday']) ? 'color:var(--coral,#c0737a)' : '' }}">
@@ -64,9 +64,9 @@
     </div>
 
     {{-- Calendar grid --}}
-    <div style="display:grid;grid-template-columns:repeat(7,1fr)">
+    <div class="dr-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr)">
         @for($i = 0; $i < $startDow; $i++)
-        <div style="min-height:90px;border-bottom:1px solid var(--parch);border-right:1px solid var(--parch)"></div>
+        <div class="dr-cal-cell" style="min-height:90px;border-bottom:1px solid var(--parch);border-right:1px solid var(--parch)"></div>
         @endfor
 
         @for($d = 1; $d <= $daysInMon; $d++)
@@ -79,7 +79,7 @@
             $col      = ($startDow + $d - 1) % 7 + 1;
             $isLast   = $d === $daysInMon;
         @endphp
-        <div style="min-height:90px;padding:6px 8px;border-bottom:1px solid var(--parch);border-right:1px solid var(--parch);
+        <div class="dr-cal-cell" style="min-height:90px;padding:6px 8px;border-bottom:1px solid var(--parch);border-right:1px solid var(--parch);
                     {{ $isToday ? 'background:#f7f3ee' : '' }}
                     {{ $isWeekend ? 'background:rgba(0,0,0,.012)' : '' }};
                     transition:background .12s;cursor:{{ $dayApts->count() ? 'pointer' : 'default' }}"
@@ -104,12 +104,12 @@
             {{-- Appointment pills (max 3) --}}
             @foreach($dayApts->take(3) as $apt)
             @php $aptColor = $statusColors[$apt->status] ?? '#94a3b8'; @endphp
-            <div style="font-size:.65rem;padding:2px 6px;border-radius:4px;margin-bottom:2px;background:{{ $aptColor }}18;color:{{ $aptColor }};border-left:2px solid {{ $aptColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">
+            <div class="dr-cal-pill" style="font-size:.65rem;padding:2px 6px;border-radius:4px;margin-bottom:2px;background:{{ $aptColor }}18;color:{{ $aptColor }};border-left:2px solid {{ $aptColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">
                 {{ $apt->slot_datetime->format('h:i A') }} {{ $apt->patient?->profile?->full_name ? Str::limit($apt->patient->profile->full_name, 12) : '' }}
             </div>
             @endforeach
             @if($dayApts->count() > 3)
-            <div style="font-size:.62rem;color:var(--txt-lt);padding:1px 6px">+{{ $dayApts->count()-3 }} more</div>
+            <div class="dr-cal-pill" style="font-size:.62rem;color:var(--txt-lt);padding:1px 6px">+{{ $dayApts->count()-3 }} more</div>
             @endif
         </div>
         @endfor
@@ -128,3 +128,16 @@
 
 </div>
 @endsection
+
+@push('styles')
+<style>
+    @media (max-width: 768px) {
+        .dr-cal-cell { min-height: 60px !important; padding: 3px 3px !important; }
+        .dr-cal-head > div { padding: 6px 2px !important; font-size: .6rem !important; }
+        .dr-cal-pill { display: none !important; }
+    }
+    @media (max-width: 480px) {
+        .dr-cal-cell { min-height: 46px !important; }
+    }
+</style>
+@endpush

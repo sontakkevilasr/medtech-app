@@ -66,7 +66,7 @@
 
 {{-- ── Main two-column grid ─────────────────────────────────────────────── -- --}}
 <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start"
-     class="fade-in-d2">
+     class="fade-in-d2 dr-grid-2col">
 
     {{-- LEFT: Today's Appointments --}}
     <div>
@@ -368,9 +368,6 @@
 
 @push('styles')
 <style>
-    @media (max-width: 900px) {
-        #content-grid { grid-template-columns: 1fr !important; }
-    }
     @keyframes pulse-ring {
         0%, 100% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.5); opacity: .5; }

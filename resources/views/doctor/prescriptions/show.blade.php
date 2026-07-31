@@ -50,7 +50,7 @@
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start">
+<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start">
 <div>
 <div class="panel fade-in">
     {{-- Letterhead --}}

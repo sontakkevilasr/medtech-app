@@ -15,10 +15,10 @@
 
 {{-- Tabs + actions --}}
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
-    <div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd)">
+    <div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%">
         @foreach(['today'=>"Today ({$counts['today']})", 'upcoming'=>"Upcoming ({$counts['upcoming']})", 'past'=>"Past ({$counts['past']})", 'cancelled'=>'Cancelled'] as $t => $lbl)
         <a href="{{ route('doctor.appointments.index', ['tab' => $t]) }}"
-           style="padding:9px 16px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;
+           style="padding:9px 16px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;flex-shrink:0;
                   {{ $tab === $t ? 'color:var(--ink);border-bottom-color:var(--ink);font-weight:600' : 'color:var(--txt-lt)' }}">
             {{ $lbl }}
         </a>
@@ -47,7 +47,7 @@
         $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
         $pColor   = $colors[$apt->patient_user_id % count($colors)];
     @endphp
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--warm-bd);transition:background .12s"
+    <div class="dr-row-wrap" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--warm-bd);transition:background .12s"
          onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background='transparent'">
 
         {{-- Time column --}}

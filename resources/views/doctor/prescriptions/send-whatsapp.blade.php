@@ -116,7 +116,7 @@
     @endif
 
     {{-- Action buttons --}}
-    <div style="display:flex;gap:10px;justify-content:flex-end">
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
         <a href="{{ route('doctor.prescriptions.show', $prescription) }}"
            style="padding:10px 18px;border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.875rem;font-weight:500;color:var(--txt-md);text-decoration:none">
             Cancel

@@ -94,8 +94,9 @@
     </div>
     @else
 
+    <div class="dr-table-wrap">
     {{-- Table header --}}
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
+    <div class="dr-table-min" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
         <span>Patient</span>
         <span>Mobile</span>
         <span>Last Visit</span>
@@ -110,7 +111,7 @@
         $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
         $color    = $colors[$p->id % count($colors)];
     @endphp
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;padding:13px 20px;border-bottom:1px solid var(--warm-bd);align-items:center;transition:background .12s"
+    <div class="dr-table-min" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;padding:13px 20px;border-bottom:1px solid var(--warm-bd);align-items:center;transition:background .12s"
          onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background='transparent'">
 
         {{-- Name + family count --}}
@@ -205,6 +206,7 @@
         </div>
     </div>
     @endforeach
+    </div>
 
     {{-- Pagination --}}
     @if($patients->hasPages())

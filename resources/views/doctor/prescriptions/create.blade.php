@@ -53,7 +53,7 @@
 <input type="hidden" name="action" id="form-action" value="view">
 @if(isset($appointment))<input type="hidden" name="appointment_id" value="{{ $appointment->id }}">@endif
 
-<div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
+<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
 <div>
 
 {{-- ① Patient --}}
@@ -290,7 +290,7 @@
 </div>
 
 {{-- RIGHT: Letterhead + summary + presets --}}
-<div style="position:sticky;top:calc(var(--topbar-h) + 16px)">
+<div class="dr-sidebar-sticky" style="position:sticky;top:calc(var(--topbar-h) + 16px)">
     <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden;margin-bottom:14px">
         <div style="background:var(--ink);padding:16px 18px">
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#fff;font-weight:500">{{ $profile?->clinic_name ?? 'My Clinic' }}</div>

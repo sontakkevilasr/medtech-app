@@ -3,8 +3,8 @@
 @section('page-title', 'Prescriptions')
 
 @section('content')
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <form method="GET" style="display:flex;gap:8px;flex:1;max-width:460px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <form method="GET" style="display:flex;gap:8px;flex:1;min-width:220px;max-width:460px">
         <input type="text" name="q" value="{{ request('q') }}"
                placeholder="Search by patient name or Rx number…"
                style="flex:1;padding:.55rem .85rem;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.875rem;color:var(--txt);background:var(--cream);outline:none;font-family:'Outfit',sans-serif">
@@ -20,7 +20,7 @@
 </div>
 
 {{-- Filters --}}
-<div style="display:flex;gap:6px;margin-bottom:18px">
+<div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap">
     @foreach(['all' => 'All', 'today' => 'Today', 'this_week' => 'This Week', 'unsent' => 'Not Sent'] as $val => $lbl)
     <a href="{{ route('doctor.prescriptions.index', array_merge(request()->only('q'), ['filter' => $val === 'all' ? null : $val])) }}"
        style="padding:6px 13px;border-radius:8px;font-size:.8rem;font-weight:500;text-decoration:none;border:1.5px solid;transition:all .15s;
@@ -37,7 +37,8 @@
 </div>
 @else
 <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden">
-    <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+    <div class="dr-table-wrap">
+    <table style="width:100%;border-collapse:collapse;font-size:.875rem;min-width:640px">
         <thead>
             <tr style="background:var(--parch);border-bottom:1px solid var(--warm-bd)">
                 <th style="padding:11px 16px;text-align:left;font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--txt-lt)">Rx #</th>
@@ -83,6 +84,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 
 @if($prescriptions->hasPages())

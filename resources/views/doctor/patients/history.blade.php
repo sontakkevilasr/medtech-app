@@ -159,10 +159,10 @@
 
 @else
 {{-- ── Tabs ─────────────────────────────────────────────────────────────────── -- --}}
-<div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px">
+<div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch">
     @foreach(['records' => 'Medical Records', 'prescriptions' => 'Prescriptions', 'vitals' => 'Vitals & Charts', 'timelines' => 'Care Timelines', 'documents' => 'Documents'] as $t => $lbl)
     <a href="{{ route('doctor.patients.history', $patient->id) }}?tab={{ $t }}{{ $familyMemberId ? '&member='.$familyMemberId : '' }}"
-       style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;
+       style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;flex-shrink:0;
               {{ $activeTab === $t ? 'color:var(--ink);border-bottom-color:var(--ink);font-weight:600' : 'color:var(--txt-lt)' }}"
        onmouseover="if('{{ $activeTab }}' !== '{{ $t }}') this.style.color='var(--txt)'" onmouseout="if('{{ $activeTab }}' !== '{{ $t }}') this.style.color='var(--txt-lt)'">
         {{ $lbl }}
@@ -335,8 +335,9 @@
 </div>
 @else
 <div class="panel">
+    <div class="dr-table-wrap">
     {{-- Table header --}}
-    <div style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
+    <div class="dr-table-min" style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
         <span>Rx Number</span>
         <span>Date</span>
         <span>Medicines</span>
@@ -344,7 +345,7 @@
         <span>Actions</span>
     </div>
     @foreach($prescriptions as $rx)
-    <div style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:13px 20px;border-bottom:1px solid var(--warm-bd);align-items:center;transition:background .12s"
+    <div class="dr-table-min" style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:13px 20px;border-bottom:1px solid var(--warm-bd);align-items:center;transition:background .12s"
          onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background='transparent'">
 
         <div>
@@ -397,6 +398,7 @@
         </div>
     </div>
     @endforeach
+    </div>
 </div>
 @if($prescriptions->hasPages())
 <div style="display:flex;justify-content:center;gap:6px;margin-top:12px">
@@ -425,7 +427,7 @@
     <p style="font-size:.8rem;margin-top:4px">Patient can log vitals from their dashboard.</p>
 </div>
 @else
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" x-data="vitalsCharts()" x-init="init()">
+<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:18px" x-data="vitalsCharts()" x-init="init()">
 
     @foreach([
         'blood_pressure' => ['label' => 'Blood Pressure', 'unit' => 'mmHg', 'color' => '#c0737a', 'color2' => '#e8a89e'],

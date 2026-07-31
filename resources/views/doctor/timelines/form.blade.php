@@ -36,7 +36,7 @@
                    required>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="tl-form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
             <div>
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px">Specialty *</label>
                 @include('components.specialty-select', ['selected' => $template?->specialty_type])
@@ -77,4 +77,12 @@
     </form>
 </div>
 </div>
+
+@push('styles')
+<style>
+    @media (max-width: 480px) {
+        .tl-form-grid { grid-template-columns: 1fr !important; }
+    }
+</style>
+@endpush
 @endsection

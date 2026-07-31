@@ -39,7 +39,7 @@
         <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:var(--txt);letter-spacing:.08em;margin-bottom:10px">
             {{ $selfSubId }}
         </div>
-        <div style="display:flex;gap:8px;justify-content:center">
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
             <button type="button"
                     onclick="navigator.clipboard.writeText('{{ $selfSubId }}').then(()=>{const b=this;b.textContent='✓ Copied!';setTimeout(()=>b.textContent='Copy ID',2000)})"
                     style="padding:7px 18px;border:1.5px solid var(--warm-bd);border-radius:9px;background:transparent;color:var(--txt-md);font-size:.8rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .12s"
