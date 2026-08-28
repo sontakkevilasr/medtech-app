@@ -9,7 +9,7 @@
 
 <div class="fade-in" x-data="accessHub()" x-init="init()">
 
-{{-- ══ PENDING REQUESTS (top — if any) ══════════════════════════════════════ -- --}}
+{{-- ══ PENDING REQUESTS (top — if any) ══════════════════════════════════════ --}}
 @if($pending->isNotEmpty())
 <div style="margin-bottom:24px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
@@ -26,6 +26,7 @@
     @foreach($pending as $req)
     @php
         $drName   = $req->doctor?->profile?->full_name ?? 'Doctor';
+        $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
         $dp       = $req->doctor?->doctorProfile;
         $expiresIn= now()->diffInMinutes($req->otp_expires_at, false);
         $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
@@ -37,8 +38,9 @@
 
         <div style="display:flex;align-items:flex-start;gap:14px">
             {{-- Doctor avatar --}}
-            <x-avatar name="{{ $drName }}" :photo="$req->doctor?->profile?->profile_photo"
-                       :size="46" :radius="12" :bg="$color" font-size="1rem" />
+            <div style="width:46px;height:46px;border-radius:12px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0">
+                {{ $initials }}
+            </div>
 
             {{-- Info --}}
             <div style="flex:1;min-width:0">
@@ -126,17 +128,17 @@
 </div>
 @endif
 
-{{-- ══ MAIN GRID ═══════════════════════════════════════════════════════════════ -- --}}
-<div class="access-grid" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
+{{-- ══ MAIN GRID ═══════════════════════════════════════════════════════════════ --}}
+<div style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
-{{-- ── LEFT: Active grants + History ──────────────────────────────────────── -- --}}
+{{-- ── LEFT: Active grants + History ──────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:20px">
 
     {{-- Active Grants --}}
     <div class="panel">
         <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--warm-bd);margin-bottom:16px">
-            <div style="padding: 14px 18px 0px;">
-                <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin:10">Active Doctor Access</h3>
+            <div>
+                <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">Active Doctor Access</h3>
                 <div style="font-size:.75rem;color:var(--txt-lt);margin-top:2px">Doctors currently authorized to view your health records</div>
             </div>
             <span style="font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:20px;background:{{ $active->isEmpty() ? 'var(--parch)' : '#e8f5f3' }};color:{{ $active->isEmpty() ? 'var(--txt-lt)' : '#1a7a6a' }}">
@@ -157,6 +159,7 @@
             @foreach($active as $grant)
             @php
                 $drName   = $grant->doctor?->profile?->full_name ?? 'Doctor';
+                $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
                 $dp       = $grant->doctor?->doctorProfile;
                 $daysLeft = now()->diffInDays($grant->access_expires_at, false);
                 $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
@@ -167,8 +170,9 @@
                  x-data="{ revoking: false, revoked: false }"
                  x-show="!revoked" x-transition>
 
-                <x-avatar name="{{ $drName }}" :photo="$grant->doctor?->profile?->profile_photo"
-                           :size="40" :radius="10" :bg="$color" font-size=".9rem" />
+                <div style="width:40px;height:40px;border-radius:10px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0">
+                    {{ $initials }}
+                </div>
 
                 <div style="flex:1;min-width:0">
                     <div style="font-weight:600;font-size:.875rem;color:var(--txt)">Dr. {{ $drName }}</div>
@@ -213,9 +217,9 @@
 
     {{-- Family Member Overrides --}}
     @if($patient->familyMembers->isNotEmpty())
-    <div class="panel" style="padding: 14px 18px 0px;">
+    <div class="panel">
         <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--warm-bd)">
-            <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin:0">Family Member Settings</h3>
+            <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">Family Member Settings</h3>
             <div style="font-size:.75rem;color:var(--txt-lt);margin-top:2px">
                 Override the default access setting for individual family members
             </div>
@@ -268,7 +272,7 @@
 
     {{-- Recently closed --}}
     @if($recentClosed->isNotEmpty())
-    <div class="panel" style="padding: 14px 18px 0px;">
+    <div class="panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--warm-bd)">
             <h3 style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">Recent Activity</h3>
             <a href="{{ route('patient.access.history') }}" style="font-size:.75rem;color:var(--plum);text-decoration:none" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">Full history →</a>
@@ -277,6 +281,7 @@
             @foreach($recentClosed as $req)
             @php
                 $drName   = $req->doctor?->profile?->full_name ?? 'Doctor';
+                $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
                 $color    = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'][$req->doctor_user_id % 5];
                 $stCfg    = match($req->status) {
                     'denied'  => ['bg'=>'#fef2f2','color'=>'#dc2626','label'=>'Denied'],
@@ -285,8 +290,9 @@
                 };
             @endphp
             <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--parch)">
-                <x-avatar name="{{ $drName }}" :photo="$req->doctor?->profile?->profile_photo"
-                           :size="30" :radius="8" :bg="$color.'22'" :color="$color" font-size=".72rem" />
+                <div style="width:30px;height:30px;border-radius:8px;background:{{ $color }}22;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:{{ $color }};flex-shrink:0">
+                    {{ $initials }}
+                </div>
                 <div style="flex:1;min-width:0">
                     <div style="font-size:.8125rem;font-weight:500;color:var(--txt-md)">Dr. {{ $drName }}</div>
                     @if($req->familyMember)
@@ -303,8 +309,8 @@
 
 </div>{{-- end left --}}
 
-{{-- ── RIGHT: Global settings + info ────────────────────────────────────────── -- --}}
-<div class="access-sidebar" style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
+{{-- ── RIGHT: Global settings + info ────────────────────────────────────────── --}}
+<div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
     {{-- Global access type --}}
     <div class="panel" style="padding:18px 20px">
@@ -370,12 +376,6 @@
 <style>
 @keyframes spin   { to { transform: rotate(360deg); } }
 @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-@@media (max-width: 900px) {
-    .access-grid    { grid-template-columns: 1fr !important; }
-    .access-sidebar { position: static !important; }
-    .access-grid > div { min-width: 0; }
-}
 </style>
 @endpush
 

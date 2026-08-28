@@ -34,7 +34,7 @@ class WhatsAppService
             . "🏥 *Clinic:* {$clinic}\n"
             . "🔖 *Ref No:* {$appointment->appointment_number}\n\n"
             . "_Reply CANCEL to cancel this appointment._\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -54,7 +54,7 @@ class WhatsAppService
             . "📅 *When:* {$dateTime}\n"
             . "🏥 *Clinic:* {$doctor->doctorProfile->clinic_name}\n\n"
             . "_Please arrive 10 minutes early._\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -66,7 +66,7 @@ class WhatsAppService
             . "Dr. {$doctorName} has recommended a follow-up visit.\n\n"
             . "📅 *Recommended Date:* {$followUpDate}\n\n"
             . "Please book your appointment at your earliest.\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -89,14 +89,14 @@ class WhatsAppService
             . "📋 *Rx No:* {$prescription->prescription_number}\n"
             . "📅 *Date:* {$prescription->prescribed_date->format('d M Y')}\n\n"
             . "*Medicines:*\n{$medicineList}\n\n"
-            . ($prescription->notes
-                ? "📝 *Instructions:* {$prescription->notes}\n\n"
+            . ($prescription->general_instructions
+                ? "📝 *Instructions:* {$prescription->general_instructions}\n\n"
                 : '')
             . ($prescription->follow_up_date
                 ? "🗓️ *Follow-up:* {$prescription->follow_up_date->format('d M Y')}\n\n"
                 : '')
             . "_Show this message at the pharmacy or download PDF from the app._\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         $sent = $this->send($patient->full_mobile, $message);
 
@@ -121,7 +121,7 @@ class WhatsAppService
             . "_(Valid for {$expiresMinutes} minutes)_\n\n"
             . "Share this OTP with the doctor *only if you approve* this request.\n"
             . "Do NOT share if you did not visit this doctor.\n\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -132,7 +132,7 @@ class WhatsAppService
             . "Dear Dr. {$doctor->profile->full_name},\n"
             . "*{$patientName}* has approved your request to access their medical records.\n\n"
             . "_Access is valid for " . config('medtech.access.session_hours', 8) . " hours._\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($doctor->full_mobile, $message);
     }
@@ -143,7 +143,7 @@ class WhatsAppService
             . "Dear Dr. {$doctor->profile->full_name},\n"
             . "*{$patientName}* has declined your request to access their medical records.\n\n"
             . "_If you believe this is an error, please contact the patient directly._\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($doctor->full_mobile, $message);
     }
@@ -156,7 +156,7 @@ class WhatsAppService
             . "Time to take your medicine!\n\n"
             . "🔹 *{$medicineName}* — {$dosage}\n"
             . "⏰ *Time:* {$time}\n\n"
-            . "_Stay healthy! — Naumah Clinic_";
+            . "_Stay healthy! — MedTech_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -172,7 +172,7 @@ class WhatsAppService
             . "💉 *Vaccine:* {$vaccineName}\n"
             . "📅 *Due Date:* {$dueDate}\n\n"
             . "_Please visit your pediatrician to get this vaccine on time._\n"
-            . "_Naumah Clinic_";
+            . "_MedTech Health Platform_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -183,7 +183,7 @@ class WhatsAppService
             . "Dear {$patient->profile->full_name},\n\n"
             . "🗓️ *This Week:* {$milestoneName}\n\n"
             . "{$description}\n\n"
-            . "_Take care of yourself and your little one! — Naumah Clinic_";
+            . "_Take care of yourself and your little one! — MedTech_";
 
         return $this->send($patient->full_mobile, $message);
     }
@@ -237,28 +237,25 @@ class WhatsAppService
 
     private function sendTwilio(string $toMobile, string $message): bool
     {
-        $response = Http::withBasicAuth(
-            config('whatsapp.twilio.sid'),
-            config('whatsapp.twilio.token')
-        )->timeout(15)->asForm()->post(
-            "https://api.twilio.com/2010-04-01/Accounts/" . config('whatsapp.twilio.sid') . "/Messages.json",
-            [
-                'To'   => 'whatsapp:' . $toMobile,
-                'From' => config('whatsapp.twilio.from'),
-                'Body' => $message,
-            ]
-        );
+        try {
+            $response = Http::withBasicAuth(
+                config('whatsapp.twilio.sid'),
+                config('whatsapp.twilio.token')
+            )->asForm()->post(
+                "https://api.twilio.com/2010-04-01/Accounts/" . config('whatsapp.twilio.sid') . "/Messages.json",
+                [
+                    'To'   => 'whatsapp:' . $toMobile,
+                    'From' => config('whatsapp.twilio.from'),
+                    'Body' => $message,
+                ]
+            );
 
-        if ($response->successful()) {
-            return true;
+            return $response->successful();
+
+        } catch (\Throwable $e) {
+            Log::error('[WhatsApp Twilio] Exception', ['error' => $e->getMessage()]);
+            return false;
         }
-
-        $body    = $response->json();
-        $reason  = $body['message'] ?? $response->body();
-        $code    = $body['code'] ?? $response->status();
-
-        Log::error('[WhatsApp Twilio] Failed', ['to' => $toMobile, 'code' => $code, 'reason' => $reason]);
-        throw new \RuntimeException("Twilio error {$code}: {$reason}");
     }
 
     private function sendWati(string $toMobile, string $message): bool
@@ -266,19 +263,14 @@ class WhatsAppService
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('whatsapp.wati.access_token'),
-            ])->timeout(8)->post(config('whatsapp.wati.api_endpoint') . '/sendSessionMessage/' . $toMobile, [
+            ])->post(config('whatsapp.wati.api_endpoint') . '/sendSessionMessage/' . $toMobile, [
                 'messageText' => $message,
             ]);
 
-            if ($response->successful()) {
-                return true;
-            }
-
-            Log::error('[WhatsApp WATI] Failed', ['to' => $toMobile, 'response' => $response->body()]);
-            return false;
+            return $response->successful();
 
         } catch (\Throwable $e) {
-            Log::error('[WhatsApp WATI] Exception', ['to' => $toMobile, 'error' => $e->getMessage()]);
+            Log::error('[WhatsApp WATI] Exception', ['error' => $e->getMessage()]);
             return false;
         }
     }
@@ -286,13 +278,10 @@ class WhatsAppService
     public function sendVerificationApproved($doctor): bool
     {
         $name   = $doctor->profile?->full_name ?? 'Doctor';
-        $mobile = ($doctor->country_code ?? '+91') . $doctor->mobile_number;
+        $mobile = ltrim($doctor->country_code ?? '+91', '+') . $doctor->mobile_number;
 
-        $message = "✅ *Verification Approved*\n\n"
-            . "Dear Dr. {$name},\n"
-            . "Your account has been verified successfully. You can now start accepting appointments.\n\n"
-            . "_Naumah Clinic_";
-
-        return $this->send($mobile, $message);
+        return $this->send($mobile, "verification_approved", [
+            ['key' => 'doctor_name', 'value' => "Dr. {$name}"],
+        ]);
     }
 }

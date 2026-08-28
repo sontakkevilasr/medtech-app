@@ -1,5 +1,6 @@
 @php
     $name     = $doc->profile?->full_name ?? 'Doctor';
+    $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
     $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
     $color    = $colors[$doc->id % count($colors)];
     $dp       = $doc->doctorProfile;
@@ -11,11 +12,12 @@
     {{-- Top bar --}}
     <div style="background:{{ $color }}18;padding:16px 18px 12px;border-bottom:1px solid {{ $color }}22">
         <div style="display:flex;gap:12px;align-items:flex-start">
-            <x-avatar name="{{ $name }}" :photo="$doc->profile?->profile_photo"
-                       :size="44" :radius="11" :bg="$color" font-size="1rem" />
+            <div style="width:44px;height:44px;border-radius:11px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0">
+                {{ $initials }}
+            </div>
             <div style="flex:1;min-width:0">
                 <div style="font-size:.9375rem;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                    {{ $name }}
+                    Dr. {{ $name }}
                 </div>
                 <div style="font-size:.78rem;font-weight:600;color:{{ $color }};margin-top:1px">
                     {{ $dp?->specialization ?? 'General Physician' }}
@@ -27,10 +29,6 @@
             @if($isMyDoctor)
             <span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:{{ $color }}20;color:{{ $color }};white-space:nowrap;border:1px solid {{ $color }}44">
                 My Doctor
-            </span>
-            @elseif($isTopDoctor ?? false)
-            <span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:#e8a02018;color:#b87010;white-space:nowrap;border:1px solid #e8a02044">
-                ★ Popular
             </span>
             @endif
         </div>

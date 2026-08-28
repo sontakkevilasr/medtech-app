@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>@yield('title', 'Admin') — Naumah Clinic Admin</title>
+<title>@yield('title', 'Admin') — MedTech Admin</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
@@ -185,37 +185,21 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
 .pager a:hover { background: var(--bg); }
 .pager .disabled { opacity: .4; cursor: not-allowed; }
 
-/* ── Mobile ── */
-#mob-toggle {
-    display: none; background: none; border: none; cursor: pointer;
-    color: var(--txt); padding: 4px;
-}
-#overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.4); z-index: 45;
-}
-#overlay.show { display: block; }
-
 @media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
-        transition: transform .3s cubic-bezier(.4,0,.2,1);
-    }
-    .sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(0,0,0,.4); }
+    .sidebar { transform: translateX(-100%); }
     .topbar, .main-content { left: 0; margin-left: 0; }
-    #mob-toggle { display: flex; align-items: center; }
 }
 </style>
 @stack('styles')
 </head>
 <body>
 
-{{-- ── Sidebar ─────────────────────────────────────────────────────────────── -- --}}
+{{-- ── Sidebar ─────────────────────────────────────────────────────────────── --}}
 <aside class="sidebar">
     <div class="sidebar-logo">
         <div class="logo-badge">M</div>
         <div>
-            <div class="logo-text">Naumah Clinic</div>
+            <div class="logo-text">MedTech</div>
             <div class="logo-sub">Admin Console</div>
         </div>
     </div>
@@ -235,17 +219,9 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
                 <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 All Users
             </a>
-            <!-- <a href="{{ route('admin.users.doctors') }}" class="nav-item {{ request()->routeIs('admin.users.doctors') ? 'active' : '' }}">
-                <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                Doctors
-            </a> -->
             <a href="{{ route('admin.users.doctors') }}" class="nav-item {{ request()->routeIs('admin.users.doctors') ? 'active' : '' }}">
                 <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 Doctors
-            </a>
-            <a href="{{ route('admin.doctors.create') }}" class="nav-item {{ request()->routeIs('admin.doctors.create') ? 'active' : '' }}" style="{{ request()->routeIs('admin.doctors.create') ? '' : 'color:rgba(255,255,255,.5)' }}">
-                <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-                + Add Doctor
             </a>
             <a href="{{ route('admin.users.patients') }}" class="nav-item {{ request()->routeIs('admin.users.patients') ? 'active' : '' }}">
                 <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -271,10 +247,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
                 <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 Reports
             </a>
-            <a href="{{ route('admin.reports.export') }}" class="nav-item {{ request()->routeIs('admin.reports.export') ? 'active' : '' }}">
-                <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Export Data
-            </a>
         </div>
     </nav>
 
@@ -288,7 +260,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
                 <div style="font-size:.68rem;color:rgba(255,255,255,.4)">Administrator</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('auth.logout') }}" style="margin-top:8px">
+        <form method="POST" action="{{ route('logout') }}" style="margin-top:8px">
             @csrf
             <button type="submit" style="width:100%;padding:8px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;color:rgba(255,255,255,.5);font-size:.78rem;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s"
                     onmouseover="this.style.color='rgba(255,255,255,.8)';this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.background='transparent'">
@@ -298,19 +270,9 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
     </div>
 </aside>
 
-{{-- ── Mobile overlay ──────────────────────────────────────────────────────── --}}
-<div id="overlay" onclick="closeSidebar()"></div>
-
-{{-- ── Topbar ───────────────────────────────────────────────────────────────── -- --}}
+{{-- ── Topbar ───────────────────────────────────────────────────────────────── --}}
 <header class="topbar">
-    <div style="display:flex;align-items:center;gap:12px">
-        <button id="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-        </button>
-        <div class="page-title">@yield('page-title', 'Dashboard')</div>
-    </div>
+    <div class="page-title">@yield('page-title', 'Dashboard')</div>
 
     {{-- Search --}}
     <div style="position:relative">
@@ -327,7 +289,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
     <div style="font-size:.8rem;color:var(--txt-lt)">{{ now()->format('D, d M Y') }}</div>
 </header>
 
-{{-- ── Flash messages ───────────────────────────────────────────────────────── -- --}}
+{{-- ── Flash messages ───────────────────────────────────────────────────────── --}}
 @if(session('success') || session('error') || session('warning'))
 <div style="position:fixed;top:calc(var(--topbar-h)+14px);right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;min-width:280px;max-width:380px"
      x-data="{ show: true }" x-show="show" x-init="setTimeout(()=>show=false, 4000)" x-transition>
@@ -341,21 +303,11 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
 </div>
 @endif
 
-{{-- ── Main ─────────────────────────────────────────────────────────────────── -- --}}
+{{-- ── Main ─────────────────────────────────────────────────────────────────── --}}
 <main class="main-content fade-in">
     @yield('content')
 </main>
 
 @stack('scripts')
-<script>
-function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('show');
-}
-function closeSidebar() {
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('overlay').classList.remove('show');
-}
-</script>
 </body>
 </html>

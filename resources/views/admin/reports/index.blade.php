@@ -5,7 +5,7 @@
 @section('content')
 <div class="fade-in">
 
-{{-- ── Summary stat grid ────────────────────────────────────────────────────── -- --}}
+{{-- ── Summary stat grid ────────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
 @php
 $summaryCards = [
@@ -27,7 +27,7 @@ $summaryCards = [
 @endforeach
 </div>
 
-{{-- ── Row 1: User growth (12m bar) + Appointment types (pie) ─────────────── -- --}}
+{{-- ── Row 1: User growth (12m bar) + Appointment types (pie) ─────────────── --}}
 <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
 
     <div class="card" style="padding:0;overflow:hidden">
@@ -56,7 +56,7 @@ $summaryCards = [
     </div>
 </div>
 
-{{-- ── Row 2: Appointment trend (30d line) ─────────────────────────────────── -- --}}
+{{-- ── Row 2: Appointment trend (30d line) ─────────────────────────────────── --}}
 <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
     <div style="padding:14px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
         <div>
@@ -77,7 +77,7 @@ $summaryCards = [
     </div>
 </div>
 
-{{-- ── Row 3: Specialization bar + quick stats ─────────────────────────────── -- --}}
+{{-- ── Row 3: Specialization bar + quick stats ─────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
 
     <div class="card" style="padding:0;overflow:hidden">

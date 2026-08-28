@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') — Naumah Clinic Doctor</title>
+    <title>@yield('title', 'Dashboard') — MedTech Doctor</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -407,27 +407,9 @@
             .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
             #main { padding: 16px; }
             .today-badge { display: none; }
-            .apt-row { flex-wrap: wrap; row-gap: 8px; }
-            .apt-actions { margin-left: auto; }
-            .dr-row-wrap { flex-wrap: wrap; row-gap: 8px; }
-            .dr-row-wrap > *:last-child { margin-left: auto; }
         }
         @media (max-width: 480px) {
             .stat-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        /* ── Shared responsive helpers: 2-col content grid + sticky sidebar ── */
-        /* Add class="dr-grid-2col" to a `display:grid;grid-template-columns:1fr <px>` container,
-           and class="dr-sidebar-sticky" to its `position:sticky` sidebar child. */
-        @media (max-width: 900px) {
-            .dr-grid-2col { grid-template-columns: 1fr !important; }
-            .dr-sidebar-sticky { position: static !important; }
-        }
-        /* Add class="dr-table-wrap" around a header+rows grid-based table, with
-           class="dr-table-min" on the header row and each data row. */
-        @media (max-width: 900px) {
-            .dr-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .dr-table-min { min-width: 640px; }
         }
 
         /* ── Overlay for mobile ─────────────────────────────────────── */
@@ -457,7 +439,7 @@
                     <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
             </div>
-            <span class="brand-name">Naumah Clinic</span>
+            <span class="brand-name">MedTech</span>
         </div>
 
         <div class="doctor-chip">
@@ -487,7 +469,7 @@
             Dashboard
         </a>
 
-        <a href="{{ route('doctor.appointments.index') }}"
+        <a href="{{ route('doctor.appointments') }}"
            class="nav-item {{ request()->routeIs('doctor.appointments*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -499,7 +481,7 @@
             @endif
         </a>
 
-        <a href="{{ route('doctor.patients.index') }}"
+        <a href="{{ route('doctor.patients') }}"
            class="nav-item {{ request()->routeIs('doctor.patients*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -507,23 +489,15 @@
             My Patients
         </a>
 
-        <a href="{{ route('doctor.quick-register.create') }}"
-           class="nav-item {{ request()->routeIs('doctor.quick-register*') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-            </svg>
-            Register Patient
-        </a>
-
-        <a href="{{ route('doctor.records.index') }}"
-           class="nav-item {{ request()->routeIs('doctor.records.*') ? 'active' : '' }}">
+        <a href="{{ route('doctor.records') }}"
+           class="nav-item {{ request()->routeIs('doctor.records*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             Medical Records
         </a>
 
-        <a href="{{ route('doctor.prescriptions.index') }}"
+        <a href="{{ route('doctor.prescriptions') }}"
            class="nav-item {{ request()->routeIs('doctor.prescriptions*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -531,25 +505,17 @@
             Prescriptions
         </a>
 
-        <a href="{{ route('doctor.medicines.index') }}"
-           class="nav-item {{ request()->routeIs('doctor.medicines*') ? 'active' : '' }}">
-            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-            </svg>
-            Medicine List
-        </a>
-
         <div class="nav-label" style="margin-top:4px">Premium</div>
 
         @if(auth()->user()->doctorProfile?->is_premium)
-        <a href="{{ route('doctor.timelines.index') }}"
+        <a href="{{ route('doctor.timelines') }}"
            class="nav-item {{ request()->routeIs('doctor.timelines*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
             </svg>
             Care Timelines
         </a>
-        <a href="{{ route('doctor.analytics.index') }}"
+        <a href="{{ route('doctor.analytics') }}"
            class="nav-item {{ request()->routeIs('doctor.analytics*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -575,15 +541,15 @@
 
         <div class="nav-label" style="margin-top:4px">Account</div>
 
-        <a href="{{ route('doctor.appointments.slots') }}"
-           class="nav-item {{ request()->routeIs('doctor.appointments.slots*') ? 'active' : '' }}">
+        <a href="{{ route('doctor.slots') }}"
+           class="nav-item {{ request()->routeIs('doctor.slots*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             Slot Settings
         </a>
 
-        <a href="{{ route('doctor.subscription.plans') }}"
+        <a href="{{ route('doctor.subscription') }}"
            class="nav-item {{ request()->routeIs('doctor.subscription*') ? 'active' : '' }}">
             <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
@@ -636,7 +602,14 @@
         @endif
 
         <!-- Notifications -->
-        @include('partials.notification-bell')
+        <a href="#" class="topbar-btn" title="Notifications">
+            <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            @if(isset($pendingAccess) && $pendingAccess > 0)
+                <span class="notif-dot"></span>
+            @endif
+        </a>
 
         <!-- Profile -->
         <a href="{{ route('doctor.profile.edit') }}" class="topbar-btn" title="Profile">
@@ -666,8 +639,6 @@
 
     @yield('content')
 </main>
-
-<x-attachment-preview-modal />
 
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>

@@ -11,8 +11,6 @@ use App\Services\PdfService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\NotificationService;
-use App\Models\DoctorMedicine;
 
 class PrescriptionController extends Controller
 {
@@ -51,7 +49,7 @@ class PrescriptionController extends Controller
     {
         $doctor  = auth()->user();
         $profile = $doctor->doctorProfile;
-        $patient = $appointment = $record = $familyMember = null;
+        $patient = $appointment = $record = null;
 
         if ($pid = $request->get('patient')) {
             $patient = User::where('id', $pid)->where('role', 'patient')
@@ -61,13 +59,6 @@ class PrescriptionController extends Controller
         if ($aid = $request->get('appointment')) {
             $appointment = Appointment::where('id', $aid)->where('doctor_user_id', $doctor->id)->first();
         }
-        if ($mid = $request->get('member')) {
-            $familyMember = \App\Models\FamilyMember::find($mid);
-        }
-        // If no explicit member param but appointment has one, use it
-        if (!$familyMember && $appointment?->family_member_id) {
-            $familyMember = $appointment->familyMember;
-        }
 
         $recentMedicines = PrescriptionMedicine::whereHas('prescription',
             fn($q) => $q->where('doctor_user_id', $doctor->id)
@@ -75,12 +66,7 @@ class PrescriptionController extends Controller
          ->orderByDesc('id')->limit(300)->get()
          ->unique('medicine_name')->take(60)->values();
 
-        $myMedicines = DoctorMedicine::where('doctor_user_id', $doctor->id)
-            ->active()
-            ->orderBy('medicine_name')
-            ->get(['id','medicine_name','generic_name','form','dosage','frequency','timing','duration_days','special_instructions']);
-
-        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines','myMedicines','familyMember'));
+        return view('doctor.prescriptions.create', compact('doctor','profile','patient','appointment','record','recentMedicines'));
     }
 
     public function store(Request $request)
@@ -118,11 +104,9 @@ class PrescriptionController extends Controller
                 'notes'                  => $request->notes,
                 'follow_up_instructions' => $request->follow_up_instructions,
                 'follow_up_date'         => $request->follow_up_date ?: null,
-                'status'                 => 'issued',
+                'status'                 => 'active',
                 'is_sent_whatsapp'       => false,
             ]);
-
-            NotificationService::prescriptionCreated($rx->load('doctor.profile'));
 
             foreach ($request->medicines as $i => $med) {
                 if (empty($med['medicine_name'])) continue;
@@ -134,42 +118,25 @@ class PrescriptionController extends Controller
                     'form'                 => $med['form'] ?? null,
                     'frequency'            => $med['frequency'] ?? null,
                     'duration_days'        => $med['duration_days'] ?? null,
-                    'timing'               => $med['timing'] ?: 'after_food',
+                    'timing'               => $med['timing'] ?? null,
                     'special_instructions' => $med['special_instructions'] ?? null,
                     'sort_order'           => $i,
                 ]);
             }
 
             DB::commit();
+            dispatch(new \App\Jobs\GeneratePrescriptionPdfJob($rx));
+
+            if ($request->get('action') === 'send_whatsapp') {
+                return redirect()->route('doctor.prescriptions.send-whatsapp', $rx)
+                    ->with('success', 'Prescription saved.');
+            }
+            return redirect()->route('doctor.prescriptions.show', $rx)
+                ->with('success', 'Prescription #'.$rx->prescription_number.' created.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Could not save prescription: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['general' => $e->getMessage()]);
         }
-
-        dispatch(new \App\Jobs\GeneratePrescriptionPdfJob($rx->id));
-
-        // Schedule WhatsApp follow-up reminder 3 days before the follow-up date at 9 AM
-        if ($rx->follow_up_date && $rx->follow_up_date->isFuture()) {
-            $rx->loadMissing('doctor.profile');
-            $remindAt = $rx->follow_up_date->copy()->subDays(3)->setTime(9, 0);
-            if ($remindAt->isFuture()) {
-                \App\Jobs\SendWhatsAppReminderJob::dispatch(
-                    userId:  $rx->patient_user_id,
-                    type:    'follow_up',
-                    payload: [
-                        'doctor_name'    => $rx->doctor->profile?->full_name ?? 'your doctor',
-                        'follow_up_date' => $rx->follow_up_date->format('d M Y'),
-                    ]
-                )->delay($remindAt);
-            }
-        }
-
-        if ($request->get('action') === 'send_whatsapp') {
-            return redirect()->route('doctor.prescriptions.send-whatsapp', $rx)
-                ->with('success', 'Prescription saved.');
-        }
-        return redirect()->route('doctor.prescriptions.show', $rx)
-            ->with('success', 'Prescription #'.$rx->prescription_number.' created.');
     }
 
     public function show(Prescription $prescription)
@@ -183,6 +150,7 @@ class PrescriptionController extends Controller
     {
         $this->auth($prescription);
         $prescription->load(['doctor.profile','doctor.doctorProfile','patient.profile','medicines']);
+        dd($prescription);
         return $request->get('download')
             ? $this->pdf->download($prescription)
             : $this->pdf->stream($prescription);
@@ -200,20 +168,16 @@ class PrescriptionController extends Controller
         $this->auth($prescription);
         $prescription->load(['patient.profile','medicines','doctor.profile','doctor.doctorProfile']);
         try {
-            $disk = config('medtech.prescription.pdf_disk', 'local');
-            if (! $prescription->pdf_path || ! \Storage::disk($disk)->exists($prescription->pdf_path)) {
-                $this->pdf->generatePrescriptionPdf($prescription);
+            if (! $prescription->pdf_path || ! \Storage::exists($prescription->pdf_path)) {
+                $this->pdf->generate($prescription);
                 $prescription->refresh();
             }
-            $sent = $this->whatsApp->sendPrescription($prescription);
-            if (! $sent) {
-                return back()->with('error', 'Failed to send WhatsApp message. Please try again.');
-            }
-            NotificationService::prescriptionSentWhatsApp($prescription);
+            $this->whatsApp->sendPrescription($prescription);
+            $prescription->update(['is_sent_whatsapp' => true, 'whatsapp_sent_at' => now()]);
             return redirect()->route('doctor.prescriptions.show', $prescription)
                 ->with('success', 'Prescription sent to patient\'s WhatsApp.');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Send failed: '.$e->getMessage());
+            return back()->withErrors(['whatsapp' => 'Send failed: '.$e->getMessage()]);
         }
     }
 
@@ -221,7 +185,7 @@ class PrescriptionController extends Controller
     {
         $this->auth($prescription);
         $prescription->load(['doctor.profile','doctor.doctorProfile','patient.profile','medicines']);
-        $this->pdf->generatePrescriptionPdf($prescription);
+        $this->pdf->generate($prescription);
         return back()->with('success', 'PDF regenerated.');
     }
 

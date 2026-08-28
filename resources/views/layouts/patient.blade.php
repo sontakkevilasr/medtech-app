@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'My Health') — Naumah Clinic</title>
+    <title>@yield('title', 'My Health') — MedTech</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -266,7 +266,7 @@
         }
         .apt-meta {
             font-size: .75rem; color: var(--txt-lt);
-            margin-top: 2px; display: flex; gap: 7px; align-items: center; flex-wrap: wrap;
+            margin-top: 2px; display: flex; gap: 7px; align-items: center;
         }
         .apt-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--warm-bd); }
         .apt-date-badge {
@@ -446,7 +446,7 @@
                     <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
             </div>
-            <span class="sb-brand-name">Naumah Clinic</span>
+            <span class="sb-brand-name">MedTech</span>
         </div>
 
         <div class="patient-chip">
@@ -478,7 +478,7 @@
             My Dashboard
         </a>
 
-        <a href="{{ route('patient.history.index') }}"
+        <a href="{{ route('patient.history') }}"
            class="nav-a {{ request()->routeIs('patient.history*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -486,7 +486,7 @@
             Medical History
         </a>
 
-        <a href="{{ route('patient.appointments.index') }}"
+        <a href="{{ route('patient.appointments') }}"
            class="nav-a {{ request()->routeIs('patient.appointments*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -498,15 +498,15 @@
             @endif
         </a>
 
-        <a href="{{ route('patient.health.index') }}"
-           class="nav-a {{ request()->routeIs('patient.health*') ? 'on' : '' }}">
+        <a href="{{ route('patient.tracker') }}"
+           class="nav-a {{ request()->routeIs('patient.tracker*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
             Health Tracker
         </a>
 
-        <a href="{{ route('patient.reminders.index') }}"
+        <a href="{{ route('patient.reminders') }}"
            class="nav-a {{ request()->routeIs('patient.reminders*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -516,7 +516,7 @@
 
         <div class="nav-lbl">Family</div>
 
-        <a href="{{ route('patient.family.index') }}"
+        <a href="{{ route('patient.family') }}"
            class="nav-a {{ request()->routeIs('patient.family*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -528,29 +528,21 @@
             @endif
         </a>
 
-        <a href="{{ route('patient.payments.index') }}"
-           class="nav-a {{ request()->routeIs('patient.payments*') ? 'on' : '' }}">
-            <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            Payments
-        </a>
-
         <div class="nav-lbl">Privacy</div>
 
-        <a href="{{ route('patient.access.index') }}"
+        <a href="{{ route('patient.access') }}"
            class="nav-a {{ request()->routeIs('patient.access*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
             </svg>
             Doctor Access
-            @php $pendCnt = auth()->user()->accessRequests()->where('status','pending')->where('otp_expires_at','>',now())->count() @endphp
+            @php $pendCnt = auth()->user()->patientAccessRequests()->where('status','pending')->where('otp_expires_at','>',now())->count() @endphp
             @if($pendCnt > 0)
                 <span class="nav-bd">{{ $pendCnt }}</span>
             @endif
         </a>
 
-        <a href="{{ route('patient.timelines.index') }}"
+        <a href="{{ route('patient.timelines') }}"
            class="nav-a {{ request()->routeIs('patient.timelines*') ? 'on' : '' }}">
             <svg class="nav-ic" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
@@ -586,22 +578,21 @@
     </div>
     <div class="tb-right">
         @yield('topbar-extras')
-        @include('partials.notification-bell')
-        <a href="{{ route('patient.appointments.book') }}" class="next-apt-chip" style="text-decoration:none">
+
+        <a href="{{ route('patient.appointments.create') }}" class="next-apt-chip" style="text-decoration:none">
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
             </svg>
             Book Appointment
         </a>
 
-        <a href="{{ route('patient.access.index') }}" class="tb-btn" title="Doctor Access">
+        <a href="{{ route('patient.access') }}" class="tb-btn" title="Doctor Access">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
             </svg>
-            @php $pc = auth()->user()->accessRequests()->where('status','pending')->where('otp_expires_at','>',now())->count() @endphp
+            @php $pc = auth()->user()->patientAccessRequests()->where('status','pending')->where('otp_expires_at','>',now())->count() @endphp
             @if($pc > 0)<span class="tb-dot"></span>@endif
         </a>
-
 
         <a href="{{ route('patient.profile.edit') }}" class="tb-btn" title="Settings">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -628,8 +619,6 @@
 
     @yield('content')
 </main>
-
-<x-attachment-preview-modal />
 
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>

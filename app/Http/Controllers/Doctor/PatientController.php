@@ -10,8 +10,6 @@ use App\Models\MedicalRecord;
 use App\Models\Prescription;
 use App\Models\HealthLog;
 use App\Models\PatientTimeline;
-use App\Models\PatientHistoryDocument;
-use Illuminate\Support\Facades\Storage;
 use App\Services\AccessControlService;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
@@ -62,10 +60,10 @@ class PatientController extends Controller
         // Filter
         if ($filter = $request->get('filter')) {
             match ($filter) {
-                'active'  => $query->whereHas('accessRequests', fn($q) =>
+                'active'  => $query->whereHas('patientAccessRequests', fn($q) =>
                     $q->where('doctor_user_id', $doctor->id)->active()
                 ),
-                'recent'  => $query->whereHas('medicalRecords', fn($q) =>
+                'recent'  => $query->whereHas('patientMedicalRecords', fn($q) =>
                     $q->where('doctor_user_id', $doctor->id)->where('visit_date', '>=', now()->subDays(30))
                 ),
                 default   => null,
@@ -91,9 +89,7 @@ class PatientController extends Controller
                 ->count();
         });
 
-        $assignTemplate = $request->get('assign_template');
-
-        return view('doctor.patients.index', compact('patients', 'search', 'filter', 'assignTemplate'));
+        return view('doctor.patients.index', compact('patients', 'search', 'filter'));
     }
 
     // ─── AJAX Patient Search (for access request modal) ──────────────────────
@@ -101,75 +97,40 @@ class PatientController extends Controller
     public function search(Request $request)
     {
         $q      = $request->get('q', '');
-        $type   = $request->get('type', 'mobile'); // mobile | sub_id | aadhaar | any
+        $type   = $request->get('type', 'mobile'); // mobile | sub_id | aadhaar
 
-        if (strlen($q) < 2) {
-            return response()->json(['found' => false, 'patients' => []]);
+        if (strlen($q) < 3) {
+            return response()->json(['found' => false]);
         }
 
-        // Multi-mode search: try name, mobile, and sub_id
-        if ($type === 'mobile' || $type === 'any') {
-            $patients = User::where('role', 'patient')
-                ->where(function ($query) use ($q) {
-                    $query->where('mobile_number', 'like', "%{$q}%")
-                          ->orWhereHas('profile', fn($p) => $p->where('full_name', 'like', "%{$q}%"));
-                })
-                ->with('profile')
-                ->limit(10)
-                ->get();
+        $result = $this->accessControl->findPatient($q, $type);
 
-            if ($patients->isNotEmpty()) {
-                $list = $patients->map(fn($p) => [
-                    'id'     => $p->id,
-                    'name'   => $p->profile?->full_name ?? 'Unknown',
-                    'mobile' => $p->full_mobile ?? $p->mobile_number,
-                    'age'    => $p->profile?->age,
-                    'gender' => $p->profile?->gender,
-                    'city'   => $p->profile?->city,
-                ])->values();
-
-                return response()->json([
-                    'found'    => true,
-                    'patient'  => $list->first(),
-                    'patients' => $list,
-                ]);
-            }
+        if (! $result['found']) {
+            return response()->json(['found' => false, 'message' => 'No patient found.']);
         }
 
-        // Fallback to existing access control search for aadhaar/sub_id
-        if ($type !== 'any') {
-            $result = $this->accessControl->findPatient($q, $type);
+        $patient = $result['user'];
+        $member  = $result['member'];
 
-            if ($result['found']) {
-                $patient = $result['user'];
-                $member  = $result['member'];
-
-                $patientData = [
-                    'id'     => $patient->id,
-                    'name'   => $patient->profile?->full_name ?? 'Unknown',
-                    'mobile' => $patient->full_mobile,
-                    'age'    => $patient->profile?->age,
-                    'gender' => $patient->profile?->gender,
-                    'city'   => $patient->profile?->city,
-                ];
-
-                return response()->json([
-                    'found'           => true,
-                    'patient'         => $patientData,
-                    'patients'        => [$patientData],
-                    'family_member'   => $member ? [
-                        'id'       => $member->id,
-                        'name'     => $member->full_name,
-                        'relation' => $member->relation,
-                        'sub_id'   => $member->sub_id,
-                    ] : null,
-                    'identifier'      => $q,
-                    'identifier_type' => $type,
-                ]);
-            }
-        }
-
-        return response()->json(['found' => false, 'patients' => [], 'message' => 'No patient found.']);
+        return response()->json([
+            'found'   => true,
+            'patient' => [
+                'id'       => $patient->id,
+                'name'     => $patient->profile?->full_name ?? 'Unknown',
+                'mobile'   => $patient->full_mobile,
+                'age'      => $patient->profile?->age,
+                'gender'   => $patient->profile?->gender,
+                'city'     => $patient->profile?->city,
+            ],
+            'family_member' => $member ? [
+                'id'       => $member->id,
+                'name'     => $member->full_name,
+                'relation' => $member->relation,
+                'sub_id'   => $member->sub_id,
+            ] : null,
+            'identifier'      => $q,
+            'identifier_type' => $type,
+        ]);
     }
 
     // ─── Raise Access Request (from patient list or modal) ───────────────────
@@ -222,22 +183,6 @@ class PatientController extends Controller
         return response()->json($result);
     }
 
-    // ─── Doctor downloads a patient-uploaded document ────────────────────────
-
-    public function downloadPatientDocument(PatientHistoryDocument $document)
-    {
-        $doctor = auth()->user();
-
-        // Doctor must have active access to this patient
-        if (!$this->accessControl->doctorHasAccess($doctor, $document->patient_user_id)) {
-            abort(403, 'You do not have access to this patient\'s documents.');
-        }
-
-        if (!Storage::disk('local')->exists($document->file_path)) abort(404);
-
-        return Storage::disk('local')->download($document->file_path, $document->file_name);
-    }
-
     // ─── Full Patient History ────────────────────────────────────────────────
 
     public function history(Request $request, int $patientId)
@@ -272,11 +217,11 @@ class PatientController extends Controller
             ? MedicalRecord::where('patient_user_id', $patientId)
                 ->when($familyMemberId, fn($q) => $q->where('family_member_id', $familyMemberId))
                 ->when(!$familyMemberId, fn($q) => $q->whereNull('family_member_id'))
-                ->with(['doctor.profile', 'doctor.doctorProfile', 'prescription.medicines', 'prescriptions'])
+                ->with(['doctor.profile', 'doctor.doctorProfile', 'prescriptions.medicines'])
                 ->latest('visit_date')
                 ->paginate(10, ['*'], 'rpage')
             : collect();
-        // dd($records);
+
         // ── Prescriptions ─────────────────────────────────────────────────────
         $prescriptions = $hasAccess
             ? Prescription::where('patient_user_id', $patientId)
@@ -286,6 +231,7 @@ class PatientController extends Controller
                 ->latest('prescribed_date')
                 ->paginate(8, ['*'], 'ppage')
             : collect();
+
         // ── Vitals (last 30 days, for chart) ──────────────────────────────────
         $vitalsData = [];
         if ($hasAccess) {
@@ -316,16 +262,6 @@ class PatientController extends Controller
                 ])
             : collect();
 
-        // ── Patient-uploaded documents ────────────────────────────────────────
-        $patientDocuments = $hasAccess
-            ? PatientHistoryDocument::where('patient_user_id', $patientId)
-                ->when($familyMemberId, fn($q) => $q->where('family_member_id', $familyMemberId))
-                ->when(!$familyMemberId, fn($q) => $q->whereNull('family_member_id'))
-                ->orderByDesc('document_date')
-                ->orderByDesc('created_at')
-                ->get()
-            : collect();
-
         // ── Summary stats ─────────────────────────────────────────────────────
         $stats = $hasAccess ? [
             'total_visits'   => MedicalRecord::where('patient_user_id', $patientId)->count(),
@@ -340,7 +276,7 @@ class PatientController extends Controller
             'hasAccess', 'pendingReq', 'accessGrant',
             'viewingMember', 'familyMemberId',
             'records', 'prescriptions',
-            'vitalsData', 'timelines', 'stats', 'patientDocuments'
+            'vitalsData', 'timelines', 'stats'
         ));
     }
 }

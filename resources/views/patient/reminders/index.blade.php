@@ -14,19 +14,13 @@
 input:checked + .toggle-track { background: var(--sage); }
 input:checked + .toggle-track::before { transform: translateX(16px); }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-@media (max-width: 900px) {
-    .rem-grid    { grid-template-columns: 1fr !important; }
-    .rem-sidebar { position: static !important; }
-    .rem-grid > div { min-width: 0; }
-}
 </style>
 @endpush
 
 @section('content')
 <div class="fade-slide" x-data="reminders()">
 
-{{-- ── Today's schedule (if any active) ───────────────────────────────────── -- --}}
+{{-- ── Today's schedule (if any active) ───────────────────────────────────── --}}
 @if($dueToday->isNotEmpty())
 <div class="panel" style="padding:16px 20px;margin-bottom:20px;border-left:4px solid var(--amber);background:var(--amber-lt)">
     <div style="font-family:'Lora',serif;font-size:.95rem;color:var(--txt);margin-bottom:10px;display:flex;align-items:center;gap:8px">
@@ -52,10 +46,10 @@ input:checked + .toggle-track::before { transform: translateX(16px); }
 </div>
 @endif
 
-{{-- ── Main grid ───────────────────────────────────────────────────────────── -- --}}
-<div class="rem-grid" style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+{{-- ── Main grid ───────────────────────────────────────────────────────────── --}}
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
-{{-- ── LEFT: Active reminders list ─────────────────────────────────────────── -- --}}
+{{-- ── LEFT: Active reminders list ─────────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:14px">
 
     <div style="display:flex;align-items:center;justify-content:space-between">
@@ -184,8 +178,8 @@ input:checked + .toggle-track::before { transform: translateX(16px); }
     @endif
 </div>
 
-{{-- ── RIGHT: New reminder form ─────────────────────────────────────────────── -- --}}
-<div class="rem-sidebar" style="position:sticky;top:78px">
+{{-- ── RIGHT: New reminder form ─────────────────────────────────────────────── --}}
+<div style="position:sticky;top:78px">
     <div class="panel" style="padding:20px 22px" x-data="reminderForm()">
         <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:4px">
             {{ $active->isEmpty() ? 'Set Up a Reminder' : 'New Reminder' }}

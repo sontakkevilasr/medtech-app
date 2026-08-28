@@ -20,7 +20,7 @@ class EnsureUserIsVerified
             // Store intended URL so we can redirect back after verification
             session(['url.intended' => $request->url()]);
 
-            return redirect()->route('auth.otp.verify')
+            return redirect()->route('otp.verify')
                 ->with('info', 'Please verify your mobile number to continue.');
         }
 

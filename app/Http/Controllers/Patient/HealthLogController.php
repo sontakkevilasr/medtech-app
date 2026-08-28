@@ -69,7 +69,7 @@ class HealthLogController extends Controller
         $rules = [
             'log_type'  => ['required', 'in:bp,sugar,weight,oxygen,temperature,pulse'],
             'value_1'   => ['required', 'numeric', 'min:0', 'max:999'],
-            'context'   => ['nullable', 'in:fasting,post_meal,random,morning,night,other'],
+            'context'   => ['nullable', 'in:fasting,post_meal,random,before_activity,after_activity,rest'],
             'notes'     => ['nullable', 'string', 'max:255'],
             'logged_at' => ['nullable', 'date'],
         ];
@@ -181,7 +181,7 @@ class HealthLogController extends Controller
                 'v2'        => $log->value_2 ? (float) $log->value_2 : null,
                 'logged_at' => $log->logged_at,
                 'context'   => $log->context,
-                'status'    => $this->vitalStatus($type, (float) $log->value_1, $log->value_2 ? (float) $log->value_2 : null, $log->context),
+                'status'    => $this->vitalStatus($type, (float) $log->value_1, $log->value_2 ? (float) $log->value_2 : null),
             ] : null;
         }
         return $results;
@@ -202,7 +202,7 @@ class HealthLogController extends Controller
         ];
     }
 
-    private function vitalStatus(string $type, float $v1, ?float $v2, ?string $context = null): string
+    private function vitalStatus(string $type, float $v1, ?float $v2): string
     {
         $ranges = config('medtech.health_ranges', []);
 
@@ -214,11 +214,10 @@ class HealthLogController extends Controller
         }
 
         $rangeKey = match($type) {
-            'sugar'       => $context === 'post_meal' ? 'sugar_pp' : 'sugar_fasting',
+            'sugar'       => 'sugar_fasting',
             'oxygen'      => 'oxygen',
             'pulse'       => 'pulse',
             'temperature' => 'temperature',
-            'weight'      => 'weight',
             default       => null,
         };
 

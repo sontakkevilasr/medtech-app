@@ -52,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // ── Middleware priority (important for auth + role order) ────────────
         $middleware->priority([
             \Illuminate\Session\Middleware\StartSession::class,
-            \App\Http\Middleware\Authenticate::class,
+            \Illuminate\Auth\Middleware\Authenticate::class,
             \App\Http\Middleware\EnsureUserIsActive::class,
             \App\Http\Middleware\EnsureUserIsVerified::class,
             \App\Http\Middleware\RoleMiddleware::class,

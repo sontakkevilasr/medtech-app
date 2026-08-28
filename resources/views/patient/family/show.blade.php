@@ -10,18 +10,20 @@
 @php
     $relationColors = ['self'=>'#4a3760','spouse'=>'#7a3d6e','child'=>'#3d7a6e','parent'=>'#7a6e3d','sibling'=>'#3d5e7a','grandparent'=>'#6e3d7a','other'=>'#5a6e7a'];
     $relColor = $relationColors[$member->relation] ?? '#5a6e7a';
+    $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$member->full_name),0,2))));
 @endphp
-<div class="fade-in fm-grid" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
+<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
-{{-- ── LEFT ─────────────────────────────────────────────────────────────────── -- --}}
+{{-- ── LEFT ─────────────────────────────────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:18px">
 
     {{-- Profile card --}}
     <div class="panel" style="padding:0;overflow:hidden">
         {{-- Coloured banner --}}
         <div style="background:linear-gradient(135deg,{{ $relColor }} 0%,{{ $relColor }}bb 100%);padding:22px 24px;display:flex;align-items:center;gap:16px">
-            <x-avatar name="{{ $member->full_name }}" :photo="$member->profile_photo"
-                       :size="56" :radius="14" bg="rgba(255,255,255,.2)" font-size="1.3rem" />
+            <div style="width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0">
+                {{ $initials }}
+            </div>
             <div style="flex:1">
                 <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
                     <span style="font-family:'Lora',serif;font-size:1.3rem;font-weight:500;color:#fff">{{ $member->full_name }}</span>
@@ -48,7 +50,7 @@
         </div>
 
         {{-- Details grid --}}
-        <div id="fm-details-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
             @php
             $details = [
                 'Full Name'    => $member->full_name,
@@ -72,27 +74,27 @@
 
     {{-- Recent appointments --}}
     @if($appointments->isNotEmpty())
-    <div class="panel" style="padding:18px 20px">
-        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--warm-bd)">
+    <div class="panel">
+        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--warm-bd)">
             Recent Appointments
         </div>
-        <div style="display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;gap:8px">
             @foreach($appointments as $apt)
             @php
                 $drName = $apt->doctor?->profile?->full_name ?? 'Doctor';
                 $stCfg  = match($apt->status) {
-                    'confirmed'  => ['bg'=>'#dbeafe','color'=>'#1e40af'],
-                    'completed'  => ['bg'=>'#dcfce7','color'=>'#166534'],
-                    'cancelled'  => ['bg'=>'#fee2e2','color'=>'#991b1b'],
-                    default      => ['bg'=>'#f3f4f6','color'=>'#374151'],
+                    'confirmed'  => 'color:#1a7a6a',
+                    'completed'  => 'color:#0369a1',
+                    'cancelled'  => 'color:#dc2626',
+                    default      => 'color:var(--txt-lt)',
                 };
             @endphp
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--parch);font-size:.8125rem{{ $loop->last ? ';border-bottom:none' : '' }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--parch);font-size:.8125rem">
                 <div>
                     <span style="font-weight:500;color:var(--txt)">Dr. {{ $drName }}</span>
-                    <span style="color:var(--txt-lt);margin-left:8px;font-size:.75rem">{{ $apt->slot_datetime?->format('d M Y, h:i A') }}</span>
+                    <span style="color:var(--txt-lt);margin-left:8px">{{ $apt->slot_datetime->format('d M Y, h:i A') }}</span>
                 </div>
-                <span style="font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ $stCfg['bg'] }};color:{{ $stCfg['color'] }}">{{ ucfirst($apt->status) }}</span>
+                <span style="font-size:.7rem;font-weight:600;{{ $stCfg }}">{{ ucfirst($apt->status) }}</span>
             </div>
             @endforeach
         </div>
@@ -101,18 +103,18 @@
 
     {{-- Recent prescriptions --}}
     @if($prescriptions->isNotEmpty())
-    <div class="panel" style="padding:18px 20px">
-        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--warm-bd)">
+    <div class="panel">
+        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--warm-bd)">
             Recent Prescriptions
         </div>
-        <div style="display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;gap:8px">
             @foreach($prescriptions as $rx)
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--parch);font-size:.8125rem{{ $loop->last ? ';border-bottom:none' : '' }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--parch);font-size:.8125rem">
                 <div>
-                    <span style="font-weight:500;color:var(--txt)">{{ $rx->prescription_number }}</span>
-                    <span style="color:var(--txt-lt);margin-left:8px;font-size:.75rem">Dr. {{ $rx->doctor?->profile?->full_name ?? '—' }}</span>
+                    <span style="font-weight:500;color:var(--txt)">{{ $rx->rx_number }}</span>
+                    <span style="color:var(--txt-lt);margin-left:8px">Dr. {{ $rx->doctor?->profile?->full_name }}</span>
                 </div>
-                <span style="font-size:.72rem;color:var(--txt-lt)">{{ $rx->prescribed_date?->format('d M Y') }}</span>
+                <span style="font-size:.72rem;color:var(--txt-lt)">{{ \Carbon\Carbon::parse($rx->prescribed_date)->format('d M Y') }}</span>
             </div>
             @endforeach
         </div>
@@ -121,8 +123,8 @@
 
 </div>
 
-{{-- ── RIGHT: Sub-ID card + actions ──────────────────────────────────────────── -- --}}
-<div class="fm-sidebar" style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
+{{-- ── RIGHT: Sub-ID card + actions ──────────────────────────────────────────── --}}
+<div style="position:sticky;top:calc(var(--topbar-h)+20px);display:flex;flex-direction:column;gap:14px">
 
     {{-- Sub-ID card --}}
     <div style="background:linear-gradient(135deg,{{ $relColor }} 0%,{{ $relColor }}88 100%);border-radius:16px;padding:22px 20px;color:#fff">
@@ -233,17 +235,3 @@
 
 </div>
 @endsection
-
-@push('styles')
-<style>
-@@media (max-width: 900px) {
-    .fm-grid    { grid-template-columns: 1fr !important; }
-    .fm-sidebar { position: static !important; }
-    .fm-grid > div { min-width: 0; }
-}
-@@media (max-width: 480px) {
-    #fm-details-grid { grid-template-columns: 1fr !important; }
-    #fm-details-grid > div { border-right: none !important; }
-}
-</style>
-@endpush

@@ -31,38 +31,7 @@
     $timelineEmojis = ['obstetrics' => '🤰', 'pediatrics' => '💉', 'ivf' => '🧬', 'orthodontics' => '😁', 'default' => '📋'];
 @endphp
 
-{{-- ── Follow-up Reminders ──────────────────────────────────────────────────── -- --}}
-@foreach($followUpAlerts as $fu)
-@php
-    $fuDays   = today()->diffInDays($fu->follow_up_date, false);
-    $fuUrgent = $fuDays <= 2;
-    $fuNote   = $fu->follow_up_instructions ? mb_strimwidth($fu->follow_up_instructions, 0, 72, '…') : null;
-@endphp
-<div class="{{ $fuUrgent ? 'furem-alert furem-urgent' : 'furem-alert' }} fu">
-    <div class="furem-ic">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="{{ $fuUrgent ? '#d97706' : '#059669' }}" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-    </div>
-    <div style="flex:1;min-width:0">
-        <div class="furem-title" style="{{ $fuUrgent ? 'color:#78350f' : 'color:#14532d' }}">
-            Follow-up visit recommended &middot; Dr. {{ $fu->doctor->profile?->full_name }}
-        </div>
-        <div class="furem-sub" style="{{ $fuUrgent ? 'color:#92400e' : 'color:#166534' }}">
-            📅 {{ $fu->follow_up_date->format('d M Y') }} &middot;
-            {{ $fuDays === 0 ? 'Today' : ($fuDays === 1 ? 'Tomorrow' : "in {$fuDays} days") }}
-            @if($fu->follow_up_instructions)
-                &middot; {{ $fuNote }}
-            @endif
-        </div>
-    </div>
-    <a href="{{ route('patient.appointments.book') }}" class="furem-btn" style="{{ $fuUrgent ? 'background:#d97706' : 'background:#059669' }}">
-        Book Now
-    </a>
-</div>
-@endforeach
-
-{{-- ── Pending OTP Access Requests ─────────────────────────────────────────── -- --}}
+{{-- ── Pending OTP Access Requests ─────────────────────────────────────────── --}}
 @foreach($pendingAccessReqs as $req)
 <div class="otp-alert fu">
     <div class="otp-alert-ic">
@@ -96,7 +65,7 @@
 </div>
 @endforeach
 
-{{-- ── Health Vitals Row ─────────────────────────────────────────────────────── -- --}}
+{{-- ── Health Vitals Row ─────────────────────────────────────────────────────── --}}
 <div class="health-row fu">
 
     {{-- Blood Pressure --}}
@@ -127,7 +96,7 @@
                 <span class="h-status hs-{{ $bpSt }}">{{ $bpLbl }}</span>
             @else
                 <div class="h-value" style="font-size:.9rem;color:var(--txt-lt)">No data</div>
-                <a href="{{ route('patient.health.index') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
+                <a href="{{ route('patient.tracker') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
             @endif
         </div>
     </div>
@@ -161,7 +130,7 @@
                 <span class="h-status hs-{{ $sgSt }}">{{ $sgLbl }}</span>
             @else
                 <div class="h-value" style="font-size:.9rem;color:var(--txt-lt)">No data</div>
-                <a href="{{ route('patient.health.index') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
+                <a href="{{ route('patient.tracker') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
             @endif
         </div>
     </div>
@@ -187,7 +156,7 @@
                 <span class="h-status hs-ok">Tracked</span>
             @else
                 <div class="h-value" style="font-size:.9rem;color:var(--txt-lt)">No data</div>
-                <a href="{{ route('patient.health.index') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
+                <a href="{{ route('patient.tracker') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
             @endif
         </div>
     </div>
@@ -215,14 +184,14 @@
                 <span class="h-status hs-ok">Normal</span>
             @else
                 <div class="h-value" style="font-size:.9rem;color:var(--txt-lt)">No data</div>
-                <a href="{{ route('patient.health.index') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
+                <a href="{{ route('patient.tracker') }}" style="font-size:.72rem;color:var(--plum);text-decoration:none">Log now →</a>
             @endif
         </div>
     </div>
 </div>
 
-{{-- ── Two column layout ────────────────────────────────────────────────────── -- --}}
-<div id="content-grid" style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
+{{-- ── Two column layout ────────────────────────────────────────────────────── --}}
+<div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
 
     {{-- LEFT --}}
     <div style="display:flex;flex-direction:column;gap:18px">
@@ -237,14 +206,14 @@
                     Upcoming Appointments
                 </div>
                 <div style="display:flex;gap:7px;align-items:center">
-                    <a href="{{ route('patient.appointments.book') }}"
+                    <a href="{{ route('patient.appointments.create') }}"
                        style="display:flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600;color:#fff;background:var(--plum);border-radius:8px;padding:5px 11px;text-decoration:none">
                         <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
                         Book
                     </a>
-                    <a href="{{ route('patient.appointments.index') }}" class="ph-link">All →</a>
+                    <a href="{{ route('patient.appointments') }}" class="ph-link">All →</a>
                 </div>
             </div>
 
@@ -262,11 +231,12 @@
             @foreach($upcomingApts as $apt)
             @php
                 $drName   = $apt->doctor->profile?->full_name ?? 'Doctor';
+                $initials = strtoupper(implode('', array_map(fn($p) => $p[0], array_slice(explode(' ', $drName), 0, 2))));
                 $daysAway = now()->diffInDays($apt->slot_datetime, false);
                 $isSoon   = $daysAway <= 1;
             @endphp
             <div class="apt-r">
-                <x-avatar name="{{ $drName }}" :photo="$apt->doctor->profile?->profile_photo" class="dr-avatar" />
+                <div class="dr-avatar">{{ $initials }}</div>
                 <div class="apt-info">
                     <div class="apt-dr-name">Dr. {{ $drName }}</div>
                     <div class="apt-meta">
@@ -304,12 +274,12 @@
                     </svg>
                     Family Members
                 </div>
-                <a href="{{ route('patient.family.index') }}" class="ph-link">Manage →</a>
+                <a href="{{ route('patient.family') }}" class="ph-link">Manage →</a>
             </div>
 
             <div class="fam-grid">
                 {{-- Self --}}
-                <a href="{{ route('patient.history.index') }}" class="fam-card" style="text-decoration:none">
+                <a href="{{ route('patient.history') }}" class="fam-card" style="text-decoration:none">
                     <div class="fam-avatar" style="background:var(--plum)">
                         {{ strtoupper(substr(auth()->user()->profile?->full_name ?? 'Y', 0, 1)) }}
                     </div>
@@ -360,7 +330,7 @@
                     </svg>
                     Recent Prescriptions
                 </div>
-                <a href="{{ route('patient.history.index') }}" class="ph-link">All →</a>
+                <a href="{{ route('patient.history') }}" class="ph-link">All →</a>
             </div>
 
             @if($recentRx->isEmpty())
@@ -387,19 +357,17 @@
                 </div>
                 <div style="display:flex;gap:6px;flex-shrink:0">
                     @if($rx->pdf_path)
-                    <a href="{{ route('patient.history.prescription.pdf', $rx) }}"
+                    <a href="{{ route('patient.history.rx.pdf', $rx) }}"
                        style="font-size:.72rem;color:var(--sage);font-weight:600;padding:4px 8px;border:1px solid var(--sage-lt);border-radius:7px;text-decoration:none;transition:all .12s"
                        onmouseover="this.style.background='var(--sage-lt)'" onmouseout="this.style.background='transparent'">
                         PDF
                     </a>
                     @endif
-                    @if($rx->medical_record_id)
-                    <a href="{{ route('patient.history.show', $rx->medical_record_id) }}"
+                    <a href="{{ route('patient.history.rx', $rx) }}"
                        style="font-size:.72rem;color:var(--txt-lt);padding:4px 8px;border:1px solid var(--warm-bd);border-radius:7px;text-decoration:none;transition:all .12s"
                        onmouseover="this.style.background='var(--sand)'" onmouseout="this.style.background='transparent'">
                         View →
                     </a>
-                    @endif
                 </div>
             </div>
             @endforeach
@@ -432,7 +400,7 @@
                     </svg>
                     Care Timelines
                 </div>
-                <a href="{{ route('patient.timelines.index') }}" class="ph-link">All →</a>
+                <a href="{{ route('patient.timelines') }}" class="ph-link">All →</a>
             </div>
             @foreach($activeTimelines as $tl)
             @php
@@ -485,7 +453,7 @@
                     </svg>
                     My Medications
                 </div>
-                <a href="{{ route('patient.reminders.index') }}" class="ph-link">Manage →</a>
+                <a href="{{ route('patient.reminders') }}" class="ph-link">Manage →</a>
             </div>
 
             @if($activeMeds->isEmpty())
@@ -525,7 +493,7 @@
                     </svg>
                     Doctors with Access
                 </div>
-                <a href="{{ route('patient.access.index') }}" class="ph-link">Manage →</a>
+                <a href="{{ route('patient.access') }}" class="ph-link">Manage →</a>
             </div>
             @foreach($activeDoctors as $ar)
             <div class="dr-chip">
@@ -555,32 +523,6 @@
 <style>
     @media (max-width: 900px) {
         #content-grid { grid-template-columns: 1fr !important; }
-        #content-grid > div { min-width: 0; }
-    }
-    .furem-alert {
-        background: linear-gradient(135deg, #f0fdf4 0%, #f6fef9 100%);
-        border: 1.5px solid #86efac;
-        border-radius: 12px; padding: 14px 16px;
-        margin-bottom: 12px;
-        display: flex; align-items: flex-start; gap: 12px;
-    }
-    .furem-alert.furem-urgent {
-        background: linear-gradient(135deg, #fffbeb 0%, #fef9ee 100%);
-        border-color: #fbbf24;
-    }
-    .furem-ic {
-        width: 36px; height: 36px; border-radius: 10px;
-        background: #fff; display: flex; align-items: center;
-        justify-content: center; flex-shrink: 0;
-        border: 1px solid #86efac;
-    }
-    .furem-alert.furem-urgent .furem-ic { border-color: #fbbf24; }
-    .furem-title { font-size: .875rem; font-weight: 600; margin-bottom: 2px; }
-    .furem-sub   { font-size: .78rem; line-height: 1.4; }
-    .furem-btn {
-        flex-shrink: 0; padding: 6px 13px; color: #fff;
-        border-radius: 8px; font-size: .78rem; font-weight: 600;
-        text-decoration: none; white-space: nowrap; align-self: center;
     }
 </style>
 @endpush

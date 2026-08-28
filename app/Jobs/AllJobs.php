@@ -10,7 +10,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use App\Models\Appointment;
 use App\Services\WhatsAppService;
-use App\Services\NotificationService;
 
 // ─── SendAppointmentReminderJob ───────────────────────────────────────────────
 

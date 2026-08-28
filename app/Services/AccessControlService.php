@@ -7,8 +7,6 @@ use App\Models\FamilyMember;
 use App\Models\PatientAccessPermission;
 use App\Models\DoctorAccessRequest;
 use Illuminate\Support\Facades\Log;
-use App\Services\NotificationService;
-
 
 class AccessControlService
 {
@@ -92,8 +90,6 @@ class AccessControlService
             'identifier_type'   => $identifierType,
             'status'            => 'pending',
         ]);
-
-        NotificationService::accessRequested($request->load('doctor.profile'));
 
         // ── Full access: auto-approve ─────────────────────────────────────
         if ($accessType === 'full') {
@@ -286,14 +282,8 @@ class AccessControlService
 
     private function findByMobile(string $mobile): array
     {
-        $mobile = trim($mobile);
-        // Strip country code only when explicitly prefixed with +, e.g. +919876543210 → 9876543210
-        if (str_starts_with($mobile, '+')) {
-            $mobile = preg_replace('/^\+\d{1,3}/', '', $mobile);
-        } elseif (strlen($mobile) > 10) {
-            // e.g. "919876543210" → take last 10 digits
-            $mobile = substr($mobile, -10);
-        }
+        // Strip country code if included
+        $mobile = ltrim(preg_replace('/^\+?\d{1,3}/', '', $mobile), ' ');
 
         $user = User::where('mobile_number', $mobile)
             ->where('role', 'patient')

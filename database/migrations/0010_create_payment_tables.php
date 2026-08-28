@@ -33,8 +33,8 @@ return new class extends Migration
             $table->foreignId('payment_id')->nullable()->constrained('payments')->nullOnDelete();
             $table->enum('plan', ['basic', 'premium', 'enterprise'])->default('basic');
             $table->decimal('amount_paid', 10, 2)->default(0);
-            $table->timestamp('starts_at')->nullable();
-            $table->timestamp('expires_at')->nullable();
+            $table->timestamp('starts_at');
+            $table->timestamp('expires_at');
             $table->boolean('is_active')->default(true);
             $table->json('features_unlocked')->nullable();       // list of enabled features
             $table->timestamps();

@@ -7,14 +7,11 @@ use App\Models\User;
 use App\Models\Appointment;
 use App\Models\Prescription;
 use App\Models\DoctorProfile;
-use App\Services\ExcelExportService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function __construct(private ExcelExportService $excel) {}
-
     public function index()
     {
         // ── 12-month user growth ──────────────────────────────────────────────
@@ -81,41 +78,40 @@ class ReportController extends Controller
     public function revenue()      { return redirect()->route('admin.reports.index'); }
     public function specializations() { return redirect()->route('admin.reports.index'); }
 
-    public function exportUsers(Request $request)
+    public function exportUsers()
     {
-        return $this->excel->exportAllUsers($request->get('role'));
-    }
+        $users = User::whereIn('role',['doctor','patient'])
+            ->with(['profile','doctorProfile'])
+            ->get()
+            ->map(fn($u) => [
+                'ID'           => $u->id,
+                'Name'         => $u->profile?->full_name,
+                'Role'         => ucfirst($u->role),
+                'Mobile'       => $u->country_code.' '.$u->mobile_number,
+                'Email'        => $u->profile?->email,
+                'City'         => $u->profile?->city ?? $u->doctorProfile?->clinic_city,
+                'Verified'     => $u->is_verified ? 'Yes' : 'No',
+                'Active'       => $u->is_active   ? 'Yes' : 'No',
+                'Joined'       => $u->created_at->format('Y-m-d'),
+                'Specialization' => $u->doctorProfile?->specialization,
+                'Premium'      => $u->doctorProfile?->is_premium ? 'Yes' : 'No',
+            ]);
 
-    public function exportDoctors()
-    {
-        return $this->excel->exportAllUsers('doctor');
-    }
+        $csv = collect($users)->toArray();
+        $header = array_keys($csv[0] ?? []);
+        $rows   = array_merge([$header], array_map('array_values', $csv));
 
-    public function exportPatients()
-    {
-        return $this->excel->exportAllUsers('patient');
-    }
+        $content = implode("\n", array_map(fn($r) => implode(',', array_map(fn($v) => '"'.$v.'"', $r)), $rows));
 
-    public function exportAppointments(Request $request)
-    {
-        return $this->excel->exportAllAppointments(
-            $request->get('from'),
-            $request->get('to')
-        );
-    }
-
-    public function exportVerification()
-    {
-        return $this->excel->exportDoctorVerification();
+        return response($content, 200, [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="users-'.today()->format('Y-m-d').'.csv"',
+        ]);
     }
 
     public function exportRevenue()
     {
-        return $this->excel->exportPlatformStats();
-    }
-
-    public function exportPage()
-    {
-        return view('admin.reports.exports');
+        return redirect()->route('admin.reports.index')
+            ->with('warning', 'Revenue export requires payment integration.');
     }
 }

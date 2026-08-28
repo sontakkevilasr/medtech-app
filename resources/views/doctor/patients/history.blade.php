@@ -1,7 +1,7 @@
 @extends('layouts.doctor')
 @section('title', ($patient->profile?->full_name ?? 'Patient') . ' — History')
 @section('page-title')
-    <a href="{{ route('doctor.patients.index') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Patients</a>
+    <a href="{{ route('doctor.patients') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Patients</a>
     <span style="color:var(--txt-lt);margin:0 6px">/</span>
     {{ $patient->profile?->full_name ?? 'Patient' }}
 @endsection
@@ -9,6 +9,7 @@
 @section('content')
 @php
     $name     = $patient->profile?->full_name ?? 'Unknown';
+    $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
     $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
     $color    = $colors[$patient->id % count($colors)];
 
@@ -16,13 +17,14 @@
     $activeTab = request()->get('tab', 'records');
 @endphp
 
-{{-- ── Patient Header Card ─────────────────────────────────────────────────── -- --}}
+{{-- ── Patient Header Card ─────────────────────────────────────────────────── --}}
 <div class="panel fade-in" style="margin-bottom:20px">
     <div style="padding:20px 24px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
 
         {{-- Avatar --}}
-        <x-avatar name="{{ $name }}" :photo="$patient->profile?->profile_photo"
-                   :size="56" :radius="14" :bg="$color" font-size="1.25rem" />
+        <div style="width:56px;height:56px;border-radius:14px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;color:#fff;flex-shrink:0">
+            {{ $initials }}
+        </div>
 
         {{-- Identity --}}
         <div style="flex:1;min-width:200px">
@@ -106,7 +108,7 @@
     </div>
 </div>
 
-{{-- ── No Access Gate ───────────────────────────────────────────────────────── -- --}}
+{{-- ── No Access Gate ───────────────────────────────────────────────────────── --}}
 @if(!$hasAccess)
 <div style="background:linear-gradient(135deg,#fdf8f5 0%,#f7f0ea 100%);border:1.5px solid var(--warm-bd);border-radius:16px;padding:40px 32px;text-align:center;max-width:520px;margin:0 auto">
     <div style="width:60px;height:60px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid var(--warm-bd)">
@@ -150,7 +152,7 @@
         </button>
     </div>
     @else
-    <a href="{{ route('doctor.patients.index') }}"
+    <a href="{{ route('doctor.patients') }}"
        style="display:inline-flex;align-items:center;gap:6px;padding:10px 22px;background:var(--ink);color:#fff;border-radius:10px;font-size:.875rem;font-weight:600;text-decoration:none">
         Request Access
     </a>
@@ -158,11 +160,11 @@
 </div>
 
 @else
-{{-- ── Tabs ─────────────────────────────────────────────────────────────────── -- --}}
-<div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch">
-    @foreach(['records' => 'Medical Records', 'prescriptions' => 'Prescriptions', 'vitals' => 'Vitals & Charts', 'timelines' => 'Care Timelines', 'documents' => 'Documents'] as $t => $lbl)
+{{-- ── Tabs ─────────────────────────────────────────────────────────────────── --}}
+<div style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px">
+    @foreach(['records' => 'Medical Records', 'prescriptions' => 'Prescriptions', 'vitals' => 'Vitals & Charts', 'timelines' => 'Care Timelines'] as $t => $lbl)
     <a href="{{ route('doctor.patients.history', $patient->id) }}?tab={{ $t }}{{ $familyMemberId ? '&member='.$familyMemberId : '' }}"
-       style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;flex-shrink:0;
+       style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;
               {{ $activeTab === $t ? 'color:var(--ink);border-bottom-color:var(--ink);font-weight:600' : 'color:var(--txt-lt)' }}"
        onmouseover="if('{{ $activeTab }}' !== '{{ $t }}') this.style.color='var(--txt)'" onmouseout="if('{{ $activeTab }}' !== '{{ $t }}') this.style.color='var(--txt-lt)'">
         {{ $lbl }}
@@ -172,14 +174,11 @@
         @if($t === 'prescriptions' && $prescriptions->total() > 0)
             <span style="font-size:.65rem;background:var(--parch);color:var(--txt-lt);padding:1px 6px;border-radius:20px;margin-left:4px">{{ $prescriptions->total() }}</span>
         @endif
-        @if($t === 'documents' && $patientDocuments->isNotEmpty())
-            <span style="font-size:.65rem;background:#f4f0fa;color:#4a3760;padding:1px 6px;border-radius:20px;margin-left:4px">{{ $patientDocuments->count() }}</span>
-        @endif
     </a>
     @endforeach
 </div>
 
-{{-- ═══════════════════════════ TAB: MEDICAL RECORDS ════════════════════════ -- --}}
+{{-- ═══════════════════════════ TAB: MEDICAL RECORDS ════════════════════════ --}}
 @if($activeTab === 'records')
 @if($records->isEmpty())
 <div style="text-align:center;padding:52px 24px;color:var(--txt-lt)">
@@ -264,18 +263,11 @@
                 @if($record->attachments && count($record->attachments) > 0)
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
                     @foreach($record->attachments as $att)
-                    @php
-                        $ap      = explode('/', str_replace('medical-records/', '', $att['path'] ?? ''), 2);
-                        $attUrl  = route('attachments.medical-record', ['patientId' => $ap[0] ?? '', 'filename' => $ap[1] ?? '']);
-                        $attName = $att['name'] ?? 'Attachment';
-                        $attType = str_contains($att['type'] ?? '', 'pdf') ? 'pdf' : (str_starts_with($att['type'] ?? '', 'image/') ? 'image' : 'other');
-                    @endphp
-                    <a href="javascript:void(0)" x-data
-                       @click="$store.attachmentPreview.show(@js($attUrl), @js($attUrl), @js($attName), @js($attType))"
+                    <a href="{{ Storage::url($att['path'] ?? '') }}" target="_blank"
                        style="display:flex;align-items:center;gap:5px;font-size:.72rem;padding:3px 9px;border:1px solid var(--warm-bd);border-radius:7px;color:var(--txt-md);text-decoration:none;background:var(--cream)"
                        onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='var(--cream)'">
                         <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                        {{ $attName }}
+                        {{ $att['name'] ?? 'Attachment' }}
                     </a>
                     @endforeach
                 </div>
@@ -320,7 +312,7 @@
 @endif
 @endif
 
-{{-- ═══════════════════════════ TAB: PRESCRIPTIONS ═══════════════════════════ -- --}}
+{{-- ═══════════════════════════ TAB: PRESCRIPTIONS ═══════════════════════════ --}}
 @if($activeTab === 'prescriptions')
 @if($prescriptions->isEmpty())
 <div style="text-align:center;padding:52px 24px;color:var(--txt-lt)">
@@ -335,9 +327,8 @@
 </div>
 @else
 <div class="panel">
-    <div class="dr-table-wrap">
     {{-- Table header --}}
-    <div class="dr-table-min" style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
+    <div style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
         <span>Rx Number</span>
         <span>Date</span>
         <span>Medicines</span>
@@ -345,7 +336,7 @@
         <span>Actions</span>
     </div>
     @foreach($prescriptions as $rx)
-    <div class="dr-table-min" style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:13px 20px;border-bottom:1px solid var(--warm-bd);align-items:center;transition:background .12s"
+    <div style="display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr auto;gap:12px;padding:13px 20px;border-bottom:1px solid var(--warm-bd);align-items:center;transition:background .12s"
          onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background='transparent'">
 
         <div>
@@ -398,7 +389,6 @@
         </div>
     </div>
     @endforeach
-    </div>
 </div>
 @if($prescriptions->hasPages())
 <div style="display:flex;justify-content:center;gap:6px;margin-top:12px">
@@ -413,7 +403,7 @@
 @endif
 @endif
 
-{{-- ═══════════════════════════ TAB: VITALS ══════════════════════════════════ -- --}}
+{{-- ═══════════════════════════ TAB: VITALS ══════════════════════════════════ --}}
 @if($activeTab === 'vitals')
 @php
     $hasAnyVitals = collect($vitalsData)->some(fn($v) => $v->count() > 0);
@@ -427,7 +417,7 @@
     <p style="font-size:.8rem;margin-top:4px">Patient can log vitals from their dashboard.</p>
 </div>
 @else
-<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:18px" x-data="vitalsCharts()" x-init="init()">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" x-data="vitalsCharts()" x-init="init()">
 
     @foreach([
         'blood_pressure' => ['label' => 'Blood Pressure', 'unit' => 'mmHg', 'color' => '#c0737a', 'color2' => '#e8a89e'],
@@ -514,7 +504,7 @@
 @endif
 @endif
 
-{{-- ═══════════════════════════ TAB: TIMELINES ════════════════════════════════ -- --}}
+{{-- ═══════════════════════════ TAB: TIMELINES ════════════════════════════════ --}}
 @if($activeTab === 'timelines')
 @if($timelines->isEmpty())
 <div style="text-align:center;padding:52px 24px;color:var(--txt-lt)">
@@ -584,62 +574,6 @@
 @endforeach
 @endif
 @endif
-
-{{-- ══════════════════════════ TAB: DOCUMENTS ══════════════════════════════ --}}
-@if($activeTab === 'documents')
-@if($patientDocuments->isEmpty())
-<div class="panel" style="padding:44px 24px;text-align:center;color:var(--txt-lt)">
-    <svg width="38" height="38" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2" style="margin:0 auto 12px;display:block;opacity:.3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--txt-md)">No documents uploaded</div>
-    <p style="font-size:.78rem;margin-top:4px">{{ $patient->profile?->full_name ?? 'The patient' }} hasn't uploaded any documents yet.</p>
-</div>
-@else
-<div style="margin-bottom:10px;font-size:.75rem;color:var(--txt-lt)">
-    {{ $patientDocuments->count() }} document{{ $patientDocuments->count() > 1 ? 's' : '' }} uploaded by the patient · read-only
-</div>
-<div style="display:flex;flex-direction:column;gap:8px">
-@foreach($patientDocuments as $doc)
-@php
-$typeLabels = ['prescription'=>'Prescription','lab_report'=>'Lab Report','discharge_summary'=>'Discharge Summary','scan_xray'=>'Scan / X-Ray','vaccination'=>'Vaccination','insurance'=>'Insurance','other'=>'Other'];
-$typeColors = ['prescription'=>['bg'=>'#f4f0fa','color'=>'#4a3760'],'lab_report'=>['bg'=>'#eef5f3','color'=>'#2a7a6a'],'discharge_summary'=>['bg'=>'#fce7ef','color'=>'#9d174d'],'scan_xray'=>['bg'=>'#eff6ff','color'=>'#1d4ed8'],'vaccination'=>['bg'=>'#ecfdf5','color'=>'#065f46'],'insurance'=>['bg'=>'#fffbeb','color'=>'#92400e'],'other'=>['bg'=>'var(--parch)','color'=>'var(--txt-md)']];
-$tc = $typeColors[$doc->document_type] ?? $typeColors['other'];
-$tl = $typeLabels[$doc->document_type] ?? 'Other';
-$isImage = str_starts_with($doc->mime_type ?? '', 'image/');
-@endphp
-<div class="panel" style="padding:14px 18px;display:flex;align-items:center;gap:14px">
-
-    {{-- Icon --}}
-    <div style="width:42px;height:42px;border-radius:11px;background:{{ $tc['bg'] }};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
-        {{ $isImage ? '🖼️' : '📄' }}
-    </div>
-
-    {{-- Info --}}
-    <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
-            <span style="font-weight:600;font-size:.9rem;color:var(--txt)">{{ $doc->title }}</span>
-            <span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:{{ $tc['bg'] }};color:{{ $tc['color'] }}">{{ $tl }}</span>
-        </div>
-        <div style="font-size:.72rem;color:var(--txt-lt);display:flex;gap:10px;flex-wrap:wrap">
-            <span>{{ $doc->file_name }}</span>
-            <span>{{ $doc->file_size_human }}</span>
-            @if($doc->document_date)<span>📅 {{ $doc->document_date->format('d M Y') }}</span>@endif
-            @if($doc->notes)<span style="font-style:italic">{{ $doc->notes }}</span>@endif
-            <span>Uploaded {{ $doc->created_at->format('d M Y') }}</span>
-        </div>
-    </div>
-
-    {{-- Download --}}
-    <a href="{{ route('doctor.patients.documents.download', $doc->id) }}"
-       style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--ink,#2d2d2d);color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;text-decoration:none;flex-shrink:0;transition:opacity .12s"
-       onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
-        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        Download
-    </a>
-</div>
-@endforeach
-</div>
-@endif
-@endif {{-- end documents tab --}}
 
 @endif {{-- end hasAccess --}}
 @endsection

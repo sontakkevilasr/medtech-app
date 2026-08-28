@@ -1,14 +1,14 @@
 @extends('layouts.doctor')
 @section('title', 'New Prescription')
 @section('page-title')
-    <a href="{{ route('doctor.prescriptions.index') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Prescriptions</a>
+    <a href="{{ route('doctor.prescriptions') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Prescriptions</a>
     <span style="color:var(--txt-lt);margin:0 6px">/</span>
     New Prescription
 @endsection
 
 @push('styles')
 <style>
-    .rx-card { background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px;overflow:visible; }
+    .rx-card { background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px;overflow:hidden; }
     .rx-card-head { padding:13px 20px;border-bottom:1px solid var(--warm-bd);display:flex;align-items:center;gap:9px;font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--txt); }
     .rx-card-body { padding:18px 20px; }
     .fg { display:grid;gap:14px; }
@@ -53,7 +53,7 @@
 <input type="hidden" name="action" id="form-action" value="view">
 @if(isset($appointment))<input type="hidden" name="appointment_id" value="{{ $appointment->id }}">@endif
 
-<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
+<div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
 <div>
 
 {{-- ① Patient --}}
@@ -69,7 +69,7 @@
             <div class="p-ava">{{ strtoupper(substr($patient->profile?->full_name ?? 'P', 0, 1)) }}</div>
             <div style="flex:1;min-width:0">
                 <div style="font-weight:600;color:var(--txt)">{{ $patient->profile?->full_name }}</div>
-                <div style="font-size:.75rem;color:var(--txt-lt)">{{ $patient->country_code }} {{ $patient->mobile_number }}{{ $patient->profile?->age ? ' · Age ' . $patient->profile->age : '' }}{{ $patient->profile?->blood_group ? ' · ' . $patient->profile->blood_group : '' }}</div>
+                <div style="font-size:.75rem;color:var(--txt-lt)">{{ $patient->country_code }} {{ $patient->mobile_number }}@if($patient->profile?->age) · Age {{ $patient->profile->age }}@endif@if($patient->profile?->blood_group) · {{ $patient->profile->blood_group }}@endif</div>
             </div>
             <a href="{{ route('doctor.prescriptions.create') }}" style="font-size:.75rem;color:var(--txt-lt);text-decoration:none;padding:4px 8px;border-radius:7px;border:1px solid var(--warm-bd)">Change</a>
         </div>
@@ -77,14 +77,14 @@
         <div style="margin-top:12px">
             <label>Prescribing For</label>
             <select name="family_member_id" class="inp">
-                <option value="" @selected(!$familyMember)>{{ $patient->profile?->full_name }} (Self)</option>
+                <option value="">{{ $patient->profile?->full_name }} (Self)</option>
                 @foreach($patient->familyMembers as $m)
-                <option value="{{ $m->id }}" @selected($familyMember && $m->id == $familyMember->id)>{{ $m->full_name }} ({{ ucfirst($m->relation) }}) — {{ $m->sub_id }}</option>
+                <option value="{{ $m->id }}">{{ $m->full_name }} ({{ ucfirst($m->relation) }}) — {{ $m->sub_id }}</option>
                 @endforeach
             </select>
         </div>
         @endif
-        @else {{-- $patient is null --}}
+        @else
         <div class="ac-wrap">
             <input type="hidden" name="patient_user_id" id="patient_id_input" x-model="patientId">
             <input type="text" class="inp" placeholder="Search patient by name or mobile…"
@@ -178,10 +178,7 @@
                                 <div x-show="med.acList.length > 0" class="ac-list">
                                     <template x-for="(s, si) in med.acList" :key="si">
                                         <div class="ac-item" :class="med.acIdx===si?'hl':''" @mousedown.prevent="fillMed(idx, s)">
-                                            <div style="display:flex;align-items:center;gap:5px">
-                                                <span class="ac-item-name" x-text="s.medicine_name"></span>
-                                                <span x-show="s._mine" style="font-size:.62rem;font-weight:700;color:var(--leaf,#3d7a5c);background:rgba(61,122,92,.1);padding:1px 5px;border-radius:4px;letter-spacing:.04em">★ MY LIST</span>
-                                            </div>
+                                            <div class="ac-item-name" x-text="s.medicine_name"></div>
                                             <div class="ac-item-meta" x-text="[s.form,s.dosage,s.frequency].filter(Boolean).join(' · ')"></div>
                                         </div>
                                     </template>
@@ -226,24 +223,14 @@
                                     <option value="after_food">After food</option>
                                     <option value="with_food">With food</option>
                                     <option value="empty_stomach">Empty stomach</option>
-                                    <option value="bed_time">Bedtime</option>
-                                    <option value="any_time">Anytime</option>
+                                    <option value="bedtime">Bedtime</option>
+                                    <option value="anytime">Anytime</option>
                                 </select>
                             </div>
                         </div>
                         <div>
                             <label>Special Instructions</label>
                             <input type="text" :name="'medicines['+idx+'][special_instructions]'" class="inp" placeholder="e.g. Avoid in case of allergy…" x-model="med.special_instructions">
-                        </div>
-                        <div style="margin-top:8px;display:flex;align-items:center;gap:10px" x-show="med.medicine_name.trim() && !isMine(med.medicine_name) && !med._addedToList">
-                            <button type="button" @click="addToMyList(idx)" :disabled="med._addingToList"
-                                    style="font-size:.72rem;font-weight:600;padding:4px 12px;border-radius:7px;border:1.5px solid var(--leaf);background:transparent;color:var(--leaf);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s"
-                                    :style="med._addingToList ? 'opacity:.6;cursor:not-allowed' : 'opacity:1'"
-                                    x-text="med._addingToList ? 'Adding…' : '＋ Add to My List'"></button>
-                            <span x-show="med._addError" style="font-size:.72rem;color:#ef4444">Failed to add. Try again.</span>
-                        </div>
-                        <div style="margin-top:8px" x-show="med._addedToList">
-                            <span style="font-size:.72rem;font-weight:600;color:var(--leaf)">✓ Added to My List</span>
                         </div>
                     </div>
                     <button type="button" @click="removeMed(idx)" x-show="medicines.length > 1"
@@ -290,15 +277,15 @@
 </div>
 
 {{-- RIGHT: Letterhead + summary + presets --}}
-<div class="dr-sidebar-sticky" style="position:sticky;top:calc(var(--topbar-h) + 16px)">
-    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden;margin-bottom:14px">
+<div style="position:sticky;top:calc(var(--topbar-h) + 16px)">
+    <div style="background:var(--white);border:1px solid var(--warm-bd);border-radius:14px;overflow:hidden;margin-bottom:14px">
         <div style="background:var(--ink);padding:16px 18px">
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#fff;font-weight:500">{{ $profile?->clinic_name ?? 'My Clinic' }}</div>
-            <div style="font-size:.75rem;color:rgba(255,255,255,.6);margin-top:3px">{{ $profile?->clinic_address ?? '' }}{{ $profile?->clinic_city ? ', ' . $profile->clinic_city : '' }}</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.6);margin-top:3px">{{ $profile?->clinic_address ?? '' }}@if($profile?->clinic_city), {{ $profile->clinic_city }}@endif</div>
         </div>
         <div style="padding:14px 18px;border-bottom:1px solid var(--warm-bd)">
             <div style="font-size:.8rem;font-weight:600;color:var(--txt)">Dr. {{ auth()->user()->profile?->full_name ?? 'Doctor' }}</div>
-            <div style="font-size:.72rem;color:var(--txt-lt);margin-top:2px">{{ $profile?->qualification ?? '' }}{{ $profile?->specialization ? ' · ' . $profile->specialization : '' }}</div>
+            <div style="font-size:.72rem;color:var(--txt-lt);margin-top:2px">{{ $profile?->qualification ?? '' }}@if($profile?->specialization) · {{ $profile->specialization }}@endif</div>
             @if($profile?->registration_number)<div style="font-size:.7rem;color:var(--txt-lt);margin-top:1px">Reg: {{ $profile->registration_number }}</div>@endif
         </div>
         <div style="padding:12px 18px;font-size:.72rem;color:var(--txt-lt)">
@@ -307,7 +294,7 @@
         </div>
     </div>
 
-    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+    <div style="background:var(--white);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
         <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:8px">Medicines Added</div>
         <template x-for="(m, i) in medicines.slice(0, 6)" :key="i">
             <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--parch);font-size:.78rem">
@@ -318,10 +305,10 @@
         <div x-show="medicines.length > 6" style="text-align:center;padding-top:4px;font-size:.72rem;color:var(--txt-lt)" x-text="'+ '+(medicines.length-6)+' more'"></div>
     </div>
 
-    <div style="background:var(--cream);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px">
+    <div style="background:var(--white);border:1px solid var(--warm-bd);border-radius:12px;padding:14px 16px">
         <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-lt);margin-bottom:10px">Quick Combos</div>
         @foreach([
-            ['name' => 'Fever / Viral', 'meds' => [['medicine_name' => 'Paracetamol','dosage' => '500mg','form' => 'Tablet','frequency' => 'Three times daily','duration_days' => 5,'timing' => 'after_food'],['medicine_name' => 'Cetirizine','dosage' => '10mg','form' => 'Tablet','frequency' => 'Once daily','duration_days' => 5,'timing' => 'bed_time']]],
+            ['name' => 'Fever / Viral', 'meds' => [['medicine_name' => 'Paracetamol','dosage' => '500mg','form' => 'Tablet','frequency' => 'Three times daily','duration_days' => 5,'timing' => 'after_food'],['medicine_name' => 'Cetirizine','dosage' => '10mg','form' => 'Tablet','frequency' => 'Once daily','duration_days' => 5,'timing' => 'bedtime']]],
             ['name' => 'Throat / Cough', 'meds' => [['medicine_name' => 'Amoxicillin','dosage' => '500mg','form' => 'Capsule','frequency' => 'Twice daily','duration_days' => 5,'timing' => 'after_food'],['medicine_name' => 'Dextromethorphan Syrup','dosage' => '10ml','form' => 'Syrup','frequency' => 'Three times daily','duration_days' => 5,'timing' => 'after_food']]],
             ['name' => 'Gastritis', 'meds' => [['medicine_name' => 'Pantoprazole','dosage' => '40mg','form' => 'Tablet','frequency' => 'Once daily','duration_days' => 7,'timing' => 'before_food'],['medicine_name' => 'Domperidone','dosage' => '10mg','form' => 'Tablet','frequency' => 'Three times daily','duration_days' => 5,'timing' => 'before_food']]],
             ['name' => 'BP / Hypertension', 'meds' => [['medicine_name' => 'Amlodipine','dosage' => '5mg','form' => 'Tablet','frequency' => 'Once daily','duration_days' => 30,'timing' => 'after_food'],['medicine_name' => 'Telmisartan','dosage' => '40mg','form' => 'Tablet','frequency' => 'Once daily','duration_days' => 30,'timing' => 'after_food']]],
@@ -338,7 +325,7 @@
 </div>
 
 <div class="action-bar">
-    <a href="{{ route('doctor.prescriptions.index') }}" class="btn-ghost">Cancel</a>
+    <a href="{{ route('doctor.prescriptions') }}" class="btn-ghost">Cancel</a>
     <button type="button" class="btn-secondary" @click="submitForm('view')">
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         Save Prescription
@@ -352,22 +339,13 @@
 @endsection
 
 @push('scripts')
-@php
-    $selectedPatientData = $patient ? [
-        'id'     => $patient->id,
-        'name'   => $patient->profile?->full_name,
-        'mobile' => $patient->country_code . $patient->mobile_number,
-        'age'    => $patient->profile?->age,
-    ] : null;
-@endphp
 <script>
 const RECENT_MEDS = @json($recentMedicines);
-const MY_MEDS     = @json($myMedicines);
 function rxForm() {
     return {
         patientId: '{{ $patient?->id ?? "" }}',
         patientQuery: '{{ $patient?->profile?->full_name ?? "" }}',
-        selectedPatient: @json($selectedPatientData),
+        selectedPatient: @json($patient ? ['id' => $patient->id, 'name' => $patient->profile?->full_name, 'mobile' => $patient->country_code.$patient->mobile_number, 'age' => $patient->profile?->age] : null),
         results: [], showPList: false, acPIdx: 0,
         medicines: [newMed()],
         submitted: false,
@@ -376,9 +354,9 @@ function rxForm() {
         },
         async searchPatients() {
             if (this.patientQuery.length < 2) { this.results = []; return; }
-            const r = await fetch(`{{ route('doctor.patients.search') }}?q=${encodeURIComponent(this.patientQuery)}&type=any`);
+            const r = await fetch(`{{ route('doctor.patients.search') }}?q=${encodeURIComponent(this.patientQuery)}&type=mobile`);
             const d = await r.json();
-            this.results = d.found ? (d.patients || [d.patient]) : [];
+            this.results = d.found ? [d.patient] : [];
             this.showPList = this.results.length > 0;
         },
         selectPatient(p) { this.patientId = p.id; this.patientQuery = p.name; this.selectedPatient = p; this.showPList = false; document.getElementById('patient_id_input').value = p.id; },
@@ -386,23 +364,14 @@ function rxForm() {
         addMed() { this.medicines.push(newMed()); },
         removeMed(i) { this.medicines.splice(i, 1); },
         searchMed(idx, val) {
-            const med = this.medicines[idx];
-            med._addedToList = false;
-            med._addingToList = false;
-            med._addError = false;
-            if (!val || val.length < 2) { med.acList = []; return; }
+            if (!val || val.length < 2) { this.medicines[idx].acList = []; return; }
             const q = val.toLowerCase();
-            const mine = MY_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q))
-                                 .map(m => ({ ...m, _mine: true }));
-            const mineNames = new Set(mine.map(m => m.medicine_name.toLowerCase()));
-            const recent = RECENT_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q) && !mineNames.has(m.medicine_name.toLowerCase()))
-                                       .slice(0, 8 - mine.length);
-            med.acList = [...mine.slice(0, 8), ...recent].slice(0, 10);
-            med.acIdx = 0;
+            this.medicines[idx].acList = RECENT_MEDS.filter(m => m.medicine_name.toLowerCase().includes(q)).slice(0, 8);
+            this.medicines[idx].acIdx = 0;
         },
         fillMed(idx, s) {
             const m = this.medicines[idx];
-            Object.assign(m, { medicine_name: s.medicine_name, generic_name: s.generic_name||'', form: s.form||'', dosage: s.dosage||'', frequency: s.frequency||'', timing: s.timing||'', duration_days: s.duration_days||'', acList: [], _addedToList: false, _addingToList: false, _addError: false });
+            Object.assign(m, { medicine_name: s.medicine_name, generic_name: s.generic_name||'', form: s.form||'', dosage: s.dosage||'', frequency: s.frequency||'', timing: s.timing||'', duration_days: s.duration_days||'', acList: [] });
         },
         loadPreset(meds) { this.medicines = meds.map((m, i) => ({ ...newMed(), ...m, key: Date.now()+i })); },
         submitForm(action) {
@@ -412,46 +381,8 @@ function rxForm() {
             document.getElementById('form-action').value = action;
             document.getElementById('rx-form').submit();
         },
-        isMine(name) {
-            if (!name) return false;
-            const n = name.trim().toLowerCase();
-            return MY_MEDS.some(m => m.medicine_name.toLowerCase() === n);
-        },
-        async addToMyList(idx) {
-            const med = this.medicines[idx];
-            med._addingToList = true;
-            med._addError = false;
-            try {
-                const token = document.querySelector('input[name="_token"]').value;
-                const body = new FormData();
-                body.append('_token', token);
-                body.append('medicine_name', med.medicine_name);
-                if (med.generic_name)         body.append('generic_name', med.generic_name);
-                if (med.form)                 body.append('form', med.form);
-                if (med.dosage)               body.append('dosage', med.dosage);
-                if (med.frequency)            body.append('frequency', med.frequency);
-                if (med.timing)               body.append('timing', med.timing);
-                if (med.duration_days)        body.append('duration_days', med.duration_days);
-                if (med.special_instructions) body.append('special_instructions', med.special_instructions);
-                const r = await fetch("{{ route('doctor.medicines.store') }}", {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': token },
-                    body,
-                });
-                const data = await r.json();
-                if (data.success) {
-                    MY_MEDS.push(data.medicine);
-                    med._addedToList = true;
-                } else {
-                    med._addError = true;
-                }
-            } catch(e) {
-                med._addError = true;
-            }
-            med._addingToList = false;
-        },
     };
 }
-function newMed() { return { key: Date.now()+Math.random(), medicine_name:'', generic_name:'', form:'', dosage:'', frequency:'', duration_days:'', timing:'', special_instructions:'', acList:[], acIdx:0, _addingToList:false, _addedToList:false, _addError:false }; }
+function newMed() { return { key: Date.now()+Math.random(), medicine_name:'', generic_name:'', form:'', dosage:'', frequency:'', duration_days:'', timing:'', special_instructions:'', acList:[], acIdx:0 }; }
 </script>
 @endpush

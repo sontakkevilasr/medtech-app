@@ -35,7 +35,7 @@ class MedicationReminderController extends Controller
         // Recent prescriptions for quick-add
         $prescriptions = Prescription::where('patient_user_id', $patient->id)
             ->with('medicines')
-            ->where('status', '!=', 'cancelled')
+            ->whereNull('cancelled_at')
             ->orderByDesc('prescribed_date')
             ->limit(5)
             ->get();

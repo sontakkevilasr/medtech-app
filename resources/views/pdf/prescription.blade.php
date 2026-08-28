@@ -247,10 +247,10 @@
 <div class="watermark">CANCELLED</div>
 @endif
 
-{{-- ── Letterhead ─────────────────────────────────────────────────────────── -- --}}
+{{-- ── Letterhead ─────────────────────────────────────────────────────────── --}}
 <div class="letterhead">
     <div class="lh-left">
-        <div class="clinic-name">{{ $prescription->doctor->doctorProfile?->clinic_name ?? 'Naumah Clinic' }}</div>
+        <div class="clinic-name">{{ $prescription->doctor->doctorProfile?->clinic_name ?? 'MedTech Clinic' }}</div>
         <div class="doctor-name">Dr. {{ $prescription->doctor->profile?->full_name }}</div>
         <div class="doctor-quals">
             {{ $prescription->doctor->doctorProfile?->specialization }}
@@ -289,7 +289,7 @@
     </div>
 </div>
 
-{{-- ── Rx Meta: patient info + date ──────────────────────────────────────── -- --}}
+{{-- ── Rx Meta: patient info + date ──────────────────────────────────────── --}}
 @php
     $patientName = $prescription->familyMember
         ? $prescription->familyMember->full_name . ' (' . $prescription->patient->profile?->full_name . ')'
@@ -302,9 +302,9 @@
         <div class="meta-label">Patient</div>
         <div class="meta-value">{{ $patientName }}</div>
         <div style="margin-top:3pt;font-size:8pt;color:#5a6e6c">
-            {{ $patientProfile?->age ? 'Age: ' . $patientProfile->age : '' }}
-            {{ $patientProfile?->gender ? ' &nbsp;·&nbsp; ' . ucfirst($patientProfile->gender) : '' }}
-            {{ $patientProfile?->blood_group ? ' &nbsp;·&nbsp; ' . $patientProfile->blood_group : '' }}
+            @if($patientProfile?->age)      Age: {{ $patientProfile->age }} @endif
+            @if($patientProfile?->gender)   &nbsp;·&nbsp; {{ ucfirst($patientProfile->gender) }} @endif
+            @if($patientProfile?->blood_group) &nbsp;·&nbsp; {{ $patientProfile->blood_group }} @endif
         </div>
     </div>
     <div class="rx-right">
@@ -322,7 +322,7 @@
     </div>
 </div>
 
-{{-- ── Diagnosis ──────────────────────────────────────────────────────────── -- --}}
+{{-- ── Diagnosis ──────────────────────────────────────────────────────────── --}}
 @if($prescription->diagnosis_summary)
 <div class="diagnosis-block">
     <div class="section-label">Diagnosis / Clinical Summary</div>
@@ -330,7 +330,7 @@
 </div>
 @endif
 
-{{-- ── Medicines ──────────────────────────────────────────────────────────── -- --}}
+{{-- ── Medicines ──────────────────────────────────────────────────────────── --}}
 <div class="med-section-title">Prescribed Medicines</div>
 <table class="med-table">
     <thead>
@@ -378,7 +378,7 @@
     </tbody>
 </table>
 
-{{-- ── Instructions row ──────────────────────────────────────────────────── -- --}}
+{{-- ── Instructions row ──────────────────────────────────────────────────── --}}
 @if($prescription->general_instructions || $prescription->diet_advice)
 <div class="instr-table">
     @if($prescription->general_instructions)
@@ -400,7 +400,7 @@
 </div>
 @endif
 
-{{-- ── Follow-up ───────────────────────────────────────────────────────────── -- --}}
+{{-- ── Follow-up ───────────────────────────────────────────────────────────── --}}
 @if($prescription->follow_up_date || $prescription->follow_up_instructions)
 <div class="followup-bar">
     <div class="fu-left">
@@ -423,7 +423,7 @@
 </div>
 @endif
 
-{{-- ── Signature footer ────────────────────────────────────────────────────── -- --}}
+{{-- ── Signature footer ────────────────────────────────────────────────────── --}}
 <div class="sig-footer">
     <div class="sig-left">
         <div style="font-size:7.5pt;color:#8fa09e;margin-bottom:4pt">

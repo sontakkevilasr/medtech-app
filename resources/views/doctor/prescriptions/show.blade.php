@@ -1,7 +1,7 @@
 @extends('layouts.doctor')
 @section('title', $prescription->prescription_number)
 @section('page-title')
-    <a href="{{ route('doctor.prescriptions.index') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Prescriptions</a>
+    <a href="{{ route('doctor.prescriptions') }}" style="color:var(--txt-lt);text-decoration:none;font-size:.85rem;font-weight:400">Prescriptions</a>
     <span style="color:var(--txt-lt);margin:0 6px">/</span>
     {{ $prescription->prescription_number }}
 @endsection
@@ -50,18 +50,18 @@
     </div>
 </div>
 
-<div class="dr-grid-2col" style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start">
+<div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start">
 <div>
 <div class="panel fade-in">
     {{-- Letterhead --}}
     <div style="background:var(--ink);padding:16px 22px;display:flex;justify-content:space-between;align-items:flex-start">
         <div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:#fff;font-weight:500">{{ $doctor->doctorProfile?->clinic_name ?? 'Medical Clinic' }}</div>
-            <div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-top:3px">{{ $doctor->doctorProfile?->clinic_address }}{{ $doctor->doctorProfile?->clinic_city ? ', ' . $doctor->doctorProfile->clinic_city : '' }}</div>
+            <div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-top:3px">{{ $doctor->doctorProfile?->clinic_address }}@if($doctor->doctorProfile?->clinic_city), {{ $doctor->doctorProfile->clinic_city }}@endif</div>
         </div>
         <div style="text-align:right">
             <div style="font-size:.875rem;font-weight:600;color:#fff">Dr. {{ $doctor->profile?->full_name }}</div>
-            <div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px">{{ $doctor->doctorProfile?->qualification }}{{ $doctor->doctorProfile?->specialization ? ' · ' . $doctor->doctorProfile->specialization : '' }}</div>
+            <div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px">{{ $doctor->doctorProfile?->qualification }}@if($doctor->doctorProfile?->specialization) · {{ $doctor->doctorProfile->specialization }}@endif</div>
         </div>
     </div>
     <div style="height:3px;background:var(--leaf)"></div>
@@ -72,7 +72,7 @@
             <div style="width:34px;height:34px;border-radius:9px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;color:#fff">{{ strtoupper(substr($displayName,0,1)) }}</div>
             <div>
                 <div style="font-size:.9rem;font-weight:600;color:var(--txt)">{{ $displayName }}</div>
-                <div style="font-size:.75rem;color:var(--txt-lt)">{{ ($member?->age ?? $profile?->age) ? 'Age ' . ($member?->age ?? $profile?->age) : '' }}{{ $profile?->blood_group ? ' · ' . $profile->blood_group : '' }}{{ $member ? ' · ' . ucfirst($member->relation) : '' }}</div>
+                <div style="font-size:.75rem;color:var(--txt-lt)">@if($member?->age??$profile?->age)Age {{ $member?->age??$profile?->age }}@endif@if($profile?->blood_group) · {{ $profile->blood_group }}@endif@if($member) · {{ ucfirst($member->relation) }}@endif</div>
             </div>
         </div>
         <div style="margin-left:auto;text-align:right">

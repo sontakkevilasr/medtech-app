@@ -23,7 +23,7 @@
 
 <div class="fade-in">
 
-{{-- ══ YOUR OWN SUB-ID CARD ═══════════════════════════════════════════════════ -- --}}
+{{-- ══ YOUR OWN SUB-ID CARD ═══════════════════════════════════════════════════ --}}
 <div style="background:linear-gradient(135deg,#4a3760 0%,#2d1f47 100%);border-radius:18px;padding:28px 32px;margin-bottom:26px;color:#fff;position:relative;overflow:hidden">
     {{-- Decorative circles --}}
     <div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
@@ -50,7 +50,7 @@
                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                     Copy ID
                 </button>
-                <a href="https://wa.me/?text={{ urlencode('My Naumah Clinic Sub-ID is: '.$selfId.' — share with your doctor for quick record lookup.') }}"
+                <a href="https://wa.me/?text={{ urlencode('My MedTech Sub-ID is: '.$selfId.' — share with your doctor for quick record lookup.') }}"
                    target="_blank"
                    style="padding:8px 16px;border:1.5px solid rgba(37,211,102,.5);border-radius:9px;background:rgba(37,211,102,.15);color:#fff;font-size:.8125rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .15s"
                    onmouseover="this.style.background='rgba(37,211,102,.25)'" onmouseout="this.style.background='rgba(37,211,102,.15)'">
@@ -66,7 +66,7 @@
     </div>
 </div>
 
-{{-- ══ ACTIVE FAMILY MEMBERS ══════════════════════════════════════════════════ -- --}}
+{{-- ══ ACTIVE FAMILY MEMBERS ══════════════════════════════════════════════════ --}}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div>
         <h2 style="font-family:'Lora',serif;font-size:1.1rem;font-weight:500;color:var(--txt)">Family Members</h2>
@@ -97,6 +97,7 @@
     @foreach($active as $member)
     @php
         $relColor = $relationColors[$member->relation] ?? '#5a6e7a';
+        $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$member->full_name),0,2))));
     @endphp
     <div class="panel" style="padding:0;overflow:hidden;transition:box-shadow .15s"
          onmouseover="this.style.boxShadow='0 4px 20px rgba(74,55,96,.1)'" onmouseout="this.style.boxShadow='none'">
@@ -104,8 +105,9 @@
         {{-- Top colour bar with avatar --}}
         <div style="background:linear-gradient(135deg,{{ $relColor }} 0%,{{ $relColor }}bb 100%);padding:18px 20px 16px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <x-avatar name="{{ $member->full_name }}" :photo="$member->profile_photo"
-                           :size="42" :radius="11" bg="rgba(255,255,255,.2)" font-size="1rem" />
+                <div style="width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff">
+                    {{ $initials }}
+                </div>
                 <span style="font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff;text-transform:uppercase;letter-spacing:.06em">
                     {{ $member->relation }}
                 </span>
@@ -132,7 +134,7 @@
                         title="Copy Sub-ID">
                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                 </button>
-                <a href="https://wa.me/?text={{ urlencode($member->full_name."'s Naumah Clinic Sub-ID: ".$member->sub_id) }}"
+                <a href="https://wa.me/?text={{ urlencode($member->full_name."'s MedTech Sub-ID: ".$member->sub_id) }}"
                    target="_blank"
                    style="width:28px;height:28px;border:1px solid #bbf7d0;border-radius:7px;background:#f0fdf4;cursor:pointer;color:#15803d;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .12s"
                    title="Share via WhatsApp">
@@ -164,7 +166,7 @@
 </div>
 @endif
 
-{{-- ══ DELINKED SUB-IDs ════════════════════════════════════════════════════════ -- --}}
+{{-- ══ DELINKED SUB-IDs ════════════════════════════════════════════════════════ --}}
 @if($delinked->isNotEmpty())
 <div style="margin-bottom:24px">
     <h3 style="font-family:'Lora',serif;font-size:.95rem;font-weight:500;color:var(--txt-md);margin-bottom:12px;display:flex;align-items:center;gap:8px">
@@ -200,10 +202,10 @@
 </div>
 @endif
 
-{{-- ══ WHAT IS A SUB-ID? INFO CARD ════════════════════════════════════════════ -- --}}
+{{-- ══ WHAT IS A SUB-ID? INFO CARD ════════════════════════════════════════════ --}}
 <div class="panel" style="padding:18px 22px;background:var(--parch)">
     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:10px">About Sub-IDs</div>
-    <div id="about-subid-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
         @foreach([
             ['🏷️', 'Unique identifier', 'Every person in your family gets a permanent ID like MED-00001-A that stays with them forever.'],
             ['🔒', 'Privacy first',     'Doctors search by Sub-ID instead of your mobile number — no personal data is exposed during lookup.'],
@@ -220,11 +222,3 @@
 
 </div>
 @endsection
-
-@push('styles')
-<style>
-@media (max-width: 600px) {
-    #about-subid-grid { grid-template-columns: 1fr !important; }
-}
-</style>
-@endpush

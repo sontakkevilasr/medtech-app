@@ -11,7 +11,6 @@ use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
-use App\Services\NotificationService;
 
 class AppointmentController extends Controller
 {
@@ -58,18 +57,11 @@ class AppointmentController extends Controller
 
     public function showDoctors(Request $request)
     {
-        $patient        = auth()->user();
-        $search         = $request->get('q');
+        $patient    = auth()->user();
+        $search     = $request->get('q');
         $specialization = $request->get('spec');
-        $cityFilter     = $request->get('city'); // null = patient's city default, 'all' = no filter
 
-        $patientCity = $patient->profile?->city;
-        $activeCity  = match(true) {
-            $cityFilter === 'all' => null,
-            $cityFilter !== null  => $cityFilter,
-            default               => $patientCity,
-        };
-
+        // My existing doctors first (with active access)
         $myDoctorIds = \App\Models\DoctorAccessRequest::where('patient_user_id', $patient->id)
             ->active()
             ->pluck('doctor_user_id');
@@ -93,49 +85,21 @@ class AppointmentController extends Controller
                 $q->where('specialization', 'like', "%{$specialization}%"));
         }
 
-        if ($activeCity) {
-            $query->whereHas('doctorProfile', fn($q) =>
-                $q->where('clinic_city', 'like', "%{$activeCity}%"));
-        }
-
-        $allDoctors = $query->get();
-
-        // Batch-fetch completed appointment counts for popularity ranking
-        $completedCounts = Appointment::where('status', 'completed')
-            ->whereIn('doctor_user_id', $allDoctors->pluck('id'))
-            ->selectRaw('doctor_user_id, count(*) as count')
-            ->groupBy('doctor_user_id')
-            ->pluck('count', 'doctor_user_id');
-
-        $allDoctors = $allDoctors->map(function ($doc) use ($myDoctorIds, $completedCounts) {
-            $doc->completed_count = $completedCounts->get($doc->id, 0);
-            $doc->is_my_doctor    = $myDoctorIds->contains($doc->id);
+        $allDoctors = $query->get()->map(function ($doc) use ($myDoctorIds) {
+            $doc->is_my_doctor = $myDoctorIds->contains($doc->id);
             return $doc;
-        });
+        })->sortByDesc('is_my_doctor')->values();
 
-        $myDoctors = $allDoctors->filter(fn($d) => $d->is_my_doctor)
-            ->sortByDesc('completed_count')->values();
+        // My doctors section (top)
+        $myDoctors  = $allDoctors->filter(fn($d) => $d->is_my_doctor)->values();
+        $otherDoctors = $allDoctors->filter(fn($d) => !$d->is_my_doctor)->values();
 
-        $nonMyDoctors = $allDoctors->filter(fn($d) => !$d->is_my_doctor)
-            ->sortByDesc('completed_count')->values();
-
-        // Top doctors: only when city is active, max 4, must have ≥1 completed appointment
-        $topDoctors   = $activeCity
-            ? $nonMyDoctors->where('completed_count', '>', 0)->take(4)->values()
-            : collect();
-        $topIds       = $topDoctors->pluck('id');
-        $otherDoctors = $nonMyDoctors->reject(fn($d) => $topIds->contains($d->id))->values();
-
-        $cities = DoctorProfile::where('is_verified', true)
-            ->whereNotNull('clinic_city')->where('clinic_city', '!=', '')
-            ->distinct()->pluck('clinic_city')->sort()->values();
-
+        // All specializations for filter chips
         $specializations = DoctorProfile::whereNotNull('specialization')
             ->distinct()->pluck('specialization')->sort()->values();
 
         return view('patient.appointments.book-doctor', compact(
-            'myDoctors', 'topDoctors', 'otherDoctors', 'specializations',
-            'search', 'specialization', 'cities', 'activeCity', 'patientCity', 'cityFilter'
+            'myDoctors', 'otherDoctors', 'specializations', 'search', 'specialization'
         ));
     }
 
@@ -147,11 +111,10 @@ class AppointmentController extends Controller
             ->with(['profile', 'doctorProfile'])
             ->firstOrFail();
 
-        $patient       = auth()->user();
-        $familyMember  = null;
-        $familyMembers = $patient->familyMembers()->active()->orderBy('full_name')->get();
+        $patient      = auth()->user();
+        $familyMember = null;
 
-        return view('patient.appointments.book-slots', compact('doctor', 'patient', 'familyMember', 'familyMembers'));
+        return view('patient.appointments.book-slots', compact('doctor', 'patient', 'familyMember'));
     }
 
     public function showSlotsForMember(Request $request, int $doctor, int $member)
@@ -159,34 +122,26 @@ class AppointmentController extends Controller
         $doctor = User::where('id', $doctor)->where('role', 'doctor')
             ->with(['profile', 'doctorProfile'])->firstOrFail();
 
-        $patient       = auth()->user();
-        $familyMember  = $patient->familyMembers()->where('id', $member)->firstOrFail();
-        $familyMembers = $patient->familyMembers()->active()->orderBy('full_name')->get();
+        $familyMember = auth()->user()->familyMembers()->where('id', $member)->firstOrFail();
 
-        return view('patient.appointments.book-slots', compact('doctor', 'patient', 'familyMember', 'familyMembers'));
+        return view('patient.appointments.book-slots', compact('doctor', 'familyMember')
+            + ['patient' => auth()->user()]);
     }
 
     // ── AJAX: Available slots for a given date ───────────────────────────────
     // GET /patient/appointments/book/{doctor}/slots?date=2025-03-15
 
-    public function availableSlotsForDate(Request $request, int $doctor)
+    public function availableSlotsForDate(Request $request, int $doctorId)
     {
         $request->validate(['date' => ['required', 'date', 'after_or_equal:today']]);
 
-        $doctor  = User::findOrFail($doctor);
+        $doctor  = User::findOrFail($doctorId);
         $profile = $doctor->doctorProfile;
         $date    = Carbon::parse($request->date);
         $dayName = strtolower($date->format('l')); // monday, tuesday…
 
         $slots = $profile->available_slots ?? [];
         $daySlots = $slots[$dayName] ?? []; // [["start":"09:00","end":"13:00"],...]
-
-        // Check if the entire day is blocked
-        $blockedDates = $profile->blocked_dates ?? [];
-        $dateStr      = $date->format('Y-m-d');
-        if (isset($blockedDates[$dateStr]) && $blockedDates[$dateStr]['type'] === 'full_day') {
-            return response()->json(['available' => [], 'date' => $request->date]);
-        }
 
         if (empty($daySlots)) {
             return response()->json(['available' => [], 'date' => $request->date]);
@@ -207,17 +162,12 @@ class AppointmentController extends Controller
         }
 
         // Remove already-booked slots
-        $booked = Appointment::where('doctor_user_id', $doctor->id)
+        $booked = Appointment::where('doctor_user_id', $doctorId)
             ->whereDate('slot_datetime', $date)
             ->whereNotIn('status', ['cancelled'])
             ->pluck('slot_datetime')
             ->map(fn($dt) => $dt->format('H:i'))
             ->toArray();
-
-        // Merge doctor-blocked partial slots into the booked list
-        if (isset($blockedDates[$dateStr]) && $blockedDates[$dateStr]['type'] === 'partial') {
-            $booked = array_merge($booked, $blockedDates[$dateStr]['slots'] ?? []);
-        }
 
         $available = array_values(array_filter($allTimes, function ($t) use ($booked, $date) {
             if (in_array($t, $booked)) return false;
@@ -238,11 +188,11 @@ class AppointmentController extends Controller
     // ── AJAX: Available dates for a month ────────────────────────────────────
     // GET /patient/appointments/book/{doctor}/dates?month=2025-03
 
-    public function availableDatesForMonth(Request $request, int $doctor)
+    public function availableDatesForMonth(Request $request, int $doctorId)
     {
         $request->validate(['month' => ['required', 'date_format:Y-m']]);
 
-        $doctor  = User::findOrFail($doctor);
+        $doctor  = User::findOrFail($doctorId);
         $profile = $doctor->doctorProfile;
         $slots   = $profile->available_slots ?? [];
 
@@ -256,21 +206,15 @@ class AppointmentController extends Controller
         $start = Carbon::create($year, $month, 1)->max(today());
         $end   = Carbon::create($year, $month, 1)->endOfMonth();
 
-        $blockedDates = $profile->blocked_dates ?? [];
-
         $availableDates = [];
         $period = CarbonPeriod::create($start, $end);
         foreach ($period as $day) {
-            $dateStr = $day->format('Y-m-d');
-            if (!in_array(strtolower($day->format('l')), $availableDays)) continue;
-            // Skip fully blocked days
-            if (isset($blockedDates[$dateStr]) && $blockedDates[$dateStr]['type'] === 'full_day') continue;
-            $availableDates[] = $dateStr;
+            if (in_array(strtolower($day->format('l')), $availableDays)) {
+                $availableDates[] = $day->format('Y-m-d');
+            }
         }
 
-        return response()->json(['available_dates' => $availableDates])
-            ->header('Cache-Control', 'no-store, no-cache, must-revalidate')
-            ->header('Pragma', 'no-cache');
+        return response()->json(['available_dates' => $availableDates]);
     }
 
     // ── Step 3: Store booking ────────────────────────────────────────────────
@@ -323,8 +267,6 @@ class AppointmentController extends Controller
             'payment_status'  => 'pending',
         ]);
 
-        NotificationService::appointmentBooked($appointment->load('doctor.profile', 'patient.profile'));
-
         // Schedule reminders
         $this->reminder->scheduleAppointmentReminders($appointment);
 
@@ -364,8 +306,7 @@ class AppointmentController extends Controller
             'status'              => 'cancelled',
             'cancellation_reason' => $request->reason,
         ]);
-        NotificationService::appointmentCancelled($appointment->fresh(), 'patient');
-        
+
         return back()->with('success', 'Appointment cancelled.');
     }
 

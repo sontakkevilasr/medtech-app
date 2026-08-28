@@ -4,7 +4,7 @@
 
 @section('content')
 
-{{-- ── Stat Cards ─────────────────────────────────────────────────────── -- --}}
+{{-- ── Stat Cards ─────────────────────────────────────────────────────── --}}
 <div class="stat-grid">
 
     {{-- Today's Appointments --}}
@@ -64,9 +64,9 @@
 
 </div>
 
-{{-- ── Main two-column grid ─────────────────────────────────────────────── -- --}}
+{{-- ── Main two-column grid ─────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start"
-     class="fade-in-d2 dr-grid-2col">
+     class="fade-in-d2">
 
     {{-- LEFT: Today's Appointments --}}
     <div>
@@ -79,7 +79,7 @@
                         {{ now()->format('l, d M Y') }}
                     </span>
                 </div>
-                <a href="{{ route('doctor.appointments.index') }}" class="panel-action">View all →</a>
+                <a href="{{ route('doctor.appointments') }}" class="panel-action">View all →</a>
             </div>
 
             @if($todayApts->isEmpty())
@@ -96,6 +96,7 @@
             @foreach($todayApts as $apt)
             @php
                 $name     = $apt->patient->profile?->full_name ?? 'Patient';
+                $initials = strtoupper(implode('', array_map(fn($p) => $p[0], array_slice(explode(' ', $name), 0, 2))));
                 $time     = $apt->slot_datetime;
                 $isPast   = $time->isPast();
             @endphp
@@ -107,7 +108,7 @@
 
                 <div class="apt-divider"></div>
 
-                <x-avatar name="{{ $name }}" :photo="$apt->patient->profile?->profile_photo" class="apt-avatar" />
+                <div class="apt-avatar">{{ $initials }}</div>
 
                 <div class="apt-info">
                     <div class="apt-name">{{ $name }}</div>
@@ -171,7 +172,7 @@
                     </svg>
                     Upcoming — Next 7 Days
                 </div>
-                <a href="{{ route('doctor.appointments.index') }}" class="panel-action">Full calendar →</a>
+                <a href="{{ route('doctor.appointments') }}" class="panel-action">Full calendar →</a>
             </div>
 
             @if($upcomingApts->isEmpty())
@@ -188,6 +189,7 @@
             @foreach($upcomingApts as $apt)
             @php
                 $name     = $apt->patient->profile?->full_name ?? 'Patient';
+                $initials = strtoupper(implode('', array_map(fn($p) => $p[0], array_slice(explode(' ', $name), 0, 2))));
                 $time     = $apt->slot_datetime;
                 $isToday  = $time->isToday();
                 $dayLabel = $time->isToday() ? 'Today' : ($time->isTomorrow() ? 'Tomorrow' : $time->format('D, d M'));
@@ -201,7 +203,7 @@
                 </div>
 
                 <div class="apt-divider"></div>
-                <x-avatar name="{{ $name }}" :photo="$apt->patient->profile?->profile_photo" class="apt-avatar" />
+                <div class="apt-avatar">{{ $initials }}</div>
 
                 <div class="apt-info">
                     <div class="apt-name">{{ $name }}</div>
@@ -243,7 +245,7 @@
                     Revenue (6 months)
                 </div>
                 @if(auth()->user()->doctorProfile?->is_premium)
-                    <a href="{{ route('doctor.analytics.index') }}" class="panel-action">Details →</a>
+                    <a href="{{ route('doctor.analytics') }}" class="panel-action">Details →</a>
                 @endif
             </div>
             @php $maxRevenue = $revenueChart->max('amount') ?: 1; @endphp
@@ -287,7 +289,7 @@
                     Pending Access
                     <span style="font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:400;color:var(--coral)">{{ $pendingAccess }} request{{ $pendingAccess > 1 ? 's' : '' }}</span>
                 </div>
-                <a href="{{ route('doctor.patients.index') }}" class="panel-action" style="color:var(--coral)">Resolve →</a>
+                <a href="{{ route('doctor.patients') }}" class="panel-action" style="color:var(--coral)">Resolve →</a>
             </div>
             <div style="padding:12px 20px;font-size:.8125rem;color:var(--txt-md)">
                 You have pending OTP access requests waiting for patient approval.
@@ -304,7 +306,7 @@
                     </svg>
                     Recent Prescriptions
                 </div>
-                <a href="{{ route('doctor.prescriptions.index') }}" class="panel-action">All →</a>
+                <a href="{{ route('doctor.prescriptions') }}" class="panel-action">All →</a>
             </div>
 
             @if($recentRx->isEmpty())
@@ -352,7 +354,7 @@
             <div style="font-size:.8rem;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.5">
                 Specialised workflows for OBG, IVF, Paediatrics, Orthodontics and more.
             </div>
-            <a href="{{ route('doctor.subscription.plans') }}"
+            <a href="{{ route('doctor.subscription') }}"
                style="display:inline-flex;align-items:center;gap:6px;background:var(--amber);color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:.8125rem;font-weight:600;text-decoration:none;transition:opacity .15s"
                onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
                 View Plans
@@ -368,6 +370,9 @@
 
 @push('styles')
 <style>
+    @media (max-width: 900px) {
+        #content-grid { grid-template-columns: 1fr !important; }
+    }
     @keyframes pulse-ring {
         0%, 100% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.5); opacity: .5; }

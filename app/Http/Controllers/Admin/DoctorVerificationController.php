@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\DoctorProfile;
 use Illuminate\Http\Request;
-use App\Services\NotificationService;
-
 
 class DoctorVerificationController extends Controller
 {
@@ -59,9 +57,6 @@ class DoctorVerificationController extends Controller
             'rejection_reason'=> null,
         ]);
 
-        NotificationService::doctorVerified($doctor);
-
-
         // Notify doctor (WhatsApp / future)
         try {
             app(\App\Services\WhatsAppService::class)
@@ -85,8 +80,7 @@ class DoctorVerificationController extends Controller
             'is_verified'      => false,
             'rejection_reason' => $request->reason,
         ]);
-        NotificationService::doctorRejected($doctor, $request->reason);
-        
+
         // Suspend until they fix it
         $doctor->update(['is_active' => false]);
 

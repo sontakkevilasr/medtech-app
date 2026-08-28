@@ -38,19 +38,19 @@
                    required>
         </div>
 
-        {{-- Relation --}}
+        {{-- Relation (only on create) --}}
+        @if(!$editing)
         <div style="margin-bottom:16px">
             <label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:6px">
                 Relation <span style="color:var(--rose)">*</span>
             </label>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
                 @foreach(['spouse'=>'Spouse','child'=>'Child','parent'=>'Parent','sibling'=>'Sibling','grandparent'=>'Grandparent','other'=>'Other'] as $val => $lbl)
-                @php $relSel = old('relation', $member?->relation) === $val; @endphp
                 <label style="cursor:pointer">
-                    <input type="radio" name="relation" value="{{ $val }}" {{ $relSel ? 'checked' : '' }}
+                    <input type="radio" name="relation" value="{{ $val }}" {{ old('relation') === $val ? 'checked' : '' }}
                            style="display:none" class="rel-radio" id="rel-{{ $val }}">
                     <div class="rel-pill"
-                         style="text-align:center;padding:8px 6px;border:1.5px solid {{ $relSel ? 'var(--plum)' : 'var(--warm-bd)' }};border-radius:9px;font-size:.8rem;font-weight:500;color:{{ $relSel ? '#fff' : 'var(--txt-md)' }};background:{{ $relSel ? 'var(--plum)' : 'transparent' }};transition:all .15s"
+                         style="text-align:center;padding:8px 6px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.8rem;font-weight:500;color:var(--txt-md);transition:all .15s;{{ old('relation') === $val ? 'background:var(--plum);color:#fff;border-color:var(--plum)' : '' }}"
                          onclick="document.querySelectorAll('.rel-pill').forEach(p=>{p.style.background='transparent';p.style.color='var(--txt-md)';p.style.borderColor='var(--warm-bd)'}); this.style.background='var(--plum)'; this.style.color='#fff'; this.style.borderColor='var(--plum)'">
                         {{ $lbl }}
                     </div>
@@ -58,6 +58,7 @@
                 @endforeach
             </div>
         </div>
+        @endif
 
         {{-- DOB + Gender row --}}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">

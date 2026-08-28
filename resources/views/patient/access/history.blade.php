@@ -47,6 +47,7 @@
     @foreach($requests as $req)
     @php
         $drName   = $req->doctor?->profile?->full_name ?? 'Doctor';
+        $initials = strtoupper(implode('', array_map(fn($x)=>$x[0], array_slice(explode(' ',$drName),0,2))));
         $dp       = $req->doctor?->doctorProfile;
         $colors   = ['#4a3760','#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a'];
         $color    = $colors[$req->doctor_user_id % count($colors)];
@@ -62,8 +63,9 @@
          onmouseover="this.style.background='#faf8f4'" onmouseout="this.style.background='transparent'">
 
         {{-- Avatar --}}
-        <x-avatar name="{{ $drName }}" :photo="$req->doctor?->profile?->profile_photo"
-                   :size="40" :radius="10" :bg="$color" font-size=".9rem" />
+        <div style="width:40px;height:40px;border-radius:10px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0">
+            {{ $initials }}
+        </div>
 
         {{-- Info --}}
         <div style="flex:1;min-width:0">

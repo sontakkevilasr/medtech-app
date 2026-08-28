@@ -6,14 +6,13 @@
 <title>{{ $prescription->prescription_number }}</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { margin: 14mm 18mm 18mm 18mm; }
+    @page { margin: 14mm 14mm 18mm 14mm; }
     body {
         font-family: DejaVu Sans, sans-serif;
         font-size: 9.5pt;
         color: #1c2b2a;
         line-height: 1.45;
         background: #fff;
-        padding: 0 4mm;
     }
 
     /* ── Letterhead ─────────────────────────────────────── */
@@ -26,9 +25,8 @@
         display: table;
         width: 100%;
     }
-    .lh-left  { display: table-cell; vertical-align: top; width: 42%; }
-    .lh-logo  { display: table-cell; vertical-align: middle; width: 16%; text-align: center; }
-    .lh-right { display: table-cell; vertical-align: top; width: 42%; text-align: right; }
+    .lh-left  { display: table-cell; vertical-align: top; width: 70%; }
+    .lh-right { display: table-cell; vertical-align: top; width: 30%; text-align: right; }
 
     .dr-name {
         font-size: 16pt;
@@ -219,7 +217,7 @@
 </head>
 <body>
 
-{{-- ── Letterhead ────────────────────────────────────────────────────────── -- --}}
+{{-- ── Letterhead ────────────────────────────────────────────────────────── --}}
 @php
     $doctor  = $prescription->doctor;
     $profile = $doctor?->doctorProfile;
@@ -229,13 +227,6 @@
     $patientAge  = $member ? $member->age : $patient->profile?->age;
     $patientGen  = $member ? $member->gender : $patient->profile?->gender;
     $patientBg   = $patient->profile?->blood_group;
-
-    $logoData = null;
-    if ($profile?->clinic_logo && \Storage::disk('public')->exists($profile->clinic_logo)) {
-        $logoFile = \Storage::disk('public')->path($profile->clinic_logo);
-        $logoMime = mime_content_type($logoFile) ?: 'image/png';
-        $logoData = 'data:' . $logoMime . ';base64,' . base64_encode(file_get_contents($logoFile));
-    }
 @endphp
 
 <div class="letterhead">
@@ -254,11 +245,6 @@
                 </div>
             @endif
         </div>
-        <div class="lh-logo">
-            @if($logoData)
-            <img src="{{ $logoData }}" style="width:140px;height:120px;object-fit:contain">
-            @endif
-        </div>
         <div class="lh-right">
             @if($profile?->clinic_name)
                 <div class="clinic-name">{{ $profile->clinic_name }}</div>
@@ -267,7 +253,7 @@
                 <div class="clinic-addr">{{ $profile->clinic_address }}</div>
             @endif
             @if($profile?->clinic_city)
-                <div class="clinic-addr">{{ $profile->clinic_city }}{{ $profile?->clinic_state ? ', ' . $profile->clinic_state : '' }}</div>
+                <div class="clinic-addr">{{ $profile->clinic_city }}@if($profile?->clinic_state), {{ $profile->clinic_state }}@endif</div>
             @endif
             @if($doctor?->mobile_number)
                 <div class="clinic-addr">📞 {{ $doctor->country_code }} {{ $doctor->mobile_number }}</div>
@@ -284,7 +270,7 @@
     </div>
 </div>
 
-{{-- ── RX Number bar ──────────────────────────────────────────────────────── -- --}}
+{{-- ── RX Number bar ──────────────────────────────────────────────────────── --}}
 <div class="rx-bar">
     <div class="rx-bar-left">
         <span class="rx-number">{{ $prescription->prescription_number }}</span>
@@ -294,7 +280,7 @@
     </div>
 </div>
 
-{{-- ── Patient Info ───────────────────────────────────────────────────────── -- --}}
+{{-- ── Patient Info ───────────────────────────────────────────────────────── --}}
 <table class="pt-box" style="width:100%;border:1px solid #e8e2da;border-radius:5px;background:#f7f3ee;padding:7px 10px;margin-bottom:10px">
     <tr>
         <td style="font-size:7.5pt;font-weight:bold;color:#8fa09e;text-transform:uppercase;letter-spacing:.5px;padding-right:16px;white-space:nowrap;padding-bottom:2px">Patient</td>
@@ -308,13 +294,13 @@
     </tr>
 </table>
 
-{{-- ── Diagnosis ──────────────────────────────────────────────────────────── -- --}}
+{{-- ── Diagnosis ──────────────────────────────────────────────────────────── --}}
 @if($prescription->diagnosis_summary)
 <div class="section-label">Diagnosis</div>
 <div class="diag-box">{{ $prescription->diagnosis_summary }}</div>
 @endif
 
-{{-- ── Medicines ───────────────────────────────────────────────────────────── -- --}}
+{{-- ── Medicines ───────────────────────────────────────────────────────────── --}}
 <div style="margin-bottom:4px">
     <span class="rx-symbol">℞</span>
     <span class="section-label" style="line-height:2">Medicines</span>
@@ -356,7 +342,7 @@
     </tbody>
 </table>
 
-{{-- ── Instructions ───────────────────────────────────────────────────────── -- --}}
+{{-- ── Instructions ───────────────────────────────────────────────────────── --}}
 @if($prescription->general_instructions || $prescription->diet_advice)
 <table style="width:100%;border-collapse:collapse;margin-bottom:10px">
     <tr>
@@ -380,7 +366,7 @@
 </table>
 @endif
 
-{{-- ── Follow-up ───────────────────────────────────────────────────────────── -- --}}
+{{-- ── Follow-up ───────────────────────────────────────────────────────────── --}}
 @if($prescription->follow_up_date)
 <div class="followup-bar">
     <div class="fu-left">
@@ -396,10 +382,10 @@
 </div>
 @endif
 
-{{-- ── Footer / Signature ─────────────────────────────────────────────────── -- --}}
+{{-- ── Footer / Signature ─────────────────────────────────────────────────── --}}
 <div class="footer">
     <div class="footer-left">
-        <div style="font-size:7pt;color:#c0c0c0">Generated by Naumah Clinic · {{ $prescription->prescription_number }}</div>
+        <div style="font-size:7pt;color:#c0c0c0">Generated by MedTech · {{ $prescription->prescription_number }}</div>
         <div style="font-size:7pt;color:#c0c0c0">This prescription is valid for 30 days from the date of issue.</div>
         @if($member)
         <div style="font-size:7pt;color:#8fa09e;margin-top:2px">

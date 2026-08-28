@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Appointment;
-use App\Models\Prescription;
-use App\Models\Payment;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -137,130 +134,7 @@ class ExcelExportService
         ]);
     }
 
-
-    // ─── Admin / Platform-wide Exports ───────────────────────────────────────
-
-    public function exportAllUsers(string $role = null): \Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        $users = User::whereIn('role', $role ? [$role] : ['doctor', 'patient'])
-            ->with(['profile', 'doctorProfile'])
-            ->latest()
-            ->get()
-            ->map(fn($u) => [
-                $u->id,
-                $u->profile?->full_name ?? '—',
-                ucfirst($u->role),
-                $u->country_code . $u->mobile_number,
-                $u->profile?->email ?? '—',
-                $u->profile?->city ?? $u->doctorProfile?->clinic_city ?? '—',
-                $u->profile?->state ?? '—',
-                $u->is_active ? 'Active' : 'Suspended',
-                $u->is_verified ? 'Yes' : 'No',
-                $u->doctorProfile?->specialization ?? '—',
-                $u->doctorProfile?->is_verified ? 'Yes' : 'No',
-                $u->doctorProfile?->is_premium ? 'Yes' : 'No',
-                $u->created_at->format('d M Y'),
-            ]);
-
-        $label = $role ? ucfirst($role).'s' : 'All Users';
-        return Excel::download(
-            new GenericExport(
-                data:     collect($users),
-                headings: ['ID','Name','Role','Mobile','Email','City','State','Status','Mobile Verified','Specialization','Doc Verified','Premium','Joined'],
-                title:    $label,
-            ),
-            strtolower(str_replace(' ','_',$label)) . '_' . now()->format('Ymd') . '.xlsx'
-        );
-    }
-
-    public function exportAllAppointments(?string $from = null, ?string $to = null): \Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        $query = \App\Models\Appointment::with(['doctor.profile','patient.profile'])
-            ->orderByDesc('slot_datetime');
-        if ($from) $query->whereDate('slot_datetime', '>=', $from);
-        if ($to)   $query->whereDate('slot_datetime', '<=', $to);
-
-        $rows = $query->get()->map(fn($apt) => [
-            $apt->appointment_number,
-            $apt->doctor?->profile?->full_name ?? '—',
-            $apt->patient?->profile?->full_name ?? '—',
-            $apt->patient?->country_code . $apt->patient?->mobile_number,
-            $apt->slot_datetime->format('d M Y h:i A'),
-            ucfirst(str_replace('_',' ',$apt->type)),
-            ucfirst($apt->status),
-            $apt->fee ? '₹'.number_format($apt->fee,2) : '—',
-            ucfirst($apt->payment_status ?? 'pending'),
-            $apt->reason ?? '—',
-        ]);
-
-        return Excel::download(
-            new GenericExport(
-                data:     $rows,
-                headings: ['Apt No','Doctor','Patient','Mobile','Date & Time','Type','Status','Fee','Payment','Reason'],
-                title:    'Appointments',
-            ),
-            'appointments_' . now()->format('Ymd') . '.xlsx'
-        );
-    }
-
-    public function exportDoctorVerification(): \Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        $rows = User::doctors()
-            ->with(['profile','doctorProfile'])
-            ->get()
-            ->map(fn($u) => [
-                $u->id,
-                $u->profile?->full_name ?? '—',
-                $u->country_code . $u->mobile_number,
-                $u->doctorProfile?->specialization ?? '—',
-                $u->doctorProfile?->qualification ?? '—',
-                $u->doctorProfile?->registration_number ?? '—',
-                $u->doctorProfile?->registration_council ?? '—',
-                $u->doctorProfile?->is_verified ? 'Verified' : 'Pending',
-                $u->is_active ? 'Active' : 'Suspended',
-                $u->doctorProfile?->is_premium ? 'Premium' : 'Free',
-                $u->created_at->format('d M Y'),
-            ]);
-
-        return Excel::download(
-            new GenericExport(
-                data:     $rows,
-                headings: ['ID','Name','Mobile','Specialty','Qualification','Reg No','Council','Verified','Status','Plan','Joined'],
-                title:    'Doctor Verification',
-            ),
-            'doctor_verification_' . now()->format('Ymd') . '.xlsx'
-        );
-    }
-
-    public function exportPlatformStats(): \Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        // Monthly stats for last 12 months
-        $rows = collect();
-        for ($i = 11; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $rows->push([
-                $month->format('M Y'),
-                User::doctors()->whereYear('created_at',$month->year)->whereMonth('created_at',$month->month)->count(),
-                User::patients()->whereYear('created_at',$month->year)->whereMonth('created_at',$month->month)->count(),
-                \App\Models\Appointment::whereYear('slot_datetime',$month->year)->whereMonth('slot_datetime',$month->month)->count(),
-                \App\Models\Appointment::whereYear('slot_datetime',$month->year)->whereMonth('slot_datetime',$month->month)->where('status','completed')->count(),
-                \App\Models\Appointment::whereYear('slot_datetime',$month->year)->whereMonth('slot_datetime',$month->month)->where('status','cancelled')->count(),
-                \App\Models\Prescription::whereYear('created_at',$month->year)->whereMonth('created_at',$month->month)->count(),
-                \App\Models\Payment::paid()->whereYear('paid_at',$month->year)->whereMonth('paid_at',$month->month)->sum('amount'),
-            ]);
-        }
-
-        return Excel::download(
-            new GenericExport(
-                data:     $rows,
-                headings: ['Month','New Doctors','New Patients','Total Apts','Completed','Cancelled','Prescriptions','Revenue (₹)'],
-                title:    'Platform Stats',
-            ),
-            'platform_stats_' . now()->format('Ymd') . '.xlsx'
-        );
-    }
-
-        private function buildPrescriptionRows(User $doctor): Collection
+    private function buildPrescriptionRows(User $doctor): Collection
     {
         return $doctor->doctorPrescriptions()
             ->with(['patient.profile', 'medicines'])
@@ -318,5 +192,3 @@ class GenericExport implements FromCollection, WithHeadings, WithStyles, WithCol
         return $widths;
     }
 }
-// The file already has GenericExport at the bottom — appending admin exports would break it.
-// We'll update via str_replace instead.

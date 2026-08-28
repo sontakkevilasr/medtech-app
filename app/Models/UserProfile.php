@@ -22,16 +22,6 @@ class UserProfile extends Model
         ];
     }
 
-    // Strip a redundant "Dr." / "Doctor" honorific typed into the name field itself —
-    // templates already prepend "Dr." when displaying doctors, so leaving it in the
-    // stored name causes it to render twice (e.g. "Dr. Dr. Aparna Arya Tyagi").
-    public function setFullNameAttribute($value): void
-    {
-        $this->attributes['full_name'] = $value !== null
-            ? preg_replace('/^(dr\.?|doctor)\s+/i', '', trim($value))
-            : $value;
-    }
-
     // Auto-encrypt Aadhaar on set, decrypt on get
     public function setAadhaarNumberAttribute($value): void
     {

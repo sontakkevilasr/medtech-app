@@ -9,7 +9,6 @@ use App\Models\Prescription;
 use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -118,63 +117,5 @@ class DashboardController extends Controller
         $appointment->update(['status' => $request->status]);
 
         return back()->with('success', 'Appointment updated.');
-    }
-
-    public function editProfile()
-    {
-        $doctor  = auth()->user();
-        $profile = $doctor->profile;
-        $dp      = $doctor->doctorProfile;
-        return view('doctor.profile.edit', compact('doctor', 'profile', 'dp'));
-    }
-
-    public function updateProfile(Request $request)
-    {
-        $doctor = auth()->user();
-
-        $request->validate([
-            'full_name'        => ['required', 'string', 'max:100'],
-            'specialization'   => ['nullable', 'string', 'max:100'],
-            'clinic_name'      => ['nullable', 'string', 'max:150'],
-            'clinic_address'   => ['nullable', 'string', 'max:300'],
-            'clinic_city'      => ['nullable', 'string', 'max:100'],
-            'bio'              => ['nullable', 'string', 'max:1000'],
-            'consultation_fee' => ['nullable', 'numeric', 'min:0'],
-        ]);
-
-        $doctor->profile()->updateOrCreate(
-            ['user_id' => $doctor->id],
-            ['full_name' => $request->full_name]
-        );
-
-        $doctor->doctorProfile()->updateOrCreate(
-            ['user_id' => $doctor->id],
-            $request->only('specialization', 'clinic_name', 'clinic_address', 'clinic_city', 'bio', 'consultation_fee')
-        );
-
-        return redirect()->route('doctor.profile.edit')->with('success', 'Profile updated.');
-    }
-
-    public function updateLogo(Request $request)
-    {
-        $request->validate([
-            'clinic_logo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
-        ]);
-
-        $doctor = auth()->user();
-        $dp     = $doctor->doctorProfile;
-
-        if ($dp?->clinic_logo) {
-            Storage::disk('public')->delete($dp->clinic_logo);
-        }
-
-        $path = $request->file('clinic_logo')->store("clinic-logos/{$doctor->id}", 'public');
-
-        $doctor->doctorProfile()->updateOrCreate(
-            ['user_id' => $doctor->id],
-            ['clinic_logo' => $path]
-        );
-
-        return redirect()->route('doctor.profile.edit')->with('success', 'Clinic logo updated.');
     }
 }

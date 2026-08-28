@@ -4,7 +4,7 @@
 
 @section('content')
 
-{{-- ── KPI Row ──────────────────────────────────────────────────────────────── -- --}}
+{{-- ── KPI Row ──────────────────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
 
     @php
@@ -34,7 +34,7 @@
     @endforeach
 </div>
 
-{{-- ── Row 2: Charts ────────────────────────────────────────────────────────── -- --}}
+{{-- ── Row 2: Charts ────────────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px">
 
     {{-- User Growth Chart --}}
@@ -79,7 +79,7 @@
     </div>
 </div>
 
-{{-- ── Row 3: Appointment trend + Recent -- --}}
+{{-- ── Row 3: Appointment trend + Recent --}}
 <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:22px">
 
     {{-- Appointment Trend (7-day bar) --}}
@@ -121,7 +121,7 @@
     </div>
 </div>
 
-{{-- ── Row 4: Recent Registrations ─────────────────────────────────────────── -- --}}
+{{-- ── Row 4: Recent Registrations ─────────────────────────────────────────── --}}
 <div class="card" style="padding:0;overflow:hidden">
     <div style="padding:14px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--txt)">Recent Registrations</div>

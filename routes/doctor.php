@@ -9,11 +9,9 @@ use App\Http\Controllers\Doctor\PrescriptionController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\TimelineController;
 use App\Http\Controllers\Doctor\AnalyticsController;
-use App\Http\Controllers\Doctor\QuickRegisterController;
-use App\Http\Controllers\Doctor\MedicineController;
 use App\Http\Controllers\Payment\SubscriptionController;
 use App\Http\Controllers\Payment\RazorpayController;
-use \App\Http\Controllers\Doctor\ProfileSetupController;
+
 /*
 |--------------------------------------------------------------------------
 | Doctor Routes
@@ -27,8 +25,6 @@ Route::middleware('role:doctor')->group(function () {
 
     // ── Dashboard ────────────────────────────────────────────────────────────
     Route::get('/',          [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/setup',       [ProfileSetupController::class, 'edit'])   ->name('setup');
-    Route::post('/setup',      [ProfileSetupController::class, 'update']) ->name('setup.save');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.alias');
     Route::patch('/dashboard/appointments/{appointment}/status', [DashboardController::class, 'updateAppointmentStatus'])->name('dashboard.update-status');
 
@@ -46,26 +42,13 @@ Route::middleware('role:doctor')->group(function () {
     Route::prefix('patients')->name('patients.')->group(function () {
         Route::get('/',                                   [PatientController::class, 'index'])          ->name('index');
         Route::get('/search',                             [PatientController::class, 'search'])         ->name('search');
-        Route::get('/documents/{document}/download',      [PatientController::class, 'downloadPatientDocument'])->name('documents.download');
         Route::post('/request-access',                   [PatientController::class, 'requestAccess'])  ->name('request-access');
         Route::post('/access/{accessRequest}/verify-otp',[PatientController::class, 'verifyAccessOtp'])->name('verify-otp');
         // History: access-gate UI is handled in controller (not middleware-redirect)
         Route::get('/{patient}/history',                 [PatientController::class, 'history'])        ->name('history');
-        Route::get('/{patient}',                         [PatientController::class, 'history'])         ->name('show');
+        Route::get('/{patient}',                         [PatientController::class, 'show'])            ->name('show');
         Route::post('/{patient}/notes',                  [PatientController::class, 'addNote'])         ->name('notes');
     });
-
-    /*
-    |----------------------------------------------------------------------
-    | Quick Patient Registration (walk-in patients)
-    |----------------------------------------------------------------------
-    */
-    Route::prefix('quick-register')->name('quick-register.')->group(function () {
-        Route::get('/',          [QuickRegisterController::class, 'create']) ->name('create');
-        Route::post('/',         [QuickRegisterController::class, 'store'])  ->name('store');
-        Route::get('/success/{patient}', [QuickRegisterController::class, 'success'])->name('success');
-    });
-
 
     /*
     |----------------------------------------------------------------------
@@ -73,7 +56,6 @@ Route::middleware('role:doctor')->group(function () {
     |----------------------------------------------------------------------
     */
     Route::prefix('records')->name('records.')->group(function () {
-        Route::get('/',                       [MedicalRecordController::class, 'index'])   ->name('index');
         Route::get('/create/{patient}',       [MedicalRecordController::class, 'create'])  ->name('create');
         Route::post('/{patient}',             [MedicalRecordController::class, 'store'])   ->name('store');
         Route::get('/{record}',               [MedicalRecordController::class, 'show'])    ->name('show');
@@ -81,7 +63,6 @@ Route::middleware('role:doctor')->group(function () {
         Route::put('/{record}',               [MedicalRecordController::class, 'update'])  ->name('update');
         Route::delete('/{record}',            [MedicalRecordController::class, 'destroy']) ->name('destroy');
         Route::post('/{record}/attachment',   [MedicalRecordController::class, 'uploadAttachment'])->name('attachment');
-        Route::delete('/{record}/attachment', [MedicalRecordController::class, 'deleteAttachment'])->name('attachment.delete');
     });
 
     /*
@@ -116,11 +97,9 @@ Route::middleware('role:doctor')->group(function () {
         Route::post('/{appointment}/remind',  [AppointmentController::class, 'sendReminder'])  ->name('remind');
 
         // Slot management
-        Route::get('/slots/manage',           [AppointmentController::class, 'manageSlots'])      ->name('slots');
-        Route::post('/slots/save',            [AppointmentController::class, 'saveSlots'])        ->name('slots.save');
-        Route::get('/slots/available',        [AppointmentController::class, 'availableSlots'])   ->name('slots.available');
-        Route::post('/slots/block',           [AppointmentController::class, 'saveBlockedDate'])  ->name('slots.block');
-        Route::post('/slots/unblock',         [AppointmentController::class, 'removeBlockedDate'])->name('slots.unblock');
+        Route::get('/slots/manage',           [AppointmentController::class, 'manageSlots'])   ->name('slots');
+        Route::post('/slots/save',            [AppointmentController::class, 'saveSlots'])     ->name('slots.save');
+        Route::get('/slots/available',        [AppointmentController::class, 'availableSlots'])->name('slots.available');
     });
 
     /*
@@ -196,22 +175,8 @@ Route::middleware('role:doctor')->group(function () {
         ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
         ->name('payments.webhook');
 
-    /*
-    |----------------------------------------------------------------------
-    | Medicine Master List
-    |----------------------------------------------------------------------
-    */
-    Route::prefix('medicines')->name('medicines.')->group(function () {
-        Route::get('/',          [MedicineController::class, 'index'])   ->name('index');
-        Route::get('/search',    [MedicineController::class, 'search'])  ->name('search');
-        Route::post('/',         [MedicineController::class, 'store'])   ->name('store');
-        Route::put('/{medicine}',    [MedicineController::class, 'update'])  ->name('update');
-        Route::delete('/{medicine}', [MedicineController::class, 'destroy']) ->name('destroy');
-    });
-
     // ── Profile ──────────────────────────────────────────────────────────────
     Route::get('/profile/edit',               [DashboardController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile',                    [DashboardController::class, 'updateProfile'])->name('profile.update');
-    Route::post('/profile/logo',              [DashboardController::class, 'updateLogo'])->name('profile.logo');
 
 });

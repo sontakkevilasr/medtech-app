@@ -14,7 +14,7 @@
 @endphp
 <div class="fade-in" style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
-{{-- ── LEFT: Doctor details ─────────────────────────────────────────────────── -- --}}
+{{-- ── LEFT: Doctor details ─────────────────────────────────────────────────── --}}
 <div style="display:flex;flex-direction:column;gap:18px">
 
     {{-- Header --}}
@@ -114,7 +114,7 @@
 
 </div>
 
-{{-- ── RIGHT: Approve / Reject panel ───────────────────────────────────────── -- --}}
+{{-- ── RIGHT: Approve / Reject panel ───────────────────────────────────────── --}}
 <div style="position:sticky;top:82px;display:flex;flex-direction:column;gap:14px">
 
     @if(!$dp?->is_verified)

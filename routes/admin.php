@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\DoctorVerificationController;
 use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\DoctorRegisterController;
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
@@ -20,16 +20,6 @@ Route::middleware('role:admin')->group(function () {
     // ── Dashboard ────────────────────────────────────────────────────────────
     Route::get('/',          [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.alias');
-
-/*
-    |----------------------------------------------------------------------
-    | Doctor Registration (admin adds a new doctor)
-    |----------------------------------------------------------------------
-    */
-    Route::prefix('doctors')->name('doctors.')->group(function () {
-        Route::get('/register',  [DoctorRegisterController::class, 'create']) ->name('create');
-        Route::post('/register', [DoctorRegisterController::class, 'store'])  ->name('store');
-    });
 
     /*
     |----------------------------------------------------------------------
@@ -46,8 +36,6 @@ Route::middleware('role:admin')->group(function () {
         Route::post('/{user}/grant-premium',  [UserManagementController::class, 'grantPremium']) ->name('grant-premium');
         Route::delete('/{user}',              [UserManagementController::class, 'destroy'])      ->name('destroy');
     });
-
-
 
     /*
     |----------------------------------------------------------------------
@@ -75,13 +63,8 @@ Route::middleware('role:admin')->group(function () {
         Route::get('/specializations',        [ReportController::class, 'specializations'])  ->name('specializations');
 
         // Exports
-        Route::get('/export',                 [ReportController::class, 'exportPage'])        ->name('export');
-        Route::get('/export/users',           [ReportController::class, 'exportUsers'])       ->name('export.users');
-        Route::get('/export/doctors',         [ReportController::class, 'exportDoctors'])     ->name('export.doctors');
-        Route::get('/export/patients',        [ReportController::class, 'exportPatients'])    ->name('export.patients');
-        Route::get('/export/appointments',    [ReportController::class, 'exportAppointments'])->name('export.appointments');
-        Route::get('/export/verification',    [ReportController::class, 'exportVerification'])->name('export.verification');
-        Route::get('/export/revenue',         [ReportController::class, 'exportRevenue'])     ->name('export.revenue');
+        Route::get('/export/users',           [ReportController::class, 'exportUsers'])      ->name('export.users');
+        Route::get('/export/revenue',         [ReportController::class, 'exportRevenue'])    ->name('export.revenue');
     });
 
     /*

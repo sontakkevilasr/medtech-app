@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamps();
 
             // One permission record per patient / per family member
-            $table->unique(['patient_user_id', 'family_member_id'], 'pap_patient_family_unique');
+            $table->unique(['patient_user_id', 'family_member_id']);
         });
 
         // Doctor raises a request to view patient history

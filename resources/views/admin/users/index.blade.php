@@ -65,6 +65,7 @@
         @forelse($users as $user)
         @php
             $name     = $user->profile?->full_name ?? 'Unknown';
+            $initials = strtoupper(implode('', array_map(fn($x) => $x[0], array_slice(explode(' ', $name), 0, 2))));
             $palette  = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6'];
             $color    = $palette[$user->id % count($palette)];
             $dp       = $user->doctorProfile;
@@ -73,8 +74,9 @@
             {{-- Name + role --}}
             <td>
                 <div style="display:flex;align-items:center;gap:10px">
-                    <x-avatar name="{{ $name }}" :photo="$user->profile?->profile_photo"
-                               :size="36" :radius="9" :bg="$color" font-size=".85rem" />
+                    <div style="width:36px;height:36px;border-radius:9px;background:{{ $color }};display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff;flex-shrink:0">
+                        {{ $initials }}
+                    </div>
                     <div>
                         <div style="font-weight:500;color:var(--txt)">
                             {{ $user->isDoctor() ? 'Dr. ' : '' }}{{ $name }}
