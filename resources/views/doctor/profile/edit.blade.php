@@ -35,6 +35,60 @@
 </style>
 @endpush
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const pincode = document.getElementById('personal-pincode');
+    const city = document.getElementById('personal-city');
+    const state = document.getElementById('personal-state');
+    const status = document.getElementById('pincode-status');
+
+    if (!pincode || !city || !state || !status) return;
+
+    let lookupId = 0;
+
+    async function lookupPincode() {
+        const value = pincode.value.replace(/\D/g, '').slice(0, 6);
+        pincode.value = value;
+        status.textContent = '';
+
+        if (value.length !== 6) return;
+
+        const currentLookup = ++lookupId;
+        status.textContent = 'Finding location...';
+        status.style.color = 'var(--txt-lt)';
+
+        try {
+            const response = await fetch(`https://api.postalpincode.in/pincode/${value}`);
+            const result = await response.json();
+            const office = result[0]?.Status === 'Success' ? result[0].PostOffice?.[0] : null;
+
+            if (currentLookup !== lookupId) return;
+
+            if (!office) {
+                status.textContent = 'Pincode not found. Enter the location manually.';
+                status.style.color = '#dc2626';
+                return;
+            }
+
+            city.value = office.District || office.Block || office.Name || '';
+            const stateOption = [...state.options].find(option => option.value === office.State);
+            if (stateOption) state.value = stateOption.value;
+            status.textContent = 'City and state updated from pincode.';
+            status.style.color = 'var(--leaf)';
+        } catch (error) {
+            if (currentLookup !== lookupId) return;
+            status.textContent = 'Lookup unavailable. Enter the location manually.';
+            status.style.color = '#dc2626';
+        }
+    }
+
+    pincode.addEventListener('input', lookupPincode);
+    if (pincode.value.length === 6) lookupPincode();
+});
+</script>
+@endpush
+
 @section('content')
 <div class="fade-in" x-data="{ tab: 'personal' }">
 
@@ -128,13 +182,13 @@
                     <div class="pf-grid pf-3">
                         <div>
                             <label class="pf-label">City</label>
-                            <input type="text" name="city" class="pf-inp"
+                            <input type="text" name="city" id="personal-city" class="pf-inp"
                                    value="{{ old('city', $profile?->city) }}" placeholder="e.g. Nagpur">
                             @error('city')<div class="pf-err">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label class="pf-label">State</label>
-                            <select name="state" class="pf-inp">
+                            <select name="state" id="personal-state" class="pf-inp">
                                 <option value="">— State —</option>
                                 @foreach(['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh','Puducherry','Chandigarh'] as $st)
                                 <option value="{{ $st }}" @selected(old('state',$profile?->state)===$st)>{{ $st }}</option>
@@ -143,8 +197,9 @@
                         </div>
                         <div>
                             <label class="pf-label">Pincode</label>
-                            <input type="text" name="pincode" class="pf-inp"
+                            <input type="text" name="pincode" id="personal-pincode" class="pf-inp"
                                    value="{{ old('pincode', $profile?->pincode) }}" maxlength="6" placeholder="6 digits">
+                            <div id="pincode-status" class="pf-err" role="status" aria-live="polite"></div>
                             @error('pincode')<div class="pf-err">{{ $message }}</div>@enderror
                         </div>
                     </div>

@@ -46,6 +46,7 @@
             color: var(--txt);
             font-size: 14px;
             line-height: 1.5;
+            overflow-x: hidden;
         }
         .font-display { font-family: 'Cormorant Garamond', serif; }
 
@@ -159,6 +160,7 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 1.25rem; font-weight: 500; color: var(--txt);
             letter-spacing: -.01em;
+            min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .topbar-right { display: flex; align-items: center; gap: 12px; }
 
@@ -402,6 +404,7 @@
             #sidebar { transform: translateX(-100%); }
             #sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(0,0,0,.4); }
             #main, #topbar { margin-left: 0; left: 0; }
+            #topbar > div:first-child { min-width: 0; flex: 1; }
             #mob-toggle { display: flex; }
             .topbar-title { font-size: 1rem; }
             .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -413,7 +416,10 @@
             .dr-row-wrap > *:last-child { margin-left: auto; }
         }
         @media (max-width: 480px) {
-            .stat-grid { grid-template-columns: 1fr 1fr; }
+            #topbar { padding: 0 14px; gap: 8px; }
+            .topbar-right { gap: 8px; }
+            .stat-grid { grid-template-columns: 1fr; }
+            .stat-card { min-width: 0; }
         }
 
         /* ── Shared responsive helpers: 2-col content grid + sticky sidebar ── */

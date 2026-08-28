@@ -46,6 +46,7 @@ class DoctorRegisterController extends Controller
             'clinic_address'      => ['nullable', 'string', 'max:255'],
             'clinic_city'         => ['nullable', 'string', 'max:80'],
             'clinic_state'        => ['nullable', 'string', 'max:80'],
+            'clinic_pincode'      => ['nullable', 'digits:6'],
             'consultation_fee'    => ['nullable', 'numeric', 'min:0'],
             'upi_id'              => ['nullable', 'string', 'max:100'],
             // Languages
@@ -78,6 +79,7 @@ class DoctorRegisterController extends Controller
                 'email'      => $request->email,
                 'city'       => $request->clinic_city,
                 'state'      => $request->clinic_state,
+                'pincode'    => $request->clinic_pincode,
             ]);
 
             // 3. Doctor profile
@@ -93,6 +95,7 @@ class DoctorRegisterController extends Controller
                 'clinic_address'       => $request->clinic_address,
                 'clinic_city'          => $request->clinic_city,
                 'clinic_state'         => $request->clinic_state,
+                'clinic_pincode'       => $request->clinic_pincode,
                 'consultation_fee'     => $request->consultation_fee,
                 'upi_id'               => $request->upi_id,
                 'languages_spoken'     => $request->languages_spoken ?? ['English', 'Hindi'],

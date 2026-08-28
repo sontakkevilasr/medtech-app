@@ -32,7 +32,7 @@
         $color    = $colors[$req->doctor_user_id % count($colors)];
     @endphp
     <div class="panel" style="padding:18px 22px;border-left:4px solid #ef4444"
-         x-data="{ processing: false, done: false, action: '' }"
+         x-data="accessRequest()"
          x-show="!done" x-transition>
 
         <div style="display:flex;align-items:flex-start;gap:14px">
@@ -371,7 +371,7 @@
 @keyframes spin   { to { transform: rotate(360deg); } }
 @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-@@media (max-width: 900px) {
+@media (max-width: 900px) {
     .access-grid    { grid-template-columns: 1fr !important; }
     .access-sidebar { position: static !important; }
     .access-grid > div { min-width: 0; }
@@ -384,13 +384,44 @@
 function accessHub() {
     return {
         init() {},
-
-        async handleRequest(url, expectedAction) {
-            const comp = this;
-            // Find the parent Alpine component
-            // handled inline via x-data on each card
-        }
     }
+}
+
+function accessRequest() {
+    return {
+        processing: false,
+        done: false,
+        action: '',
+        async handleRequest(url, expectedAction) {
+            if (this.processing) return;
+            this.processing = true;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({})
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Request could not be processed.');
+                }
+
+                this.action = expectedAction;
+                this.processing = false;
+                setTimeout(() => { this.done = true; }, 900);
+            } catch (error) {
+                this.processing = false;
+                alert(error.message || 'Unable to process the access request. Please try again.');
+            }
+        }
+    };
 }
 </script>
 @endpush

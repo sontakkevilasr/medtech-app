@@ -367,9 +367,12 @@
 
 @media (max-width: 480px) {
     .nb-dropdown {
-        right: -8px;
-        width: min(340px, calc(100vw - 16px));
-        max-height: min(420px, calc(100vh - 84px));
+        position: fixed;
+        top: calc(var(--th, 58px) + 8px);
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-height: calc(100vh - var(--th, 58px) - 20px);
     }
 
     .nb-header {

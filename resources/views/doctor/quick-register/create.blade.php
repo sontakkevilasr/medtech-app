@@ -44,6 +44,76 @@
 </style>
 @endpush
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const pincode = document.getElementById('quick-pincode');
+    const city = document.getElementById('quick-city');
+    const state = document.getElementById('quick-state');
+    const status = document.getElementById('quick-location-status');
+    if (!pincode || !city || !state || !status) return;
+
+    const stateCities = {
+        'Andhra Pradesh': ['Amaravati', 'Visakhapatnam', 'Vijayawada', 'Tirupati'], 'Assam': ['Guwahati', 'Dibrugarh', 'Jorhat', 'Silchar'],
+        'Bihar': ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur'], 'Chhattisgarh': ['Raipur', 'Bhilai', 'Bilaspur', 'Durg'],
+        'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa'], 'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar'],
+        'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Hisar'], 'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan', 'Mandi'],
+        'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro'], 'Karnataka': ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi'],
+        'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur'], 'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior'],
+        'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane'], 'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Puri'],
+        'Punjab': ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar'], 'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer'],
+        'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Salem'], 'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar'],
+        'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Noida', 'Ghaziabad'], 'Uttarakhand': ['Dehradun', 'Haridwar', 'Nainital', 'Haldwani'],
+        'West Bengal': ['Kolkata', 'Siliguri', 'Asansol', 'Durgapur'], 'Delhi': ['New Delhi', 'Delhi'],
+        'Jammu & Kashmir': ['Srinagar', 'Jammu', 'Anantnag'], 'Ladakh': ['Leh', 'Kargil'], 'Puducherry': ['Puducherry', 'Karaikal'],
+        'Chandigarh': ['Chandigarh']
+    };
+
+    function setCities(names, selected = '') {
+        city.innerHTML = names.length ? '<option value="">— Select City —</option>' : '<option value="">Select state first</option>';
+        names.forEach(name => city.add(new Option(name, name, false, name === selected)));
+        if (names.length && !selected) city.value = names[0];
+        city.disabled = !names.length;
+    }
+
+    async function lookupPincode() {
+        const value = pincode.value.replace(/\D/g, '').slice(0, 6);
+        pincode.value = value;
+        if (value.length !== 6) {
+            status.textContent = '';
+            setCities(stateCities[state.value] || []);
+            return;
+        }
+        status.textContent = 'Finding location...';
+        try {
+            const response = await fetch(`https://api.postalpincode.in/pincode/${value}`);
+            const result = await response.json();
+            const offices = result[0]?.Status === 'Success' ? (result[0].PostOffice || []) : [];
+            const office = offices[0];
+            if (!office) throw new Error('Pincode not found');
+            const stateOption = [...state.options].find(option => option.value === office.State);
+            if (stateOption) state.value = stateOption.value;
+            setCities([...new Set(offices.map(item => item.District || item.Block || item.Name).filter(Boolean))]);
+            status.textContent = 'City and state updated from pincode.';
+            status.style.color = 'var(--leaf)';
+        } catch (error) {
+            status.textContent = 'Pincode not found. Select state and city manually.';
+            status.style.color = 'var(--coral)';
+        }
+    }
+
+    state.addEventListener('change', () => {
+        pincode.value = '';
+        setCities(stateCities[state.value] || []);
+        status.textContent = 'Pincode is optional.';
+        status.style.color = 'var(--txt-lt)';
+    });
+    pincode.addEventListener('input', lookupPincode);
+    setCities(stateCities[state.value] || [], city.dataset.selectedCity);
+});
+</script>
+@endpush
+
 @section('content')
 <div class="fade-in dr-grid-2col" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
@@ -160,18 +230,25 @@
         <div class="qr-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
                 <label class="field-label">City</label>
-                <input type="text" name="city" value="{{ old('city') }}"
-                       class="field-inp" placeholder="e.g. Nagpur">
+                <select name="city" id="quick-city" class="field-inp" data-selected-city="{{ old('city') }}">
+                    <option value="">Select state first</option>
+                </select>
             </div>
             <div>
                 <label class="field-label">State</label>
-                <select name="state" class="field-inp">
+                <select name="state" id="quick-state" class="field-inp">
                     <option value="">— Select State —</option>
                     @foreach(['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh','Puducherry','Chandigarh'] as $state)
                     <option value="{{ $state }}" {{ old('state')===$state ? 'selected':'' }}>{{ $state }}</option>
                     @endforeach
                 </select>
             </div>
+        </div>
+        <div style="margin-top:12px">
+            <label class="field-label">Pincode <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+            <input type="text" name="pincode" id="quick-pincode" value="{{ old('pincode') }}"
+                   class="field-inp" placeholder="6-digit pincode" maxlength="6" inputmode="numeric">
+            <div id="quick-location-status" style="font-size:.72rem;margin-top:5px;color:var(--txt-lt)" role="status" aria-live="polite"></div>
         </div>
     </div>
 

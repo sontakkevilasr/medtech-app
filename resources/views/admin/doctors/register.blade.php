@@ -7,6 +7,54 @@
 @endsection
 
 @section('content')
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const city = document.getElementById('admin-clinic-city');
+    const state = document.getElementById('admin-clinic-state');
+    const pincode = document.getElementById('admin-clinic-pincode');
+    const status = document.getElementById('admin-clinic-location-status');
+    if (!city || !state || !pincode || !status) return;
+
+    const stateCities = {
+        'Andhra Pradesh':['Amaravati','Visakhapatnam','Vijayawada','Tirupati'], 'Assam':['Guwahati','Dibrugarh','Jorhat','Silchar'],
+        'Bihar':['Patna','Gaya','Muzaffarpur','Bhagalpur'], 'Goa':['Panaji','Margao','Vasco da Gama','Mapusa'],
+        'Gujarat':['Ahmedabad','Surat','Vadodara','Rajkot','Gandhinagar'], 'Haryana':['Gurugram','Faridabad','Panipat','Hisar'],
+        'Karnataka':['Bengaluru','Mysuru','Mangaluru','Hubballi'], 'Kerala':['Thiruvananthapuram','Kochi','Kozhikode','Thrissur'],
+        'Madhya Pradesh':['Bhopal','Indore','Jabalpur','Gwalior'], 'Maharashtra':['Mumbai','Pune','Nagpur','Nashik','Thane'],
+        'Odisha':['Bhubaneswar','Cuttack','Rourkela','Puri'], 'Punjab':['Chandigarh','Ludhiana','Amritsar','Jalandhar'],
+        'Rajasthan':['Jaipur','Jodhpur','Udaipur','Kota','Ajmer'], 'Tamil Nadu':['Chennai','Coimbatore','Madurai','Salem'],
+        'Telangana':['Hyderabad','Warangal','Nizamabad','Karimnagar'], 'Uttar Pradesh':['Lucknow','Kanpur','Agra','Varanasi','Noida','Ghaziabad'],
+        'Uttarakhand':['Dehradun','Haridwar','Nainital','Haldwani'], 'West Bengal':['Kolkata','Siliguri','Asansol','Durgapur'],
+        'Delhi':['New Delhi','Delhi'], 'Jammu & Kashmir':['Srinagar','Jammu'], 'Ladakh':['Leh','Kargil'],
+        'Puducherry':['Puducherry','Karaikal'], 'Chandigarh':['Chandigarh']
+    };
+    function setCities(names) {
+        city.innerHTML = names.length ? '<option value="">— City —</option>' : '<option value="">Select state first</option>';
+        names.forEach(name => city.add(new Option(name, name)));
+        if (names.length) city.value = names[0];
+        city.disabled = !names.length;
+    }
+    state.addEventListener('change', () => { pincode.value = ''; setCities(stateCities[state.value] || []); status.textContent = 'Pincode is optional.'; });
+    pincode.addEventListener('input', async () => {
+        const value = pincode.value.replace(/\D/g, '').slice(0, 6);
+        pincode.value = value;
+        if (value.length !== 6) { setCities(stateCities[state.value] || []); status.textContent = ''; return; }
+        status.textContent = 'Finding location...';
+        try {
+            const result = await (await fetch(`https://api.postalpincode.in/pincode/${value}`)).json();
+            const offices = result[0]?.Status === 'Success' ? (result[0].PostOffice || []) : [];
+            if (!offices.length) throw new Error('Not found');
+            const stateOption = [...state.options].find(option => option.value === offices[0].State);
+            if (stateOption) state.value = stateOption.value;
+            setCities([...new Set(offices.map(item => item.District || item.Block || item.Name).filter(Boolean))]);
+            status.textContent = 'Clinic city and state updated from pincode.';
+        } catch (error) { status.textContent = 'Pincode not found. Select state and city manually.'; }
+    });
+    setCities(stateCities[state.value] || []);
+});
+</script>
+@endpush
 <div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
 {{-- ── LEFT: Form ───────────────────────────────────────────────────────────── --}}
@@ -179,12 +227,13 @@
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-lt);display:block;margin-bottom:5px">City</label>
-                <input type="text" name="clinic_city" value="{{ old('clinic_city') }}"
-                       class="inp" style="width:100%" placeholder="e.g. Nagpur">
+                <select name="clinic_city" id="admin-clinic-city" class="inp" style="width:100%">
+                    <option value="">Select state first</option>
+                </select>
             </div>
             <div>
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-lt);display:block;margin-bottom:5px">State</label>
-                <select name="clinic_state" class="inp" style="width:100%">
+                <select name="clinic_state" id="admin-clinic-state" class="inp" style="width:100%">
                     <option value="">— State —</option>
                     @foreach(['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh','Puducherry'] as $state)
                     <option value="{{ $state }}" {{ old('clinic_state')===$state ? 'selected':'' }}>{{ $state }}</option>
@@ -199,6 +248,12 @@
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+                <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-lt);display:block;margin-bottom:5px">Clinic Pincode (optional)</label>
+                <input type="text" name="clinic_pincode" id="admin-clinic-pincode" value="{{ old('clinic_pincode') }}"
+                       class="inp" style="width:100%" placeholder="6-digit pincode" maxlength="6" inputmode="numeric">
+                <div id="admin-clinic-location-status" style="font-size:.72rem;margin-top:5px" role="status" aria-live="polite"></div>
+            </div>
             <div>
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-lt);display:block;margin-bottom:5px">UPI ID</label>
                 <input type="text" name="upi_id" value="{{ old('upi_id') }}"

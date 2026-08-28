@@ -38,6 +38,7 @@ class QuickRegisterController extends Controller
             'address'        => ['nullable', 'string', 'max:255'],
             'city'           => ['nullable', 'string', 'max:80'],
             'state'          => ['nullable', 'string', 'max:80'],
+            'pincode'        => ['nullable', 'digits:6'],
             'emergency_contact_name'   => ['nullable', 'string', 'max:100'],
             'emergency_contact_number' => ['nullable', 'digits:10'],
         ]);
@@ -82,6 +83,7 @@ class QuickRegisterController extends Controller
                 'address'                  => $request->address,
                 'city'                     => $request->city,
                 'state'                    => $request->state,
+                'pincode'                  => $request->pincode,
                 'emergency_contact_name'   => $request->emergency_contact_name,
                 'emergency_contact_number' => $request->emergency_contact_number,
             ]);

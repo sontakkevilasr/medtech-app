@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller; 
 use App\Models\User;
 use App\Models\DoctorProfile;
 use App\Models\Appointment;
-use App\Models\Prescription;
+use App\Models\Prescription; 
 use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

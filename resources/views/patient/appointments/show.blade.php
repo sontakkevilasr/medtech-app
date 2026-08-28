@@ -25,9 +25,18 @@
     background:#fff;border-radius:18px;padding:28px 30px;
     width:420px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.2);
 }
-@@media (max-width:768px) {
+@media (max-width:768px) {
     .apt-grid { grid-template-columns:1fr !important }
     .apt-sidebar { position:static !important }
+    .apt-status-banner { align-items:flex-start !important; padding:14px !important; }
+    .apt-status-banner > div:nth-child(2) { min-width:0; }
+    .apt-status-banner button { padding:8px 12px !important; }
+    .apt-card-body { padding:16px; }
+    .apt-doctor-body { align-items:flex-start !important; }
+    .apt-doctor-body > div:nth-child(2) { min-width:0; }
+    .apt-doctor-fee { margin-left:auto; }
+    .apt-meta-grid { gap:16px 12px !important; }
+    .apt-payment-row { align-items:flex-start !important; }
 }
 </style>
 @endpush
@@ -67,7 +76,7 @@
 <div style="display:flex;flex-direction:column;gap:14px">
 
     {{-- Status banner --}}
-    <div style="background:{{ $sc['bg'] }};border:1px solid {{ $sc['color'] }}33;border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:14px">
+    <div class="apt-status-banner" style="background:{{ $sc['bg'] }};border:1px solid {{ $sc['color'] }}33;border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:14px">
         <div style="width:44px;height:44px;border-radius:50%;background:{{ $sc['color'] }}18;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             @if($appointment->status === 'completed')
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="{{ $sc['color'] }}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -105,7 +114,7 @@
     {{-- Doctor --}}
     <div class="panel tl-card">
         <div class="apt-card-head">Doctor</div>
-        <div class="apt-card-body" style="display:flex;align-items:center;gap:14px">
+        <div class="apt-card-body apt-doctor-body" style="display:flex;align-items:center;gap:14px">
             <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--plum),var(--plum-md));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.15rem;flex-shrink:0">
                 {{ strtoupper(substr($name,0,1)) }}
             </div>
@@ -115,7 +124,7 @@
                 @if($dp?->clinic_name)<div style="font-size:.75rem;color:var(--txt-lt);margin-top:1px">{{ $dp->clinic_name }}</div>@endif
             </div>
             @if($dp?->consultation_fee)
-            <div style="text-align:right;flex-shrink:0">
+            <div class="apt-doctor-fee" style="text-align:right;flex-shrink:0">
                 <div style="font-family:'Lora',serif;font-size:1.35rem;font-weight:500;color:var(--txt)">₹{{ number_format($dp->consultation_fee) }}</div>
                 <div style="font-size:.68rem;color:var(--txt-lt)">consultation fee</div>
             </div>
@@ -127,7 +136,7 @@
     <div class="panel tl-card">
         <div class="apt-card-head">Appointment Details</div>
         <div class="apt-card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 16px">
+            <div class="apt-meta-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:18px 16px">
                 <div>
                     <div class="meta-label">Date</div>
                     <div class="meta-value">{{ $appointment->slot_datetime?->format('D, d M Y') }}</div>
@@ -191,7 +200,7 @@
     <div class="panel tl-card">
         <div class="apt-card-head">Payment</div>
         <div class="apt-card-body">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div class="apt-payment-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
                 <div>
                     <div class="meta-label">Consultation Fee</div>
                     <div style="font-family:'Lora',serif;font-size:1.6rem;font-weight:500;color:var(--txt);margin-top:2px">₹{{ number_format($appointment->fee, 2) }}</div>

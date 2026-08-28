@@ -127,11 +127,11 @@ Route::middleware('role:patient')->group(function () {
 
         // Approve / deny an incoming doctor access request
         Route::get('/requests',               [AccessPermissionController::class, 'pendingRequests'])->name('requests');
-        Route::post('/requests/{request}/approve', [AccessPermissionController::class, 'approve']) ->name('approve');
-        Route::post('/requests/{request}/deny',    [AccessPermissionController::class, 'deny'])    ->name('deny');
+        Route::post('/requests/{request_model}/approve', [AccessPermissionController::class, 'approve']) ->name('approve');
+        Route::post('/requests/{request_model}/deny',    [AccessPermissionController::class, 'deny'])    ->name('deny');
 
         // Send OTP to doctor for OTP-required flow
-        Route::post('/requests/{request}/send-otp', [AccessPermissionController::class, 'sendOtp'])->name('send-otp');
+        Route::post('/requests/{request_model}/send-otp', [AccessPermissionController::class, 'sendOtp'])->name('send-otp');
 
         // Revoke an active access grant
         Route::post('/revoke/{doctor}',             [AccessPermissionController::class, 'revoke'])   ->name('revoke');

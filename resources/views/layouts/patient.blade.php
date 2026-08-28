@@ -146,6 +146,8 @@
         .tb-title {
             font-family: 'Lora', serif;
             font-size: 1.15rem; font-weight: 500; color: var(--txt);
+            min-width: 0;
+            line-height: 1.2;
         }
         .tb-right { display: flex; align-items: center; gap: 10px; }
         .tb-btn {
@@ -426,7 +428,11 @@
             #main, #topbar { margin-left: 0; left: 0; }
             #mob-btn { display: flex; }
             .next-apt-chip { display: none; }
-            #main { padding: 14px; }
+            #topbar { padding: 0 14px; gap: 8px; }
+            #topbar > div:first-child { min-width: 0; flex: 1; }
+            .tb-title { font-size: 1rem; overflow-wrap: anywhere; }
+            .tb-right { gap: 6px; flex-shrink: 0; }
+            #main { padding: 14px; overflow-x: hidden; }
             .health-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         }
         @media (max-width: 480px) {

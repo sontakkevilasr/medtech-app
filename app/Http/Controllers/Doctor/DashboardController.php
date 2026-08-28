@@ -134,6 +134,15 @@ class DashboardController extends Controller
 
         $request->validate([
             'full_name'        => ['required', 'string', 'max:100'],
+            'dob'              => ['nullable', 'date', 'before:today'],
+            'gender'           => ['nullable', 'in:male,female,other'],
+            'blood_group'      => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'address'          => ['nullable', 'string', 'max:255'],
+            'city'             => ['nullable', 'string', 'max:100'],
+            'state'            => ['nullable', 'string', 'max:100'],
+            'pincode'          => ['nullable', 'digits:6'],
+            'emergency_contact_name'   => ['nullable', 'string', 'max:100'],
+            'emergency_contact_number' => ['nullable', 'digits:10'],
             'specialization'   => ['nullable', 'string', 'max:100'],
             'clinic_name'      => ['nullable', 'string', 'max:150'],
             'clinic_address'   => ['nullable', 'string', 'max:300'],
@@ -144,7 +153,11 @@ class DashboardController extends Controller
 
         $doctor->profile()->updateOrCreate(
             ['user_id' => $doctor->id],
-            ['full_name' => $request->full_name]
+            $request->only(
+                'full_name', 'dob', 'gender', 'blood_group', 'address',
+                'city', 'state', 'pincode', 'emergency_contact_name',
+                'emergency_contact_number'
+            )
         );
 
         $doctor->doctorProfile()->updateOrCreate(

@@ -1,7 +1,14 @@
 @php $editing = isset($member); @endphp
+@push('styles')
+<style>
+@media (max-width:480px) {
+    .family-form-panel { padding:20px 18px !important; }
+}
+</style>
+@endpush
 <div class="fade-in" style="max-width:580px">
 
-<div class="panel" style="padding:24px 28px">
+<div class="panel family-form-panel" style="padding:24px 28px">
     <div style="margin-bottom:22px">
         <h2 style="font-family:'Lora',serif;font-size:1.2rem;font-weight:500;color:var(--txt)">
             {{ $editing ? 'Edit Profile' : 'Add Family Member' }}

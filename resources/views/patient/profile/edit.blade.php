@@ -17,9 +17,144 @@
     .pf-btn   { padding:9px 22px;background:var(--plum,#6b4fa0);color:#fff;border:none;border-radius:9px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s; }
     .pf-btn:hover { opacity:.88; }
     .pf-err   { font-size:.73rem;color:#dc2626;margin-top:4px; }
+    .pf-location-status { font-size:.73rem;margin-top:4px; }
     .bg-pill  { padding:6px 13px;border:1.5px solid var(--warm-bd);border-radius:8px;font-size:.8rem;font-weight:600;color:var(--txt-md);background:var(--cream);cursor:pointer;transition:all .15s; }
     .rel-pill { text-align:center;padding:8px 6px;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.8rem;font-weight:500;color:var(--txt-md);background:var(--cream);cursor:pointer;transition:all .15s; }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const pincode = document.getElementById('patient-pincode');
+    const city = document.getElementById('patient-city');
+    const state = document.getElementById('patient-state');
+    const status = document.getElementById('patient-pincode-status');
+
+    if (!pincode || !city || !state || !status) return;
+
+    let lookupId = 0;
+    const stateCities = {
+        'Andhra Pradesh': ['Amaravati', 'Visakhapatnam', 'Vijayawada', 'Tirupati'],
+        'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat'],
+        'Assam': ['Guwahati', 'Dibrugarh', 'Jorhat', 'Silchar'],
+        'Bihar': ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur'],
+        'Chhattisgarh': ['Raipur', 'Bhilai', 'Bilaspur', 'Durg'],
+        'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa'],
+        'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar'],
+        'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Hisar'],
+        'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan', 'Mandi'],
+        'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro'],
+        'Karnataka': ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi'],
+        'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur'],
+        'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior'],
+        'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane'],
+        'Manipur': ['Imphal', 'Thoubal', 'Churachandpur'],
+        'Meghalaya': ['Shillong', 'Tura', 'Jowai'],
+        'Mizoram': ['Aizawl', 'Lunglei', 'Champhai'],
+        'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung'],
+        'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Puri'],
+        'Punjab': ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar'],
+        'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer'],
+        'Sikkim': ['Gangtok', 'Namchi', 'Gyalshing'],
+        'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Salem'],
+        'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar'],
+        'Tripura': ['Agartala', 'Udaipur', 'Dharmanagar'],
+        'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Noida', 'Ghaziabad'],
+        'Uttarakhand': ['Dehradun', 'Haridwar', 'Nainital', 'Haldwani'],
+        'West Bengal': ['Kolkata', 'Siliguri', 'Asansol', 'Durgapur'],
+        'Delhi': ['New Delhi', 'Delhi'],
+        'Jammu & Kashmir': ['Srinagar', 'Jammu', 'Anantnag'],
+        'Ladakh': ['Leh', 'Kargil'],
+        'Puducherry': ['Puducherry', 'Karaikal'],
+        'Chandigarh': ['Chandigarh']
+    };
+
+    function setCityOptions(offices, selectFirst = false) {
+        const selectedCity = city.dataset.selectedCity || city.value;
+        const cities = [...new Set(offices
+            .map(office => office.District || office.Block || office.Name)
+            .filter(Boolean))];
+
+        city.innerHTML = '<option value="">— Select city —</option>';
+        cities.forEach(cityName => {
+            city.add(new Option(cityName, cityName));
+        });
+        if (cities.length) city.value = cities.includes(selectedCity) ? selectedCity : cities[0];
+        city.disabled = cities.length === 0;
+    }
+
+    function setStateCities(stateName) {
+        const selectedCity = city.dataset.selectedCity || city.value;
+        const cities = stateCities[stateName] || [];
+        city.innerHTML = cities.length
+            ? '<option value="">— Select city —</option>'
+            : '<option value="">No cities available</option>';
+        cities.forEach(cityName => {
+            city.add(new Option(cityName, cityName));
+        });
+        if (cities.length && cities.includes(selectedCity)) city.value = selectedCity;
+        city.disabled = cities.length === 0;
+    }
+
+    async function lookupPincode() {
+        const value = pincode.value.replace(/\D/g, '').slice(0, 6);
+        pincode.value = value;
+        status.textContent = '';
+
+        if (value.length !== 6) {
+            if (value.length === 0) {
+                setStateCities(state.value);
+            } else {
+                city.innerHTML = '<option value="">Enter 6-digit pincode</option>';
+                city.disabled = true;
+            }
+            return;
+        }
+
+        const currentLookup = ++lookupId;
+        status.textContent = 'Finding location...';
+        status.style.color = 'var(--txt-lt)';
+
+        try {
+            const response = await fetch(`https://api.postalpincode.in/pincode/${value}`);
+            const result = await response.json();
+            const offices = result[0]?.Status === 'Success' ? (result[0].PostOffice || []) : [];
+            const office = offices[0];
+
+            if (currentLookup !== lookupId) return;
+
+            if (!office) {
+                setStateCities(state.value);
+                status.textContent = 'Pincode not found. Enter the location manually.';
+                status.style.color = '#dc2626';
+                return;
+            }
+
+            setCityOptions(offices, true);
+            const stateOption = [...state.options].find(option => option.value === office.State);
+            if (stateOption) state.value = stateOption.value;
+            status.textContent = 'City and state updated from pincode.';
+            status.style.color = 'var(--plum)';
+        } catch (error) {
+            if (currentLookup !== lookupId) return;
+            status.textContent = 'Lookup unavailable. Enter the location manually.';
+            status.style.color = '#dc2626';
+        }
+    }
+
+    pincode.addEventListener('input', lookupPincode);
+    state.addEventListener('change', () => {
+        lookupId++;
+        if (pincode.value.length === 6) pincode.value = '';
+        setStateCities(state.value);
+        status.textContent = 'Select your city. Pincode is optional.';
+        status.style.color = 'var(--txt-lt)';
+    });
+    setStateCities(state.value);
+    if (pincode.value.length === 6) lookupPincode();
+});
+</script>
 @endpush
 
 @section('content')
@@ -105,14 +240,20 @@
             <div class="pf-grid pf-row2">
                 <div>
                     <label class="pf-label">City</label>
-                    <input type="text" name="city" class="pf-inp"
-                           value="{{ old('city', $profile?->city) }}" placeholder="e.g. Mumbai">
+                    <select name="city" id="patient-city" class="pf-inp"
+                            data-selected-city="{{ old('city', $profile?->city) }}">
+                        <option value="">Enter pincode first</option>
+                    </select>
                     @error('city')<div class="pf-err">{{ $message }}</div>@enderror
                 </div>
                 <div>
                     <label class="pf-label">State</label>
-                    <input type="text" name="state" class="pf-inp"
-                           value="{{ old('state', $profile?->state) }}" placeholder="e.g. Maharashtra">
+                    <select name="state" id="patient-state" class="pf-inp">
+                        <option value="">— Select state —</option>
+                        @foreach(['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh','Puducherry','Chandigarh'] as $stateName)
+                        <option value="{{ $stateName }}" @selected(old('state', $profile?->state) === $stateName)>{{ $stateName }}</option>
+                        @endforeach
+                    </select>
                     @error('state')<div class="pf-err">{{ $message }}</div>@enderror
                 </div>
             </div>
@@ -120,8 +261,9 @@
             <div class="pf-grid pf-row3">
                 <div>
                     <label class="pf-label">Pincode</label>
-                    <input type="text" name="pincode" class="pf-inp"
-                           value="{{ old('pincode', $profile?->pincode) }}" placeholder="400001" maxlength="10">
+                          <input type="text" name="pincode" id="patient-pincode" class="pf-inp"
+                              value="{{ old('pincode', $profile?->pincode) }}" placeholder="400001" maxlength="6" inputmode="numeric">
+                          <div id="patient-pincode-status" class="pf-location-status" role="status" aria-live="polite"></div>
                     @error('pincode')<div class="pf-err">{{ $message }}</div>@enderror
                 </div>
                 <div>

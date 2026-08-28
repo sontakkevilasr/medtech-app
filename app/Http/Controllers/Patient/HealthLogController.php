@@ -80,6 +80,10 @@ class HealthLogController extends Controller
 
         $request->validate($rules);
 
+        if ($request->filled('logged_at') && Carbon::parse($request->logged_at)->gt(now()->startOfMinute())) {
+            return back()->withErrors(['logged_at' => 'The reading time cannot be in the future.'])->withInput();
+        }
+
         HealthLog::create([
             'patient_user_id'  => auth()->id(),
             'family_member_id' => $request->family_member_id ?: null,

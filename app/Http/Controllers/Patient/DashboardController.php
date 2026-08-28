@@ -159,7 +159,7 @@ class DashboardController extends Controller
             'blood_group' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'city'        => ['nullable', 'string', 'max:100'],
             'state'       => ['nullable', 'string', 'max:100'],
-            'pincode'     => ['nullable', 'string', 'max:10'],
+            'pincode'     => ['nullable', 'digits:6'],
             'address'     => ['nullable', 'string', 'max:500'],
         ]);
 

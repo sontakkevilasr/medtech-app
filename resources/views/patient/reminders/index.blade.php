@@ -280,7 +280,7 @@ input:checked + .toggle-track::before { transform: translateX(16px); }
             @if($patient->familyMembers->isNotEmpty())
             <div style="margin-bottom:12px">
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px">For</label>
-                <select name="family_member_id" style="width:100%;padding:.5rem .7rem;border:1.5px solid var(--warm-bd);border-radius:8px;font-size:.8rem;color:var(--txt);background:var(--cream);outline:none;font-family:'Plus Jakarta Sans',sans-serif">
+                <select name="family_member_id" x-model="familyMember" @change="clearPrescription()" style="width:100%;padding:.5rem .7rem;border:1.5px solid var(--warm-bd);border-radius:8px;font-size:.8rem;color:var(--txt);background:var(--cream);outline:none;font-family:'Plus Jakarta Sans',sans-serif">
                     <option value="">Myself</option>
                     @foreach($patient->familyMembers as $fm)
                     <option value="{{ $fm->id }}" {{ old('family_member_id')==$fm->id?'selected':'' }}>{{ $fm->full_name }}</option>
@@ -295,11 +295,11 @@ input:checked + .toggle-track::before { transform: translateX(16px); }
                 <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);margin-bottom:7px">Quick-fill from prescription</div>
                 @foreach($prescriptions as $rx)
                 @foreach($rx->medicines->take(3) as $med)
-                <button type="button"
+                <button type="button" x-show="prescriptionMatches({{ $rx->family_member_id ?? 'null' }})"
                         @click="fillFromPrescription('{{ addslashes($med->medicine_name) }}', '{{ addslashes($med->dosage ?? '1 tablet') }}', {{ $rx->id }})"
                         style="display:block;width:100%;text-align:left;padding:5px 8px;border:1px solid var(--warm-bd);border-radius:7px;background:var(--cream);font-size:.75rem;color:var(--txt-md);cursor:pointer;margin-bottom:4px;font-family:'Plus Jakarta Sans',sans-serif;transition:all .12s"
                         onmouseover="this.style.background='var(--rose-lt)'" onmouseout="this.style.background='var(--cream)'">
-                    {{ $med->medicine_name }} <span style="color:var(--txt-lt)">· {{ $rx->rx_number }}</span>
+                    {{ $med->medicine_name }} <span style="color:var(--txt-lt)">· {{ $rx->rx_number }} · {{ $rx->familyMember?->full_name ?? 'Myself' }}</span>
                 </button>
                 @endforeach
                 @endforeach
@@ -336,6 +336,7 @@ function reminders() {
 function reminderForm() {
     return {
         times: ['08:00'],
+        familyMember: '{{ old('family_member_id', '') }}',
         addTime() {
             if (this.times.length < 6) this.times.push('12:00');
         },
@@ -346,6 +347,21 @@ function reminderForm() {
             const form = this.$el.closest('form');
             form.querySelector('[name="medicine_name"]').value = name;
             form.querySelector('[name="dosage"]').value        = dosage;
+            let prescription = form.querySelector('[name="prescription_id"]');
+            if (!prescription) {
+                prescription = document.createElement('input');
+                prescription.type = 'hidden';
+                prescription.name = 'prescription_id';
+                form.appendChild(prescription);
+            }
+            prescription.value = rxId;
+        },
+        clearPrescription() {
+            const prescription = this.$el.closest('form').querySelector('[name="prescription_id"]');
+            if (prescription) prescription.remove();
+        },
+        prescriptionMatches(familyMemberId) {
+            return String(familyMemberId ?? '') === String(this.familyMember ?? '');
         }
     };
 }

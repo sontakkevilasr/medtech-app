@@ -25,9 +25,16 @@
 </div>
 @push('styles')
 <style>
-@@media (max-width: 560px) {
+@media (max-width: 560px) {
     .apt-tabs-row    { flex-wrap: wrap; }
     .apt-tabs-scroll { flex: 1 1 100%; }
+    .apt-card-body { padding: 14px 16px !important; gap: 10px !important; }
+    .apt-main-info { min-width: 0 !important; flex: 1 1 calc(100% - 58px) !important; }
+    .apt-main-info > div:first-child { gap: 4px !important; }
+    .apt-main-info > div:nth-child(2) { gap: 6px !important; }
+    .apt-side { width: 100%; flex-direction: row !important; align-items: center !important; justify-content: space-between; gap: 8px !important; padding-left: 58px; }
+    .apt-side > span { flex-shrink: 0; }
+    .apt-side > div { margin-left: auto; }
 }
 </style>
 @endpush
@@ -72,13 +79,13 @@
             {{-- Colour side bar --}}
             <div style="width:4px;background:{{ $color }};flex-shrink:0;border-radius:0"></div>
 
-            <div style="flex:1;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+            <div class="apt-card-body" style="flex:1;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
                 {{-- Doctor avatar --}}
                 <x-avatar name="{{ $drName }}" :photo="$apt->doctor?->profile?->profile_photo"
                            :size="44" :radius="11" :bg="$color" font-size="1rem" />
 
                 {{-- Main info --}}
-                <div style="flex:1;min-width:160px">
+                <div class="apt-main-info" style="flex:1;min-width:160px">
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
                         <span style="font-size:.9375rem;font-weight:600;color:var(--txt)">Dr. {{ $drName }}</span>
                         @if($drSpec)<span style="font-size:.75rem;color:var(--txt-lt)">· {{ $drSpec }}</span>@endif
@@ -105,7 +112,7 @@
                 </div>
 
                 {{-- Status + actions --}}
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+                <div class="apt-side" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
                     <span style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ $statusCfg['bg'] }};color:{{ $statusCfg['color'] }};display:flex;align-items:center;gap:4px">
                         <span style="width:5px;height:5px;border-radius:50%;background:{{ $statusCfg['dot'] }};display:inline-block"></span>
                         {{ $statusCfg['label'] }}

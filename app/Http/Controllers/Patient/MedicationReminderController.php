@@ -34,10 +34,10 @@ class MedicationReminderController extends Controller
 
         // Recent prescriptions for quick-add
         $prescriptions = Prescription::where('patient_user_id', $patient->id)
-            ->with('medicines')
+            ->with(['medicines', 'familyMember'])
             ->where('status', '!=', 'cancelled')
             ->orderByDesc('prescribed_date')
-            ->limit(5)
+            ->limit(20)
             ->get();
 
         return view('patient.reminders.index', compact(
@@ -67,6 +67,18 @@ class MedicationReminderController extends Controller
         // Validate family member belongs to patient
         if ($request->family_member_id) {
             auth()->user()->familyMembers()->findOrFail($request->family_member_id);
+        }
+
+        if ($request->prescription_id) {
+            $prescription = Prescription::where('id', $request->prescription_id)
+                ->where('patient_user_id', auth()->id())
+                ->firstOrFail();
+
+            if ((int) $prescription->family_member_id !== (int) ($request->family_member_id ?: 0)) {
+                return back()->withErrors([
+                    'prescription_id' => 'The selected prescription does not belong to the selected person.',
+                ])->withInput();
+            }
         }
 
         MedicationReminder::create([
