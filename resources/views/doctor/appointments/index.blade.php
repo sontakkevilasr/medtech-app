@@ -47,11 +47,11 @@
         $colors   = ['#3d7a6e','#7a6e3d','#6e3d7a','#3d607a','#7a3d4a'];
         $pColor   = $colors[$apt->patient_user_id % count($colors)];
     @endphp
-    <div class="dr-row-wrap" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--warm-bd);transition:background .12s"
+    <div class="dr-row-wrap doctor-appointment-row" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--warm-bd);transition:background .12s"
          onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background='transparent'">
 
         {{-- Time column --}}
-        <div style="width:56px;text-align:center;flex-shrink:0">
+        <div class="doctor-appointment-time" style="width:56px;text-align:center;flex-shrink:0">
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--txt)">
                 {{ $apt->slot_datetime->format('h:i') }}
             </div>
@@ -64,11 +64,11 @@
         </div>
 
         {{-- Patient avatar --}}
-        <x-avatar name="{{ $pName }}" :photo="$pPhoto"
+        <x-avatar class="doctor-appointment-avatar" name="{{ $pName }}" :photo="$pPhoto"
                    :size="38" :radius="10" :bg="$pColor" font-size=".875rem" />
 
         {{-- Info --}}
-        <div style="flex:1;min-width:0">
+        <div class="doctor-appointment-info" style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px">
                 <span style="font-size:.9rem;font-weight:600;color:var(--txt)">{{ $pName }}</span>
                 @if($apt->familyMember)
@@ -85,13 +85,13 @@
         </div>
 
         {{-- Status badge --}}
-        <span style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ $cfg['bg'] }};color:{{ $cfg['color'] }};display:flex;align-items:center;gap:4px;flex-shrink:0">
+        <span class="doctor-appointment-status" style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ $cfg['bg'] }};color:{{ $cfg['color'] }};display:flex;align-items:center;gap:4px;flex-shrink:0">
             <span style="width:5px;height:5px;border-radius:50%;background:{{ $cfg['dot'] }};display:inline-block"></span>
             {{ $cfg['label'] }}
         </span>
 
         {{-- Actions --}}
-        <div style="display:flex;gap:5px;flex-shrink:0" :id="'apt-actions-{{ $apt->id }}'">
+        <div class="doctor-appointment-actions" style="display:flex;gap:5px;flex-shrink:0" :id="'apt-actions-{{ $apt->id }}'">
             {{-- Confirm button (booked only) --}}
             @if($apt->status === 'booked')
             <button type="button"

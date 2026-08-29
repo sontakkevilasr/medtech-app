@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
+<div class="fade-in admin-grid" style="display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start">
 
 {{-- ── LEFT: Form ───────────────────────────────────────────────────────────── --}}
 <div>

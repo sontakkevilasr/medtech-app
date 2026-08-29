@@ -46,6 +46,51 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pincode || !city || !state || !status) return;
 
     let lookupId = 0;
+    const stateCities = {
+        'Andhra Pradesh':['Amaravati','Visakhapatnam','Vijayawada','Tirupati'],
+        'Arunachal Pradesh':['Itanagar','Tawang','Naharlagun'],
+        'Assam':['Guwahati','Dibrugarh','Jorhat','Silchar'],
+        'Bihar':['Patna','Gaya','Muzaffarpur','Bhagalpur'],
+        'Chhattisgarh':['Raipur','Bhilai','Bilaspur','Durg'],
+        'Goa':['Panaji','Margao','Vasco da Gama','Mapusa'],
+        'Gujarat':['Ahmedabad','Surat','Vadodara','Rajkot','Gandhinagar'],
+        'Haryana':['Gurugram','Faridabad','Panipat','Hisar'],
+        'Himachal Pradesh':['Shimla','Dharamshala','Solan','Mandi'],
+        'Jharkhand':['Ranchi','Jamshedpur','Dhanbad','Bokaro'],
+        'Karnataka':['Bengaluru','Mysuru','Mangaluru','Hubballi'],
+        'Kerala':['Thiruvananthapuram','Kochi','Kozhikode','Thrissur'],
+        'Madhya Pradesh':['Bhopal','Indore','Jabalpur','Gwalior'],
+        'Maharashtra':['Mumbai','Pune','Nagpur','Nashik','Thane'],
+        'Manipur':['Imphal','Thoubal','Bishnupur'],
+        'Meghalaya':['Shillong','Tura','Jowai'],
+        'Mizoram':['Aizawl','Lunglei','Champhai'],
+        'Nagaland':['Kohima','Dimapur','Mokokchung'],
+        'Odisha':['Bhubaneswar','Cuttack','Rourkela','Puri'],
+        'Punjab':['Chandigarh','Ludhiana','Amritsar','Jalandhar'],
+        'Rajasthan':['Jaipur','Jodhpur','Udaipur','Kota','Ajmer'],
+        'Sikkim':['Gangtok','Namchi','Gyalshing'],
+        'Tamil Nadu':['Chennai','Coimbatore','Madurai','Salem'],
+        'Telangana':['Hyderabad','Warangal','Nizamabad','Karimnagar'],
+        'Tripura':['Agartala','Udaipur','Dharmanagar'],
+        'Uttar Pradesh':['Lucknow','Kanpur','Agra','Varanasi','Noida','Ghaziabad'],
+        'Uttarakhand':['Dehradun','Haridwar','Nainital','Haldwani'],
+        'West Bengal':['Kolkata','Siliguri','Asansol','Durgapur'],
+        'Delhi':['New Delhi','Delhi'],
+        'Jammu & Kashmir':['Srinagar','Jammu','Anantnag'],
+        'Ladakh':['Leh','Kargil'],
+        'Puducherry':['Puducherry','Karaikal'],
+        'Chandigarh':['Chandigarh']
+    };
+
+    function populateCities(selected = '') {
+        const cities = stateCities[state.value] || [];
+        city.innerHTML = '<option value="">— City —</option>';
+        cities.forEach(name => city.add(new Option(name, name, false, name === selected)));
+        if (selected && !cities.includes(selected)) {
+            city.add(new Option(selected, selected, true, true));
+        }
+        city.disabled = cities.length === 0 && !selected;
+    }
 
     async function lookupPincode() {
         const value = pincode.value.replace(/\D/g, '').slice(0, 6);
@@ -71,9 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            city.value = office.District || office.Block || office.Name || '';
             const stateOption = [...state.options].find(option => option.value === office.State);
             if (stateOption) state.value = stateOption.value;
+            populateCities(office.District || office.Block || office.Name || '');
             status.textContent = 'City and state updated from pincode.';
             status.style.color = 'var(--leaf)';
         } catch (error) {
@@ -83,7 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    state.addEventListener('change', () => {
+        populateCities();
+        status.textContent = pincode.value ? 'Pincode is optional.' : '';
+    });
     pincode.addEventListener('input', lookupPincode);
+    populateCities(city.dataset.selectedCity || '');
     if (pincode.value.length === 6) lookupPincode();
 });
 </script>
@@ -182,8 +232,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="pf-grid pf-3">
                         <div>
                             <label class="pf-label">City</label>
-                            <input type="text" name="city" id="personal-city" class="pf-inp"
-                                   value="{{ old('city', $profile?->city) }}" placeholder="e.g. Nagpur">
+                                <select name="city" id="personal-city" class="pf-inp"
+                                    data-selected-city="{{ old('city', $profile?->city) }}">
+                                <option value="">— City —</option>
+                            </select>
                             @error('city')<div class="pf-err">{{ $message }}</div>@enderror
                         </div>
                         <div>

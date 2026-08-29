@@ -5,7 +5,7 @@
 @section('content')
 
 {{-- ── KPI Row ──────────────────────────────────────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
+<div class="admin-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
 
     @php
     $kpis = [
@@ -35,7 +35,7 @@
 </div>
 
 {{-- ── Row 2: Charts ────────────────────────────────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px">
+<div class="admin-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px">
 
     {{-- User Growth Chart --}}
     <div class="card" style="padding:0;overflow:hidden">
@@ -80,7 +80,7 @@
 </div>
 
 {{-- ── Row 3: Appointment trend + Recent -- --}}
-<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:22px">
+<div class="admin-grid" style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:22px">
 
     {{-- Appointment Trend (7-day bar) --}}
     <div class="card" style="padding:0;overflow:hidden">
@@ -127,7 +127,7 @@
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--txt)">Recent Registrations</div>
         <a href="{{ route('admin.users.index') }}" class="btn btn-ghost" style="font-size:.72rem;padding:4px 10px">View all</a>
     </div>
-    <table class="admin-table">
+    <div class="admin-table-wrap"><table class="admin-table">
         <thead><tr>
             <th>User</th><th>Role</th><th>Mobile</th><th>Joined</th><th>Status</th><th></th>
         </tr></thead>
@@ -170,7 +170,7 @@
             </tr>
             @endforeach
         </tbody>
-    </table>
+    </table></div>
 </div>
 
 @endsection

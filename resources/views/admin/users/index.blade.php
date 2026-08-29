@@ -3,7 +3,7 @@
 @section('page-title', $role === 'doctor' ? 'Doctors' : ($role === 'patient' ? 'Patients' : 'All Users'))
 
 @section('content')
-<div class="fade-in" x-data="{ processing: null }">
+<div class="fade-in" x-data="userActions">
 
 {{-- Sub-nav --}}
 <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
@@ -16,10 +16,10 @@
 </div>
 
 {{-- Filters --}}
-<form method="GET" action="{{ request()->url() }}"
+<form class="admin-filter-form" method="GET" action="{{ request()->url() }}"
       style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center">
-    <input type="text" name="q" value="{{ $search }}" placeholder="Search name or mobile…"
-           class="inp" style="min-width:200px">
+        <input class="inp filter-search" type="text" name="q" value="{{ $search }}" placeholder="Search name or mobile…"
+            style="min-width:200px">
 
     <select name="status" class="inp" style="min-width:130px">
         <option value="">All Status</option>
@@ -51,7 +51,7 @@
 </form>
 
 {{-- Table --}}
-<div class="card" style="overflow:hidden">
+<div class="card admin-table-wrap user-table-card">
     <table class="admin-table">
         <thead><tr>
             <th style="width:40%">User</th>
@@ -71,7 +71,7 @@
         @endphp
         <tr id="row-{{ $user->id }}">
             {{-- Name + role --}}
-            <td>
+            <td data-label="User">
                 <div style="display:flex;align-items:center;gap:10px">
                     <x-avatar name="{{ $name }}" :photo="$user->profile?->profile_photo"
                                :size="36" :radius="9" :bg="$color" font-size=".85rem" />
@@ -97,13 +97,13 @@
             </td>
 
             {{-- Mobile --}}
-            <td style="font-family:monospace;font-size:.82rem;color:var(--txt-md)">
+            <td data-label="Mobile" style="font-family:monospace;font-size:.82rem;color:var(--txt-md)">
                 {{ $user->country_code }} {{ $user->mobile_number }}
             </td>
 
             {{-- Specialty / city --}}
             @if($role === 'doctor' || !$role)
-            <td style="font-size:.8rem;color:var(--txt-md)">
+            <td data-label="Specialty / City" style="font-size:.8rem;color:var(--txt-md)">
                 @if($user->isDoctor())
                     {{ $dp?->specialization ?? '—' }}
                     @if($dp?->clinic_city)<div style="font-size:.72rem;color:var(--txt-lt)">{{ $dp->clinic_city }}</div>@endif
@@ -114,10 +114,10 @@
             @endif
 
             {{-- Joined --}}
-            <td style="font-size:.78rem;color:var(--txt-lt)">{{ $user->created_at->format('d M Y') }}</td>
+            <td data-label="Joined" style="font-size:.78rem;color:var(--txt-lt)">{{ $user->created_at->format('d M Y') }}</td>
 
             {{-- Status with live toggle --}}
-            <td>
+            <td data-label="Status">
                 <span class="badge {{ $user->is_active ? 'badge-green' : 'badge-red' }}"
                       id="status-badge-{{ $user->id }}">
                     {{ $user->is_active ? 'Active' : 'Suspended' }}
@@ -125,7 +125,7 @@
             </td>
 
             {{-- Actions --}}
-            <td style="text-align:right">
+            <td data-label="Actions" style="text-align:right">
                 <div style="display:flex;gap:5px;justify-content:flex-end;align-items:center">
                     {{-- Activate / Suspend toggle (AJAX) --}}
                     @if($user->is_active)

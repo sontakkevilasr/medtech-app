@@ -2,6 +2,17 @@
 @section('title', 'My Patients')
 @section('page-title', 'Patients')
 
+@push('styles')
+<style>
+@media (max-width: 700px) {
+    .patients-toolbar { display:grid !important; grid-template-columns:1fr; gap:10px !important; }
+    .patients-toolbar form { min-width:0 !important; width:100%; }
+    .patients-toolbar > div { overflow-x:auto; padding-bottom:2px; }
+    .patients-toolbar > button { width:100%; justify-content:center; }
+}
+</style>
+@endpush
+
 @section('content')
 <div x-data="patientList()" x-init="init()">
 
@@ -25,7 +36,7 @@
 @endif
 
 {{-- ── Top bar: search + filters + add-patient button ─────────────────────── -- --}}
-<div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+<div class="patients-toolbar" style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
 
     {{-- Search form --}}
     <form method="GET" action="{{ route('doctor.patients.index') }}"
@@ -94,7 +105,7 @@
     </div>
     @else
 
-    <div class="dr-table-wrap">
+    <div class="dr-table-wrap patients-table-wrap">
     {{-- Table header --}}
     <div class="dr-table-min" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;padding:10px 20px;border-bottom:1px solid var(--warm-bd);font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt)">
         <span>Patient</span>
@@ -267,12 +278,15 @@
                     <input x-model="searchQuery" type="text"
                            :placeholder="searchType==='mobile' ? 'Enter 10-digit mobile number' : searchType==='sub_id' ? 'e.g. MED-00042-B' : 'Last 4 digits of Aadhaar'"
                            @keyup.enter="doSearch()"
-                           style="width:100%;padding:.65rem .85rem .65rem 2.4rem;border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.9375rem;color:var(--txt);outline:none;font-family:'Outfit',sans-serif"
+                           style="width:100%;padding:.65rem 3rem .65rem .95rem;border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.9375rem;color:var(--txt);outline:none;font-family:'Outfit',sans-serif;box-sizing:border-box"
                            :style="searchError ? 'border-color:#ef4444' : ''"
                            @focus="$el.style.borderColor='var(--leaf)'" @blur="if(!searchError)$el.style.borderColor='var(--warm-bd)'">
-                    <div style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--txt-lt)">
-                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
-                    </div>
+                    <button type="button" @click="doSearch()" :disabled="searching"
+                            aria-label="Search patient"
+                            style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:8px;color:var(--txt-lt);cursor:pointer;padding:0;transition:color .15s,background .15s"
+                            onmouseover="this.style.color='var(--leaf)';this.style.background='#f0faf8'" onmouseout="this.style.color='var(--txt-lt)';this.style.background='transparent'">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+                    </button>
                 </div>
 
                 <p x-show="searchError" x-text="searchError" style="font-size:.78rem;color:#dc2626;margin-bottom:10px"></p>
@@ -294,8 +308,7 @@
                 </div>
 
                 <button @click="doSearch()" :disabled="searching || searchQuery.length < 3"
-                        style="width:100%;padding:.7rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px"
-                        :style="(searching || searchQuery.length < 3) ? 'opacity:.5;cursor:not-allowed' : ''">
+                        :style="(searching || searchQuery.length < 3) ? 'width:100%;padding:.7rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:not-allowed;opacity:.5;font-family:Outfit,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px' : 'width:100%;padding:.7rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px'">
                     <span x-show="searching" style="width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite"></span>
                     <span x-text="searching ? 'Searching…' : (foundPatient ? 'Request Access for This Patient' : 'Search Patient')"></span>
                 </button>

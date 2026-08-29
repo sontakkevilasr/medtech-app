@@ -170,13 +170,13 @@
         {{-- Reference range legend --}}
         <div style="padding:10px 18px;border-top:1px solid var(--warm-bd);display:flex;gap:14px;flex-wrap:wrap" x-show="!chartEmpty">
             <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--txt-md)">
-                <div style="width:12px;height:3px;border-radius:2px;background:#6a9e8e"></div> Normal
+                <div style="width:12px;height:3px;border-radius:2px;background:#10b981"></div> Normal
             </div>
             <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--txt-md)">
-                <div style="width:12px;height:3px;border-radius:2px;background:#c98a3a"></div> Warning
+                <div style="width:12px;height:3px;border-radius:2px;background:#f59e0b"></div> Warning
             </div>
             <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--txt-md)">
-                <div style="width:12px;height:3px;border-radius:2px;background:#c0737a"></div> High/Low
+                <div style="width:12px;height:3px;border-radius:2px;background:#ef4444"></div> High/Low
             </div>
             <span x-text="chartCount + ' readings'" style="margin-left:auto;font-size:.72rem;color:var(--txt-lt)"></span>
         </div>
@@ -433,21 +433,49 @@ function healthTracker() {
             const labels = json.data.map(d => d.date);
             const color  = meta.color ?? '#4a3760';
 
+            // Map status → colour
+            // ok       = Normal   (green)
+            // warning  = Warning  (amber/orange)
+            // danger   = High/Low (red)
+            const STATUS_COLORS = {
+                ok:      '#10b981', // green
+                warning: '#f59e0b', // amber
+                danger:  '#ef4444', // red
+            };
+            const pointColors = json.data.map(d => STATUS_COLORS[d.status] ?? color);
+            // For BP, also derive a per-point status for the diastolic line
+            const pointColorsDia = json.type === 'bp'
+                ? json.data.map(d => {
+                    if (d.v2 == null) return 'transparent';
+                    const r = json.ranges?.bp_diastolic ?? {};
+                    const v = parseFloat(d.v2);
+                    if (r.danger  && v >= r.danger[0]  && v <= r.danger[1])  return STATUS_COLORS.danger;
+                    if (r.warning && v >= r.warning[0] && v <= r.warning[1]) return STATUS_COLORS.warning;
+                    if (r.normal  && v >= r.normal[0]  && v <= r.normal[1])  return STATUS_COLORS.ok;
+                    return STATUS_COLORS.ok;
+                })
+                : [];
+
             if (chartInstance) chartInstance.destroy();
 
             const datasets = [{
                 label:       meta.label ?? json.type,
                 data:        json.data.map(d => d.v1),
-                borderColor: color,
+                borderColor:  color,
+                // Color each segment between two points based on the destination point's status
+                segment: {
+                    borderColor: (ctx) => {
+                        const status = json.data[ctx.p1DataIndex]?.status;
+                        return STATUS_COLORS[status] ?? color;
+                    },
+                },
                 backgroundColor: color + '18',
                 fill:        true,
                 tension:     0.4,
                 pointRadius: 4,
                 pointHoverRadius: 7,
-                pointBackgroundColor: json.data.map(d => {
-                    // colour each point by status
-                    return color;
-                }),
+                pointBackgroundColor: pointColors,
+                pointBorderColor:     pointColors,
             }];
 
             // Second line for BP diastolic
@@ -455,11 +483,19 @@ function healthTracker() {
                 datasets.push({
                     label:       'Diastolic',
                     data:        json.data.map(d => d.v2),
-                    borderColor: '#c98a3a',
+                    borderColor:  STATUS_COLORS.ok,
+                    segment: {
+                        borderColor: (ctx) => {
+                            return pointColorsDia[ctx.p1DataIndex] ?? STATUS_COLORS.ok;
+                        },
+                    },
                     backgroundColor: 'transparent',
                     fill:        false,
                     tension:     0.4,
                     pointRadius: 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: pointColorsDia,
+                    pointBorderColor:     pointColorsDia,
                     borderDash:  [4, 3],
                 });
             }

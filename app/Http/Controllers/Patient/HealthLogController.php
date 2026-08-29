@@ -131,13 +131,18 @@ class HealthLogController extends Controller
             ->orderBy('logged_at')
             ->get(['logged_at', 'value_1', 'value_2', 'context']);
 
-        $data = $logs->map(fn($l) => [
-            'date'    => $l->logged_at->format('d M'),
-            'ts'      => $l->logged_at->toISOString(),
-            'v1'      => (float) $l->value_1,
-            'v2'      => $l->value_2 ? (float) $l->value_2 : null,
-            'context' => $l->context,
-        ]);
+        $data = $logs->map(function ($l) use ($type) {
+            $v1 = (float) $l->value_1;
+            $v2 = $l->value_2 ? (float) $l->value_2 : null;
+            return [
+                'date'    => $l->logged_at->format('d M'),
+                'ts'      => $l->logged_at->toISOString(),
+                'v1'      => $v1,
+                'v2'      => $v2,
+                'context' => $l->context,
+                'status'  => $this->vitalStatus($type, $v1, $v2, $l->context),
+            ];
+        });
 
         // Reference ranges from config
         $ranges = config('medtech.health_ranges', []);

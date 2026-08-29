@@ -14,7 +14,7 @@
     $dp       = $user->doctorProfile;
     $profile  = $user->profile;
 @endphp
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+<div class="fade-in admin-grid" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
 {{-- ── LEFT ─────────────────────────────────────────────────────────────────── -- --}}
 <div style="display:flex;flex-direction:column;gap:18px">

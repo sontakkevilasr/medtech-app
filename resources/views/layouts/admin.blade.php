@@ -197,13 +197,67 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
 #overlay.show { display: block; }
 
 @media (max-width: 768px) {
+    :root { --topbar-h: 116px; }
     .sidebar {
         transform: translateX(-100%);
         transition: transform .3s cubic-bezier(.4,0,.2,1);
     }
     .sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(0,0,0,.4); }
     .topbar, .main-content { left: 0; margin-left: 0; }
+    .topbar { height:var(--topbar-h); padding:10px 14px; gap:8px; flex-wrap:wrap; align-content:center; }
+    .topbar > div:first-child { min-width:0; flex:1 1 auto; }
+    .page-title { min-width:0; font-size:1rem; line-height:1.15; overflow-wrap:anywhere; }
+    .admin-global-search { order:3; flex:0 0 100%; }
+    .admin-global-search form, .admin-global-search .inp { width:100% !important; }
+    .admin-topbar-date { display:none; }
+    .main-content { width:100%; max-width:100%; padding:16px 12px; overflow-x:hidden; }
     #mob-toggle { display: flex; align-items: center; }
+    .admin-grid { grid-template-columns:1fr !important; gap:14px !important; }
+    .admin-kpi-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:10px !important; }
+    .admin-card-head { flex-wrap:wrap; gap:8px; }
+    .admin-filter-form { display:grid !important; grid-template-columns:1fr 1fr; gap:8px !important; }
+    .admin-filter-form .inp, .admin-filter-form button { width:100%; min-width:0 !important; }
+    .admin-filter-form .filter-search { grid-column:1 / -1; }
+    .admin-filter-form > div { grid-column:1 / -1; margin-left:0 !important; text-align:right; }
+    .admin-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .admin-table-wrap .admin-table { min-width:620px; }
+    .admin-export-grid { grid-template-columns:1fr !important; gap:14px !important; }
+    .admin-export-card { min-width:0; }
+    .admin-export-card p, .admin-export-card div { overflow-wrap:anywhere; }
+}
+/* Small phones: stack admin-table rows into cards so nothing is clipped */
+@media (max-width: 576px) {
+    .admin-table-wrap { overflow-x:hidden !important; }
+    .admin-table, .admin-table thead, .admin-table tbody, .admin-table tr, .admin-table th, .admin-table td {
+        display:block !important; width:100% !important;
+    }
+    .admin-table thead { display:none !important; }
+    .admin-table tbody tr {
+        margin-bottom:14px; border:1px solid var(--bd); border-radius:12px;
+        padding:14px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .admin-table tbody td { padding:8px 0; border:none; font-size:.85rem; }
+    .admin-table tbody td:first-child { padding-top:0; }
+    .admin-table tbody td:last-child { padding-bottom:0; }
+    .admin-table tbody td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 700;
+        font-size: .7rem;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--txt-lt);
+        margin-bottom: 2px;
+    }
+    .admin-table tbody td[data-label="Actions"]::before { display: none; }
+    .admin-table tbody td[data-label="Actions"] { display: flex !important; flex-wrap: wrap; gap: 4px; padding-top: 8px; border-top: 1px dashed var(--bd); margin-top: 6px; }
+    .admin-table tbody td[data-label="Actions"] > div { flex-wrap: wrap; }
+}
+@media (max-width:480px) {
+    .admin-kpi-grid { grid-template-columns:1fr 1fr !important; }
+    .stat-card { padding:14px 12px; }
+    .admin-filter-form { grid-template-columns:1fr; }
+    .admin-filter-form .filter-search, .admin-filter-form > div { grid-column:1; }
 }
 </style>
 @stack('styles')
@@ -313,7 +367,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
     </div>
 
     {{-- Search --}}
-    <div style="position:relative">
+    <div class="admin-global-search" style="position:relative">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--txt-lt)">
             <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
@@ -324,7 +378,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--tx
     </div>
 
     {{-- Date --}}
-    <div style="font-size:.8rem;color:var(--txt-lt)">{{ now()->format('D, d M Y') }}</div>
+    <div class="admin-topbar-date" style="font-size:.8rem;color:var(--txt-lt)">{{ now()->format('D, d M Y') }}</div>
 </header>
 
 {{-- ── Flash messages ───────────────────────────────────────────────────────── -- --}}

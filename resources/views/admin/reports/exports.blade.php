@@ -12,7 +12,7 @@
 </div>
 
 {{-- ── Export cards grid ────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<div class="admin-export-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
 
 @php
 $exports = [
@@ -80,7 +80,7 @@ $exports = [
 @endphp
 
 @foreach($exports as $exp)
-<div class="card" style="padding:0;overflow:hidden;transition:box-shadow .15s"
+<div class="card admin-export-card" style="padding:0;overflow:hidden;transition:box-shadow .15s"
      onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
 
     {{-- Colour header --}}

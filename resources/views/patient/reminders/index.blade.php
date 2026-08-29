@@ -185,7 +185,7 @@ input:checked + .toggle-track::before { transform: translateX(16px); }
 </div>
 
 {{-- ── RIGHT: New reminder form ─────────────────────────────────────────────── -- --}}
-<div class="rem-sidebar" style="position:sticky;top:78px">
+<div class="rem-sidebar" style="position:sticky;top:78px" x-show="showForm" x-transition.opacity.duration.250ms>
     <div class="panel" style="padding:20px 22px" x-data="reminderForm()">
         <div style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);margin-bottom:4px">
             {{ $active->isEmpty() ? 'Set Up a Reminder' : 'New Reminder' }}
@@ -206,7 +206,7 @@ input:checked + .toggle-track::before { transform: translateX(16px); }
             {{-- Medicine name --}}
             <div style="margin-bottom:12px">
                 <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:5px">Medicine Name *</label>
-                <input type="text" name="medicine_name" value="{{ old('medicine_name') }}"
+                <input id="medicine_name_input" type="text" name="medicine_name" value="{{ old('medicine_name') }}"
                        placeholder="e.g. Metformin 500mg"
                        style="width:100%;padding:.55rem .8rem;border:1.5px solid var(--warm-bd);border-radius:9px;font-size:.875rem;color:var(--txt);background:var(--cream);outline:none;font-family:'Plus Jakarta Sans',sans-serif"
                        onfocus="this.style.borderColor='var(--plum)'" onblur="this.style.borderColor='var(--warm-bd)'"

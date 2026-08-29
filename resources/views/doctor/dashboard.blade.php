@@ -109,24 +109,25 @@
 
                 <x-avatar name="{{ $name }}" :photo="$apt->patient->profile?->profile_photo" class="apt-avatar" />
 
-                <div class="apt-info">
-                    <div class="apt-name">{{ $name }}</div>
-                    <div class="apt-meta">
-                        <span>{{ ucfirst($apt->type ?? 'consultation') }}</span>
-                        @if($apt->reason)
-                        <span class="apt-meta-dot"></span>
-                        <span>{{ Str::limit($apt->reason, 30) }}</span>
-                        @endif
-                        @if($apt->fee)
-                        <span class="apt-meta-dot"></span>
-                        <span>₹{{ number_format($apt->fee) }}</span>
-                        @endif
+                <div class="apt-details">
+                    <div class="apt-info">
+                        <div class="apt-name">{{ $name }}</div>
+                        <div class="apt-meta">
+                            <span>{{ ucfirst($apt->type ?? 'consultation') }}</span>
+                            @if($apt->reason)
+                            <span class="apt-meta-dot"></span>
+                            <span>{{ Str::limit($apt->reason, 30) }}</span>
+                            @endif
+                            @if($apt->fee)
+                            <span class="apt-meta-dot"></span>
+                            <span>₹{{ number_format($apt->fee) }}</span>
+                            @endif
+                        </div>
                     </div>
-                </div>
 
-                <span class="apt-status s-{{ $apt->status }}">{{ ucfirst(str_replace('_', ' ', $apt->status)) }}</span>
+                    <span class="apt-status s-{{ $apt->status }}">{{ ucfirst(str_replace('_', ' ', $apt->status)) }}</span>
 
-                <div class="apt-actions">
+                    <div class="apt-actions">
                     {{-- View / Start Record --}}
                     <a href="{{ route('doctor.patients.history', $apt->patient_user_id) }}"
                        class="apt-btn green" title="View Patient">
@@ -156,6 +157,7 @@
                         </button>
                     </form>
                     @endif
+                    </div>
                 </div>
             </div>
             @endforeach
@@ -203,26 +205,28 @@
                 <div class="apt-divider"></div>
                 <x-avatar name="{{ $name }}" :photo="$apt->patient->profile?->profile_photo" class="apt-avatar" />
 
-                <div class="apt-info">
-                    <div class="apt-name">{{ $name }}</div>
-                    <div class="apt-meta">
-                        <span>{{ ucfirst($apt->type ?? 'consultation') }}</span>
-                        @if($apt->appointment_number)
-                        <span class="apt-meta-dot"></span>
-                        <span style="font-family:monospace;font-size:.7rem">{{ $apt->appointment_number }}</span>
-                        @endif
+                <div class="apt-details">
+                    <div class="apt-info">
+                        <div class="apt-name">{{ $name }}</div>
+                        <div class="apt-meta">
+                            <span>{{ ucfirst($apt->type ?? 'consultation') }}</span>
+                            @if($apt->appointment_number)
+                            <span class="apt-meta-dot"></span>
+                            <span style="font-family:monospace;font-size:.7rem">{{ $apt->appointment_number }}</span>
+                            @endif
+                        </div>
                     </div>
-                </div>
 
-                <span class="apt-status s-{{ $apt->status }}">{{ ucfirst(str_replace('_',' ',$apt->status)) }}</span>
+                    <span class="apt-status s-{{ $apt->status }}">{{ ucfirst(str_replace('_',' ',$apt->status)) }}</span>
 
-                <div class="apt-actions">
+                    <div class="apt-actions">
                     <a href="{{ route('doctor.appointments.show', $apt) }}"
                        class="apt-btn" title="Details">
                         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                         </svg>
                     </a>
+                    </div>
                 </div>
             </div>
             @endforeach

@@ -322,6 +322,7 @@
         .apt-actions {
             display: flex; gap: 5px; flex-shrink: 0;
         }
+        .apt-details { display: contents; }
         .apt-btn {
             display: flex; align-items: center; justify-content: center;
             width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--warm-bd);
@@ -400,26 +401,135 @@
             .stat-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
-            :root { --sidebar-w: 260px; }
+            :root { --sidebar-w: 260px; --topbar-h: 76px; }
             #sidebar { transform: translateX(-100%); }
             #sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(0,0,0,.4); }
             #main, #topbar { margin-left: 0; left: 0; }
+            #topbar { padding: 0 16px; gap: 10px; }
             #topbar > div:first-child { min-width: 0; flex: 1; }
             #mob-toggle { display: flex; }
-            .topbar-title { font-size: 1rem; }
+            .topbar-title { font-size: 1rem; white-space: normal; overflow-wrap: anywhere; line-height: 1.15; }
+            .topbar-right { gap: 8px; flex-shrink: 0; }
             .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
             #main { padding: 16px; }
             .today-badge { display: none; }
-            .apt-row { flex-wrap: wrap; row-gap: 8px; }
-            .apt-actions { margin-left: auto; }
+            .apt-row { display:grid; grid-template-columns:56px 1px 36px minmax(0,1fr) auto; column-gap:10px; row-gap:6px; align-items:center; }
+            .apt-row .apt-time { grid-column:1; grid-row:1 / span 2; }
+            .apt-row .apt-divider { grid-column:2; grid-row:1 / span 2; }
+            .apt-row .apt-avatar { grid-column:3; grid-row:1 / span 2; }
+            .apt-row .apt-details { display:flex; flex-direction:column; gap:6px; grid-column:4; grid-row:1 / span 3; min-width:0; }
+            .apt-row .apt-info { min-width:0; }
+            .apt-row .apt-status { align-self:flex-start; }
+            .apt-row .apt-actions { justify-content:flex-start; margin-left:0; }
+            .apt-row .apt-meta { flex-wrap:wrap; }
+            .apt-name { overflow-wrap:anywhere; }
             .dr-row-wrap { flex-wrap: wrap; row-gap: 8px; }
             .dr-row-wrap > *:last-child { margin-left: auto; }
         }
         @media (max-width: 480px) {
             #topbar { padding: 0 14px; gap: 8px; }
             .topbar-right { gap: 8px; }
-            .stat-grid { grid-template-columns: 1fr; }
-            .stat-card { min-width: 0; }
+            .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .stat-card { min-width: 0; min-height: 132px; padding: 14px 12px; }
+            .stat-label { max-width: 78%; line-height: 1.35; }
+            .stat-icon { right: 10px; width: 38px; height: 38px; }
+            .stat-value { font-size: 1.8rem; }
+            .stat-sub { max-width: 82%; line-height: 1.3; }
+            .stat-card .stat-label { font-size:.64rem; }
+            .stat-card .stat-sub { font-size:.7rem; }
+            .panel-head { align-items:flex-start; gap:10px; }
+            .panel-title { min-width:0; line-height:1.2; }
+            .panel-action { flex-shrink:0; }
+            .panel-head .panel-title { flex:1 1 auto; }
+            .apt-row { padding:13px 14px; grid-template-columns:70px 36px minmax(0,1fr); grid-template-rows:auto auto auto; grid-template-areas:"time avatar info" "time avatar status" "time avatar actions"; column-gap:10px; row-gap:6px; align-items:start; }
+            .apt-row .apt-divider { display:none; }
+            .apt-row .apt-time { grid-area:time; min-width:70px; align-self:center; }
+            .apt-row .apt-avatar { grid-area:avatar; }
+            .apt-row .apt-details { grid-area:info; }
+            .apt-row .apt-info { min-width:0; }
+            .apt-row .apt-status { justify-self:start; }
+            .apt-row .apt-actions { justify-content:flex-start; }
+            .apt-row .apt-info { min-width:0; }
+            .apt-row .apt-name { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
+            .apt-row .apt-meta { min-width:0; overflow:visible; display:flex; flex-wrap:wrap; line-height:1.35; }
+            .apt-row .apt-meta > span:first-child { flex:0 0 100%; }
+            .apt-row .apt-meta .apt-meta-dot { display:none; }
+            .apt-row .apt-meta span { max-width:none; overflow:visible; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; }
+            .apt-row .apt-time-val { white-space:nowrap; font-size:.78rem; }
+            .apt-row .apt-time-period { white-space:nowrap; font-size:.6rem; }
+        }
+
+        @media (max-width: 700px) {
+            #main { width:100%; max-width:100%; padding-left:12px; padding-right:12px; }
+            .doctor-appointment-row {
+                display:grid !important;
+                grid-template-columns:70px 38px minmax(0,1fr);
+                grid-template-areas:"time avatar info" "time avatar status" "time avatar actions";
+                column-gap:10px !important;
+                row-gap:7px !important;
+                align-items:start !important;
+                padding:14px 12px !important;
+            }
+            .doctor-appointment-row .doctor-appointment-time { grid-area:time; width:70px !important; align-self:center; }
+            .doctor-appointment-row .doctor-appointment-avatar { grid-area:avatar; align-self:start; }
+            .doctor-appointment-row > .doctor-appointment-info { grid-area:info; min-width:0; }
+            .doctor-appointment-row > .doctor-appointment-info > div:first-child { display:flex; flex-direction:column; align-items:flex-start; gap:3px; }
+            .doctor-appointment-row > .doctor-appointment-info > div { width:100%; text-align:left; }
+            .doctor-appointment-row > .doctor-appointment-info > div:first-child > span { display:block; width:100%; }
+            .doctor-appointment-row > .doctor-appointment-info > div:last-child { margin-top:2px; }
+            .doctor-appointment-row .doctor-appointment-status { grid-area:status; justify-self:start; }
+            .doctor-appointment-row .doctor-appointment-actions { grid-area:actions; justify-content:flex-start; }
+            .doctor-appointment-row .doctor-appointment-info > div { min-width:0; }
+            .doctor-appointment-row .doctor-appointment-info span { max-width:100%; overflow-wrap:anywhere; }
+            .patients-table-wrap { overflow:visible; }
+            .patients-table-wrap .dr-table-min {
+                min-width:0 !important;
+                grid-template-columns:minmax(0,1fr) 104px !important;
+                gap:6px 10px !important;
+            }
+            .patients-table-wrap .dr-table-min > span:nth-child(n+3),
+            .patients-table-wrap .dr-table-min > div:nth-child(n+3):not(:last-child) {
+                display:none;
+            }
+            .patients-table-wrap .dr-table-min > span:nth-child(2) {
+                grid-column:1;
+            }
+            .patients-table-wrap .dr-table-min > div:nth-child(2) {
+                grid-column:1;
+                grid-row:2;
+                font-size:.75rem !important;
+                padding-left:46px;
+            }
+            .patients-table-wrap .dr-table-min > div:last-child {
+                grid-column:2;
+                grid-row:1 / span 2;
+                align-self:center;
+                width:104px;
+                max-width:104px;
+            }
+            .patients-table-wrap .dr-table-min > div:first-child {
+                min-width:0;
+            }
+            .patients-table-wrap .dr-table-min > div:first-child > div:last-child {
+                min-width:0;
+                overflow:hidden;
+            }
+            .patients-table-wrap .dr-table-min > div:first-child > div:last-child > div:nth-child(2) {
+                flex-wrap:wrap;
+                max-height:none;
+                overflow:visible;
+                line-height:1.45;
+            }
+            .patients-table-wrap .dr-table-min > div:last-child a,
+            .patients-table-wrap .dr-table-min > div:last-child button {
+                width:100%;
+                max-width:104px;
+                padding-left:7px !important;
+                padding-right:7px !important;
+                font-size:.68rem !important;
+                white-space:normal !important;
+                text-align:center;
+            }
         }
 
         /* ── Shared responsive helpers: 2-col content grid + sticky sidebar ── */

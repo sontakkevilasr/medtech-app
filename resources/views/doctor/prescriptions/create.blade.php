@@ -8,7 +8,8 @@
 
 @push('styles')
 <style>
-    .rx-card { background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px;overflow:visible; }
+    .rx-card { background:var(--cream);border:1px solid var(--warm-bd);border-radius:14px;margin-bottom:16px;overflow:visible;position:relative; }
+    .rx-card.has-dropdown { z-index:200;isolation:isolate; }
     .rx-card-head { padding:13px 20px;border-bottom:1px solid var(--warm-bd);display:flex;align-items:center;gap:9px;font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--txt); }
     .rx-card-body { padding:18px 20px; }
     .fg { display:grid;gap:14px; }
@@ -21,12 +22,14 @@
     .inp.err   { border-color:#ef4444; }
     select.inp { cursor:pointer; }
     textarea.inp { resize:vertical;min-height:72px; }
-    .med-row { background:var(--white);border:1.5px solid var(--warm-bd);border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;transition:border-color .15s,box-shadow .15s; }
-    .med-row:focus-within { border-color:var(--sage);box-shadow:0 0 0 3px rgba(106,158,142,.1); }
+    .med-row { background:var(--cream);border:1.5px solid var(--warm-bd);border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;transition:border-color .15s,box-shadow .15s; }
+    .med-row:focus-within { border-color:var(--sage);box-shadow:0 0 0 3px rgba(106,158,142,.1);z-index:20;isolation:isolate; }
+    .med-row.has-dropdown { z-index:200;isolation:isolate; }
     .med-row-num { position:absolute;top:-10px;left:14px;font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-lt);background:var(--cream);padding:0 6px; }
-    .ac-wrap { position:relative; }
-    .ac-list { position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1.5px solid var(--warm-bd);border-radius:10px;z-index:200;max-height:220px;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.12); }
-    .ac-item { padding:9px 12px;cursor:pointer;transition:background .1s;font-size:.875rem;border-bottom:1px solid var(--parch); }
+    .ac-wrap { position:relative;z-index:1; }
+    .ac-wrap:focus-within { z-index:50; }
+    .ac-list { position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--cream);border:1.5px solid var(--warm-bd);border-radius:10px;z-index:60;max-height:220px;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.12); }
+    .ac-item { padding:9px 12px;cursor:pointer;transition:background .1s;font-size:.875rem;border-bottom:1px solid var(--warm-bd);background:var(--cream); }
     .ac-item:last-child { border-bottom:none; }
     .ac-item:hover,.ac-item.hl { background:var(--parch); }
     .ac-item-name { font-weight:500;color:var(--txt); }
@@ -35,14 +38,14 @@
     .p-ava { width:36px;height:36px;border-radius:9px;background:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.875rem;flex-shrink:0; }
     .add-med-btn { display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;border:1.5px dashed var(--warm-bd);border-radius:10px;background:transparent;cursor:pointer;color:var(--txt-md);font-size:.875rem;font-family:'Outfit',sans-serif;transition:all .15s; }
     .add-med-btn:hover { border-color:var(--leaf);color:var(--leaf);background:#f0faf8; }
-    .action-bar { position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--warm-bd);padding:14px 20px;margin:0 -28px -28px;display:flex;justify-content:flex-end;gap:10px;z-index:30; }
+    .action-bar { position:sticky;bottom:0;background:var(--cream);border-top:1px solid var(--warm-bd);padding:14px 20px;margin:0 -28px -28px;display:flex;justify-content:flex-end;gap:10px;z-index:30; }
     .btn-primary { display:flex;align-items:center;gap:7px;padding:10px 20px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s; }
     .btn-primary:hover { opacity:.88; }
-    .btn-secondary { display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--white);color:var(--leaf);border:1.5px solid var(--leaf);border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s; }
+    .btn-secondary { display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--cream);color:var(--leaf);border:1.5px solid var(--leaf);border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s; }
     .btn-secondary:hover { background:#edf6f4; }
     .btn-ghost { padding:10px 16px;background:transparent;color:var(--txt-md);border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.875rem;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif; }
-    @media (max-width:768px) { .fg-3 { grid-template-columns:1fr 1fr; } .fg-4 { grid-template-columns:1fr 1fr; } .action-bar { flex-wrap:wrap;margin:0 -14px -14px; } }
-    @media (max-width:500px) { .fg-2,.fg-3,.fg-4 { grid-template-columns:1fr; } }
+    @media (max-width:768px) { .fg-3 { grid-template-columns:1fr 1fr; } .fg-4 { grid-template-columns:1fr 1fr; } .action-bar { flex-wrap:wrap;margin:0 -16px -16px;padding:12px 16px; } }
+    @media (max-width:500px) { .fg-2,.fg-3,.fg-4 { grid-template-columns:1fr; } .action-bar { position:static; } .action-bar > * { flex:1 1 100%; justify-content:center; } }
 </style>
 @endpush
 
@@ -57,7 +60,7 @@
 <div>
 
 {{-- ① Patient --}}
-<div class="rx-card">
+<div class="rx-card" :class="(showPList && results.length > 0) ? 'has-dropdown' : ''">
     <div class="rx-card-head">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="var(--leaf)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         Patient
@@ -102,14 +105,6 @@
             </div>
         </div>
         <p x-show="!patientId && submitted" style="font-size:.75rem;color:#ef4444;margin-top:4px">Please select a patient.</p>
-        <div x-show="selectedPatient" class="patient-chip" style="margin-top:10px">
-            <div class="p-ava" x-text="selectedPatient ? selectedPatient.name[0].toUpperCase() : ''"></div>
-            <div style="flex:1;min-width:0">
-                <div style="font-weight:600;color:var(--txt)" x-text="selectedPatient?.name"></div>
-                <div style="font-size:.75rem;color:var(--txt-lt)" x-text="(selectedPatient?.mobile||'')+(selectedPatient?.age?' · Age '+selectedPatient.age:'')"></div>
-            </div>
-            <button type="button" @click="clearPatient()" style="background:none;border:none;cursor:pointer;color:var(--txt-lt);font-size:.75rem">✕</button>
-        </div>
         @endif
     </div>
 </div>
@@ -159,7 +154,7 @@
     </div>
     <div class="rx-card-body" style="padding-bottom:10px">
         <template x-for="(med, idx) in medicines" :key="med.key">
-            <div class="med-row">
+            <div class="med-row" :class="med.acList.length > 0 ? 'has-dropdown' : ''">
                 <div class="med-row-num" x-text="'Medicine ' + (idx+1)"></div>
                 <div style="display:flex;align-items:flex-start;gap:10px">
                     <div style="flex:1;min-width:0">
@@ -372,7 +367,11 @@ function rxForm() {
         medicines: [newMed()],
         submitted: false,
         init() {
-            document.addEventListener('click', () => { this.showPList = false; this.medicines.forEach(m => m.acList = []); });
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.ac-wrap')) return;
+                this.showPList = false;
+                this.medicines.forEach(m => m.acList = []);
+            });
         },
         async searchPatients() {
             if (this.patientQuery.length < 2) { this.results = []; return; }

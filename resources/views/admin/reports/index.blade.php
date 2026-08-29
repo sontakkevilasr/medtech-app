@@ -6,7 +6,7 @@
 <div class="fade-in">
 
 {{-- ── Summary stat grid ────────────────────────────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+<div class="admin-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
 @php
 $summaryCards = [
     ['label'=>'Total Users',          'val'=>$summary['total_users'],         'sub'=>$summary['new_users_30d'].' new in 30 days', 'color'=>'#6366f1'],
@@ -28,7 +28,7 @@ $summaryCards = [
 </div>
 
 {{-- ── Row 1: User growth (12m bar) + Appointment types (pie) ─────────────── -- --}}
-<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
+<div class="admin-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
 
     <div class="card" style="padding:0;overflow:hidden">
         <div style="padding:14px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
@@ -78,7 +78,7 @@ $summaryCards = [
 </div>
 
 {{-- ── Row 3: Specialization bar + quick stats ─────────────────────────────── -- --}}
-<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+<div class="admin-grid" style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
 
     <div class="card" style="padding:0;overflow:hidden">
         <div style="padding:14px 20px;border-bottom:1px solid var(--bd)">

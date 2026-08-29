@@ -12,7 +12,7 @@
     $profile = $doctor->profile;
     $name    = $profile?->full_name ?? 'Unknown';
 @endphp
-<div class="fade-in" style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+<div class="fade-in admin-grid" style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
 {{-- ── LEFT: Doctor details ─────────────────────────────────────────────────── -- --}}
 <div style="display:flex;flex-direction:column;gap:18px">

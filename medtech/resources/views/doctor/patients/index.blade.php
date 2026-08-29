@@ -235,12 +235,15 @@
                     <input x-model="searchQuery" type="text"
                            :placeholder="searchType==='mobile' ? 'Enter 10-digit mobile number' : searchType==='sub_id' ? 'e.g. MED-00042-B' : 'Last 4 digits of Aadhaar'"
                            @keyup.enter="doSearch()"
-                           style="width:100%;padding:.65rem .85rem .65rem 2.4rem;border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.9375rem;color:var(--txt);outline:none;font-family:'Outfit',sans-serif"
+                           style="width:100%;padding:.65rem 3rem .65rem .95rem;border:1.5px solid var(--warm-bd);border-radius:10px;font-size:.9375rem;color:var(--txt);outline:none;font-family:'Outfit',sans-serif;box-sizing:border-box"
                            :style="searchError ? 'border-color:#ef4444' : ''"
                            @focus="$el.style.borderColor='var(--leaf)'" @blur="if(!searchError)$el.style.borderColor='var(--warm-bd)'">
-                    <div style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--txt-lt)">
-                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
-                    </div>
+                    <button type="button" @click="doSearch()" :disabled="searching"
+                            aria-label="Search patient"
+                            style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:8px;color:var(--txt-lt);cursor:pointer;padding:0;transition:color .15s,background .15s"
+                            onmouseover="this.style.color='var(--leaf)';this.style.background='#f0faf8'" onmouseout="this.style.color='var(--txt-lt)';this.style.background='transparent'">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+                    </button>
                 </div>
 
                 <p x-show="searchError" x-text="searchError" style="font-size:.78rem;color:#dc2626;margin-bottom:10px"></p>
