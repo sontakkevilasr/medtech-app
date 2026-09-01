@@ -6,7 +6,10 @@
 @php
     $patient     = auth()->user();
     $patientName = $patient->profile?->full_name ?? 'You';
-    // Generate a "self" sub-id display – MED-{padded_id}-A convention
+    // $self is now ALWAYS a real FamilyMember row (controller backfills it
+    // idempotently on every index() call). $selfId is therefore always the
+    // real Sub-ID — no view-side fallback needed. The `?? MED-…-A` below is
+    // a defensive belt-and-braces in case of an unforeseen code path.
     $prefix  = config('medtech.sub_id.prefix', 'MED');
     $padded  = str_pad($patient->id, 5, '0', STR_PAD_LEFT);
     $selfId  = $self?->sub_id ?? "{$prefix}-{$padded}-A";
@@ -23,6 +26,9 @@
 
 <div class="fade-in">
 
+{{-- ══ YOUR OWN PROFILE CARD (self, like a family member) ═════════════════════ --}}
+@include('patient.family._self-card')
+
 {{-- ══ YOUR OWN SUB-ID CARD ═══════════════════════════════════════════════════ -- --}}
 <div style="background:linear-gradient(135deg,#4a3760 0%,#2d1f47 100%);border-radius:18px;padding:28px 32px;margin-bottom:26px;color:#fff;position:relative;overflow:hidden">
     {{-- Decorative circles --}}
@@ -33,11 +39,8 @@
         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
             <div>
                 <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px">Your Primary Sub-ID</div>
-                <div style="font-family:'Lora',serif;font-size:2.4rem;font-weight:500;letter-spacing:.06em;color:#fff;margin-bottom:4px">
+                <div style="font-family:'Lora',serif;font-size:2.4rem;font-weight:500;letter-spacing:.06em;color:#fff">
                     {{ $selfId }}
-                </div>
-                <div style="font-size:.8rem;color:rgba(255,255,255,.6)">
-                    {{ $patientName }} · Primary account holder
                 </div>
             </div>
 

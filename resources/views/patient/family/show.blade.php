@@ -202,7 +202,8 @@
     </div>
     @endif
 
-    {{-- Danger zone --}}
+    {{-- Danger zone (only for family members, not for self/primary account holder) --}}
+    @if($member->relation !== 'self')
     <div class="panel" style="padding:14px 16px;border-color:#fecaca">
         <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#dc2626;margin-bottom:8px">Danger Zone</div>
 
@@ -229,6 +230,7 @@
             </button>
         </form>
     </div>
+    @endif
 </div>
 
 </div>

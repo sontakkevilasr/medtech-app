@@ -12,6 +12,16 @@ class FamilyMemberSeeder extends Seeder
     {
         // Ananya Mehta (9200000001) — pregnant, add husband & in-laws
         $ananya = User::where('mobile_number', '9200000001')->first();
+        // Self-row first (always suffix A) so the patient's own Sub-ID is reserved
+        FamilyMember::create([
+            'primary_user_id' => $ananya->id,
+            'sub_id'          => 'MED-00101-A',
+            'full_name'       => $ananya->profile?->full_name ?? 'Ananya Mehta',
+            'dob'             => $ananya->profile?->dob,
+            'gender'          => $ananya->profile?->gender,
+            'blood_group'     => $ananya->profile?->blood_group,
+            'relation'        => 'self',
+        ]);
         FamilyMember::create([
             'primary_user_id' => $ananya->id,
             'sub_id'          => 'MED-00101-B',
@@ -35,6 +45,15 @@ class FamilyMemberSeeder extends Seeder
         $vikram = User::where('mobile_number', '9200000002')->first();
         FamilyMember::create([
             'primary_user_id' => $vikram->id,
+            'sub_id'          => 'MED-00201-A',
+            'full_name'       => $vikram->profile?->full_name ?? 'Vikram Desai',
+            'dob'             => $vikram->profile?->dob,
+            'gender'          => $vikram->profile?->gender,
+            'blood_group'     => $vikram->profile?->blood_group,
+            'relation'        => 'self',
+        ]);
+        FamilyMember::create([
+            'primary_user_id' => $vikram->id,
             'sub_id'          => 'MED-00201-B',
             'full_name'       => 'Priya Desai',
             'dob'             => '1990-07-22',
@@ -54,6 +73,15 @@ class FamilyMemberSeeder extends Seeder
 
         // Aryan Kapoor (9200000004) — adds elderly parents
         $aryan = User::where('mobile_number', '9200000004')->first();
+        FamilyMember::create([
+            'primary_user_id' => $aryan->id,
+            'sub_id'          => 'MED-00401-A',
+            'full_name'       => $aryan->profile?->full_name ?? 'Aryan Kapoor',
+            'dob'             => $aryan->profile?->dob,
+            'gender'          => $aryan->profile?->gender,
+            'blood_group'     => $aryan->profile?->blood_group,
+            'relation'        => 'self',
+        ]);
         FamilyMember::create([
             'primary_user_id' => $aryan->id,
             'sub_id'          => 'MED-00401-B',
@@ -76,6 +104,15 @@ class FamilyMemberSeeder extends Seeder
         // Sneha Kulkarni (9200000003) — add a delinked member (demo of delink feature)
         $sneha = User::where('mobile_number', '9200000003')->first();
         FamilyMember::create([
+            'primary_user_id' => $sneha->id,
+            'sub_id'          => 'MED-00301-A',
+            'full_name'       => $sneha->profile?->full_name ?? 'Sneha Kulkarni',
+            'dob'             => $sneha->profile?->dob,
+            'gender'          => $sneha->profile?->gender,
+            'blood_group'     => $sneha->profile?->blood_group,
+            'relation'        => 'self',
+        ]);
+        FamilyMember::create([
             'primary_user_id'     => $sneha->id,
             'sub_id'              => 'MED-00301-B',
             'full_name'           => 'Amit Kulkarni',
@@ -91,6 +128,15 @@ class FamilyMemberSeeder extends Seeder
 
         // Suresh Nayak (9200000006) — diabetic, adds wife
         $suresh = User::where('mobile_number', '9200000006')->first();
+        FamilyMember::create([
+            'primary_user_id' => $suresh->id,
+            'sub_id'          => 'MED-00601-A',
+            'full_name'       => $suresh->profile?->full_name ?? 'Suresh Nayak',
+            'dob'             => $suresh->profile?->dob,
+            'gender'          => $suresh->profile?->gender,
+            'blood_group'     => $suresh->profile?->blood_group,
+            'relation'        => 'self',
+        ]);
         FamilyMember::create([
             'primary_user_id' => $suresh->id,
             'sub_id'          => 'MED-00601-B',

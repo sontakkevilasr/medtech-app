@@ -115,6 +115,17 @@ class SubIdService
      */
     private function nextSuffix(User $primaryUser): string
     {
+        return $this->nextSuffixFor($primaryUser);
+    }
+
+    /**
+     * Public version of nextSuffix() — used by controllers that need to
+     * pre-reserve a suffix (e.g. FamilyMemberController@index when
+     * backfilling a missing self-row without colliding with an existing
+     * member that already owns that suffix letter).
+     */
+    public function nextSuffixFor(User $primaryUser): string
+    {
         $paddedUserId = str_pad($primaryUser->id, $this->padding, '0', STR_PAD_LEFT);
         $prefix       = "{$this->prefix}-{$paddedUserId}-";
 
@@ -134,6 +145,18 @@ class SubIdService
 
         // Fallback: use random 2-char suffix (shouldn't reach here normally)
         return Str::upper(Str::random(2));
+    }
+
+    /**
+     * Build a sub-ID string from a user + suffix letter. Used when a caller
+     * already knows exactly which suffix it wants (e.g. controller backfilling
+     * a self-row must reserve 'A' explicitly).
+     */
+    public function buildSubId(User $primaryUser, string $suffix): string
+    {
+        $paddedUserId = str_pad($primaryUser->id, $this->padding, '0', STR_PAD_LEFT);
+
+        return "{$this->prefix}-{$paddedUserId}-{$suffix}";
     }
 
     private function findUserByMobile(string $mobile, string $countryCode): ?User

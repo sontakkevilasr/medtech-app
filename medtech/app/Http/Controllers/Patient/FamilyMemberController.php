@@ -24,6 +24,20 @@ class FamilyMemberController extends Controller
         // Self sub-ID (generated once, stored on the member with relation=self)
         $self = $members->firstWhere('relation', 'self');
 
+        // If no 'self' FamilyMember row exists yet (e.g. patient registered
+        // before self-tracking was added), build a "virtual self" from the
+        // patient's own profile so the self-card still renders.
+        if (!$self) {
+            $self = (object) [
+                'id'          => $patient->id,
+                'full_name'   => $patient->profile?->full_name ?? $patient->name ?? 'You',
+                'dob'         => $patient->profile?->dob,
+                'gender'      => $patient->profile?->gender,
+                'blood_group' => $patient->profile?->blood_group,
+                'sub_id'      => null, // view falls back to MED-{padded_id}-A
+            ];
+        }
+
         // Active family members
         $active   = $members->where('relation', '!=', 'self')->where('is_delinked', false)->where('deleted_at', null)->values();
         $delinked = $members->where('is_delinked', true)->values();

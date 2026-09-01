@@ -21,8 +21,64 @@ class FamilyMemberController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        // Self sub-ID (generated once, stored on the member with relation=self)
+        // Self sub-ID (a real FamilyMember row with relation='self')
         $self = $members->firstWhere('relation', 'self');
+
+        // If no 'self' FamilyMember row exists yet (e.g. patient registered
+        // before self-tracking was added, or seeder never created one),
+        // create it RIGHT NOW — idempotently. Using a real row instead of a
+        // virtual stdClass is critical because:
+        //   - route('patient.family.edit', $self->id) must point at a REAL
+        //     FamilyMember PK (otherwise it can collide with another member
+        //     that happens to share the same numeric ID, e.g. patient.id ==
+        //     some child.id → Edit opens the wrong person).
+        //   - $self->sub_id must be the real assigned Sub-ID (otherwise the
+        //     self-card can display the same Sub-ID as an existing family
+        //     member because both fell back to "MED-{padded_id}-A").
+        if (!$self) {
+            $profile = $patient->profile;
+
+            // ── Backfill: this patient has no self-row yet (legacy data or
+            //    seeder predates self-tracking). We need to:
+            //      1. Determine the correct self Sub-ID, which is the FIRST
+            //         available suffix under this user's sub-ID space.
+            //      2. If suffix 'A' is already taken by another member (e.g.
+            //         it was assigned to a child before self existed), we MUST
+            //         bump that member up so 'A' is free for self, otherwise
+            //         two members will display the same Sub-ID.
+            $selfSuffix = $this->subIdService->nextSuffixFor($patient);
+            $collider   = FamilyMember::where('primary_user_id', $patient->id)
+                ->where('relation', '!=', 'self')
+                ->where('sub_id', 'LIKE', '%-' . $selfSuffix)
+                ->first();
+
+            // Create the self row with the reserved suffix.
+            $self = FamilyMember::create([
+                'primary_user_id' => $patient->id,
+                'sub_id'          => $this->subIdService->buildSubId($patient, $selfSuffix),
+                'full_name'       => $profile?->full_name ?? $patient->name ?? 'You',
+                'dob'             => $profile?->dob,
+                'gender'          => $profile?->gender,
+                'blood_group'     => $profile?->blood_group,
+                'relation'        => 'self',
+            ]);
+
+            // If a non-self member was already sitting on this suffix,
+            // reassign them the next free one so the two don't collide.
+            if ($collider) {
+                $newSuffix = $this->subIdService->nextSuffixFor($patient);
+                $collider->update([
+                    'sub_id' => $this->subIdService->buildSubId($patient, $newSuffix),
+                ]);
+            }
+
+            // Re-fetch so $self has the freshly-assigned PK and DB defaults.
+            $members = FamilyMember::where('primary_user_id', $patient->id)
+                ->withTrashed()
+                ->orderBy('created_at')
+                ->get();
+            $self = $members->firstWhere('relation', 'self');
+        }
 
         // Active family members
         $active   = $members->where('relation', '!=', 'self')->where('is_delinked', false)->where('deleted_at', null)->values();
