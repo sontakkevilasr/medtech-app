@@ -15,7 +15,9 @@ class Appointment extends Model
         'family_member_id', 'slot_datetime', 'duration_minutes', 'type',
         'status', 'reason', 'cancellation_reason',
         'reminder_24h_sent', 'reminder_1h_sent', 'follow_up_reminder_sent',
-        'fee', 'payment_status', 'rescheduled_from',
+        'fee', 'payment_status', 'payment_preference', 'completion_note',
+        'rescheduled_from',
+        'payment_requested_at', 'payment_requested_by',
     ];
 
     protected function casts(): array
@@ -26,6 +28,7 @@ class Appointment extends Model
             'reminder_1h_sent'         => 'boolean',
             'follow_up_reminder_sent'  => 'boolean',
             'fee'                      => 'decimal:2',
+            'payment_requested_at'     => 'datetime',
         ];
     }
 
@@ -50,6 +53,11 @@ class Appointment extends Model
     public function isPast(): bool
     {
         return $this->slot_datetime->isPast();
+    }
+
+    public function hasPaymentRequest(): bool
+    {
+        return $this->payment_requested_at !== null;
     }
 
     // ─── Relationships ───────────────────────────────────────────────────────
@@ -77,6 +85,11 @@ class Appointment extends Model
     public function rescheduledFrom()
     {
         return $this->belongsTo(Appointment::class, 'rescheduled_from');
+    }
+
+    public function requestedBy()
+    {
+        return $this->belongsTo(User::class, 'payment_requested_by');
     }
 
     // ─── Scopes ──────────────────────────────────────────────────────────────

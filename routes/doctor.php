@@ -64,6 +64,7 @@ Route::middleware('role:doctor')->group(function () {
         Route::get('/',          [QuickRegisterController::class, 'create']) ->name('create');
         Route::post('/',         [QuickRegisterController::class, 'store'])  ->name('store');
         Route::get('/success/{patient}', [QuickRegisterController::class, 'success'])->name('success');
+        Route::post('/start-visit/{patient}', [QuickRegisterController::class, 'startVisit'])->name('start-visit');
     });
 
 
@@ -112,8 +113,11 @@ Route::middleware('role:doctor')->group(function () {
         Route::get('/{appointment}',          [AppointmentController::class, 'show'])          ->name('show');
         Route::post('/{appointment}/confirm', [AppointmentController::class, 'confirm'])       ->name('confirm');
         Route::post('/{appointment}/complete',[AppointmentController::class, 'complete'])      ->name('complete');
+        Route::post('/{appointment}/collect-cash', [AppointmentController::class, 'collectCash']) ->name('collect-cash');
+        Route::post('/{appointment}/complete-anyway', [AppointmentController::class, 'completeAnyway']) ->name('complete-anyway');
         Route::post('/{appointment}/cancel',  [AppointmentController::class, 'cancel'])        ->name('cancel');
         Route::post('/{appointment}/remind',  [AppointmentController::class, 'sendReminder'])  ->name('remind');
+        Route::post('/{appointment}/request-payment', [AppointmentController::class, 'requestPayment'])->name('request-payment');
 
         // Slot management
         Route::get('/slots/manage',           [AppointmentController::class, 'manageSlots'])      ->name('slots');
@@ -185,6 +189,8 @@ Route::middleware('role:doctor')->group(function () {
     */
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/',                       [RazorpayController::class, 'index'])        ->name('index');
+        Route::get('/all',                    [\App\Http\Controllers\Doctor\PaymentsController::class, 'index'])->name('all');
+        Route::get('/suggest',                [\App\Http\Controllers\Doctor\PaymentsController::class, 'patientSuggestions'])->name('suggest');
         Route::post('/order',                 [RazorpayController::class, 'createOrder'])  ->name('order');
         Route::post('/verify',                [RazorpayController::class, 'verifyPayment'])->name('verify');
         Route::get('/qr-setup',               [RazorpayController::class, 'qrSetup'])      ->name('qr-setup');
@@ -215,3 +221,4 @@ Route::middleware('role:doctor')->group(function () {
     Route::post('/profile/logo',              [DashboardController::class, 'updateLogo'])->name('profile.logo');
 
 });
+

@@ -8,7 +8,7 @@
 {{-- Tabs --}}
 <div class="apt-tabs-row" style="display:flex;gap:2px;border-bottom:2px solid var(--warm-bd);margin-bottom:20px">
     <div class="apt-tabs-scroll" style="display:flex;gap:2px;overflow-x:auto">
-    @foreach(['upcoming' => "Upcoming ({$upcomingCount})", 'past' => "Past ({$pastCount})", 'cancelled' => "Cancelled ({$cancelledCount})"] as $t => $lbl)
+    @foreach(['upcoming' => "Upcoming ({$upcomingCount})", 'unpaid' => "Unpaid ({$unpaidCount})", 'past' => "Past ({$pastCount})", 'cancelled' => "Cancelled ({$cancelledCount})"] as $t => $lbl)
     <a href="{{ route('patient.appointments.index', ['tab' => $t]) }}"
        style="padding:10px 18px;font-size:.875rem;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;
               {{ $tab === $t ? 'color:var(--plum);border-bottom-color:var(--plum);font-weight:600' : 'color:var(--txt-lt)' }}"
@@ -45,7 +45,7 @@
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
     </div>
     <div style="font-family:'Lora',serif;font-size:1.1rem;color:var(--txt-md);margin-bottom:6px">
-        {{ $tab === 'upcoming' ? 'No upcoming appointments' : ($tab === 'past' ? 'No past appointments' : 'No cancelled appointments') }}
+        {{ $tab === 'upcoming' ? 'No upcoming appointments' : ($tab === 'past' ? 'No past appointments' : ($tab === 'unpaid' ? 'No unpaid appointments 🎉' : 'No cancelled appointments')) }}
     </div>
     @if($tab === 'upcoming')
     <p style="font-size:.8125rem;margin-bottom:16px">Book an appointment with any of your doctors.</p>
@@ -113,14 +113,18 @@
 
                 {{-- Status + actions --}}
                 <div class="apt-side" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
-                    <span style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ $statusCfg['bg'] }};color:{{ $statusCfg['color'] }};display:flex;align-items:center;gap:4px">
-                        <span style="width:5px;height:5px;border-radius:50%;background:{{ $statusCfg['dot'] }};display:inline-block"></span>
-                        {{ $statusCfg['label'] }}
-                    </span>
-
-                    @if($apt->fee)
-                    <div style="font-size:.78rem;color:var(--txt-md)">₹{{ number_format($apt->fee) }}</div>
-                    @endif
+                    <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+                        <span style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ $statusCfg['bg'] }};color:{{ $statusCfg['color'] }};display:flex;align-items:center;gap:4px">
+                            <span style="width:5px;height:5px;border-radius:50%;background:{{ $statusCfg['dot'] }};display:inline-block"></span>
+                            {{ $statusCfg['label'] }}
+                        </span>
+                        @if($apt->payment_status === 'pending' && !in_array($apt->status, ['cancelled']))
+                            <span style="font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;background:#fef3c7;color:#92400e;display:flex;align-items:center;gap:3px" title="Payment pending">
+                                <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4M12 16h.01"/></svg>
+                                Due ₹{{ number_format($apt->fee ?? 0) }}
+                            </span>
+                        @endif
+                    </div>
 
                     <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
                         <a href="{{ route('patient.appointments.show', $apt) }}"
@@ -128,6 +132,15 @@
                            onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
                             View →
                         </a>
+                        @if($apt->payment_status === 'pending' && !in_array($apt->status, ['cancelled']))
+                            <button type="button"
+                                onclick="payNow({{ $apt->id }}, {{ $apt->fee }}, 'Dr. {{ addslashes($apt->doctor?->profile?->full_name ?? '') }}', '{{ $apt->appointment_number }}')"
+                                style="font-size:.75rem;font-weight:600;padding:5px 12px;background:var(--plum);color:#fff;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:opacity .12s;font-family:'Plus Jakarta Sans',sans-serif"
+                                onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M2 10h20"/></svg>
+                                Pay Now
+                            </button>
+                        @endif
                         @if($apt->isUpcoming())
                         <form method="POST" action="{{ route('patient.appointments.cancel', $apt) }}"
                               onsubmit="return confirm('Cancel this appointment?')">
@@ -159,5 +172,70 @@
 </div>
 @endif
 @endif
+@push('scripts')
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function payNow(aptId, fee, doctorName, aptNo) {
+    fetch('{{ route('patient.payments.order') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ appointment_id: aptId }),
+    })
+    .then(res => res.json())
+    .then(order => {
+        if (!order.success) {
+            alert(order.message || 'Could not create order.');
+            return;
+        }
+        const rzp = new Razorpay({
+            key: order.key_id,
+            amount: order.amount,
+            currency: order.currency,
+            name: order.name,
+            description: order.description,
+            order_id: order.order_id,
+            prefill: {
+                name: order.prefill_name,
+                contact: order.prefill_mobile,
+            },
+            theme: { color: '#4a3760' },
+            modal: {
+                ondismiss() { /* dismissed */ }
+            },
+            handler: async function(response) {
+                const verRes = await fetch('{{ route('patient.payments.verify') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                    }),
+                });
+                const ver = await verRes.json();
+                if (ver.success) {
+                    window.location.href = ver.receipt_url;
+                } else {
+                    alert(ver.message || 'Payment verification failed.');
+                }
+            }
+        });
+        rzp.open();
+    })
+    .catch(() => {
+        alert('Something went wrong. Please try again.');
+    });
+}
+</script>
+@endpush
+
 </div>
 @endsection

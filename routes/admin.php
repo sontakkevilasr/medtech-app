@@ -86,6 +86,25 @@ Route::middleware('role:admin')->group(function () {
 
     /*
     |----------------------------------------------------------------------
+    | Platform Payments (every transaction across the platform)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PaymentsController::class, 'index'])->name('index');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Timeline Template Management (system templates)
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('timelines')->name('timelines.')->group(function () {
+        Route::get('/',                       [\App\Http\Controllers\Doctor\TimelineController::class, 'adminIndex'])   ->name('index');
+        Route::post('/{template}/activate',   [\App\Http\Controllers\Doctor\TimelineController::class, 'activate'])    ->name('activate');
+        Route::post('/{template}/deactivate', [\App\Http\Controllers\Doctor\TimelineController::class, 'deactivate'])  ->name('deactivate');
+    });
+    /*
+    |----------------------------------------------------------------------
     | Timeline Template Management (system templates)
     |----------------------------------------------------------------------
     */

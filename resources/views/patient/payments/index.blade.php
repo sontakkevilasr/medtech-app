@@ -14,6 +14,8 @@
 
 @keyframes spin    { to { transform: rotate(360deg); } }
 @keyframes fadeIn  { from { opacity:0; transform:scale(.95); } to { opacity:1; transform:scale(1); } }
+@keyframes pulse   { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,.45);
     display: flex; align-items: center; justify-content: center;
@@ -24,8 +26,130 @@
     width: 420px; max-width: 94vw; box-shadow: 0 20px 60px rgba(0,0,0,.2);
 }
 
-@media (max-width: 480px) {
+/* Filter tabs */
+.filter-tabs {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 18px; flex-wrap: wrap;
+}
+.filter-tab {
+    padding: 7px 14px; border-radius: 9px; font-size: .8rem;
+    font-weight: 600; text-decoration: none; transition: all .12s;
+    border: 1.5px solid var(--warm-bd); color: var(--txt-md);
+    background: #fff; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.filter-tab:hover { background: var(--sand); }
+.filter-tab.active {
+    background: var(--plum); color: #fff; border-color: var(--plum);
+}
+.filter-tab .count {
+    font-size: .68rem; padding: 1px 6px; border-radius: 10px;
+    background: rgba(0,0,0,.08); font-weight: 700;
+}
+.filter-tab.active .count { background: rgba(255,255,255,.22); }
+
+/* Unpaid appointment card */
+.unpaid-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 15px 20px;
+}
+.unpaid-card .avatar {
+    width: 42px; height: 42px; border-radius: 11px;
+    background: var(--parch); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+    font-weight: 700; color: var(--plum); font-size: 1rem;
+}
+.unpaid-card .info { flex: 1; min-width: 0; }
+.unpaid-card .action {
+    text-align: right; flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Payment history — table on desktop, cards on mobile */
+.pay-table-wrap { width: 100%; }
+.pay-cards { display: none; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    /* Stats: keep 3 cols but shrink */
+    #pay-stats-strip { gap: 8px !important; margin-bottom: 16px !important; }
+    #pay-stats-strip .panel { padding: 12px 8px !important; }
+    #pay-stats-strip .panel > div:nth-child(1) { font-size: 1.35rem !important; }
+    #pay-stats-strip .panel > div:nth-child(2) { font-size: .68rem !important; }
+    #pay-stats-strip .panel > div:nth-child(3) { font-size: .62rem !important; }
+
+    /* Filter tabs scroll horizontally */
+    .filter-tabs {
+        flex-wrap: nowrap; overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px; margin-bottom: 14px;
+        scrollbar-width: none;
+    }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+
+    /* Unpaid card stacks */
+    .unpaid-card {
+        flex-wrap: wrap; padding: 14px 16px;
+    }
+    .unpaid-card .action {
+        width: 100%; margin-left: 0;
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 10px; border-top: 1px solid var(--warm-bd);
+        margin-top: 4px;
+    }
+    .unpaid-card .action > div:first-child {
+        font-family: 'Lora',serif; font-size: 1.1rem; font-weight: 500;
+    }
+    .unpaid-card .action button { margin-top: 0 !important; }
+}
+
+@media (max-width: 600px) {
+    /* Hide table, show cards on small screens */
+    .pay-table-wrap { display: none !important; }
+    .pay-cards { display: block; }
+
+    .pay-card {
+        padding: 14px 16px; border-bottom: 1px solid var(--warm-bd);
+    }
+    .pay-card:last-child { border-bottom: 0; }
+    .pay-card .row1 {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 10px; margin-bottom: 6px;
+    }
+    .pay-card .doc-name {
+        font-size: .9rem; font-weight: 600; color: var(--txt);
+        flex: 1; min-width: 0;
+    }
+    .pay-card .amount {
+        font-family: 'Lora',serif; font-size: 1.05rem;
+        font-weight: 500; color: var(--txt);
+    }
+    .pay-card .row2 {
+        font-size: .75rem; color: var(--txt-lt);
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .pay-card .apt-no {
+        font-family: monospace; color: var(--txt-md);
+    }
+    .pay-card .row3 {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px; margin-top: 8px;
+    }
+    .pay-card .badge {
+        font-size: .68rem; font-weight: 700;
+        padding: 3px 9px; border-radius: 20px;
+    }
+    .pay-card .receipt-btn {
+        font-size: .72rem; padding: 4px 11px;
+        border: 1.5px solid var(--warm-bd); border-radius: 8px;
+        color: var(--txt-md); text-decoration: none;
+    }
+}
+
+@media (max-width: 380px) {
     #pay-stats-strip { grid-template-columns: 1fr !important; }
+    .unpaid-card .action { flex-direction: column; align-items: stretch; gap: 8px; }
+    .unpaid-card .action button { width: 100%; }
 }
 </style>
 @endpush
@@ -67,11 +191,11 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:9px">
         @foreach($unpaidApts as $apt)
-        <div class="panel" style="padding:15px 20px;display:flex;align-items:center;gap:14px">
-            <div style="width:42px;height:42px;border-radius:11px;background:var(--parch);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <div class="panel unpaid-card">
+            <div class="avatar">
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--txt-lt)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
             </div>
-            <div style="flex:1;min-width:0">
+            <div class="info">
                 <div style="font-weight:600;font-size:.9rem;color:var(--txt)">
                     Dr. {{ $apt->doctor?->profile?->full_name }}
                 </div>
@@ -82,13 +206,11 @@
                     @endif
                 </div>
             </div>
-            <div style="text-align:right;flex-shrink:0">
-                <div style="font-family:'Lora',serif;font-size:1.2rem;font-weight:500;color:var(--txt)">
-                    ₹{{ number_format($apt->fee, 0) }}
-                </div>
+            <div class="action">
+                <div>₹{{ number_format($apt->fee, 0) }}</div>
                 <button type="button"
                         @click="openCheckout({{ $apt->id }}, {{ $apt->fee }}, 'Dr. {{ addslashes($apt->doctor?->profile?->full_name ?? '') }}', '{{ $apt->appointment_number }}')"
-                        style="margin-top:6px;padding:6px 16px;background:var(--plum);color:#fff;border:none;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:opacity .15s"
+                        style="padding:6px 16px;background:var(--plum);color:#fff;border:none;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:opacity .15s"
                         onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
                     Pay Now
                 </button>
@@ -111,55 +233,92 @@
 </div>
 @else
 <div class="panel" style="padding:0;overflow:hidden">
-    <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse">
-        <thead><tr style="border-bottom:1.5px solid var(--warm-bd)">
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Doctor</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Appointment</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Amount</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Status</th>
-            <th style="padding:9px 18px;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-lt);white-space:nowrap">Date</th>
-            <th style="padding:9px 18px"></th>
-        </tr></thead>
-        <tbody>
+
+    {{-- Desktop / tablet table --}}
+    <div class="pay-table-wrap" style="overflow-x:auto">
+        <table class="pay-table">
+            <thead><tr>
+                <th>Doctor</th>
+                <th>Appointment</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+            </tr></thead>
+            <tbody>
+            @foreach($payments as $pay)
+            <tr class="pay-row">
+                <td style="font-size:.875rem;font-weight:500;color:var(--txt)">
+                    Dr. {{ $pay->appointment?->doctor?->profile?->full_name ?? '—' }}
+                    @if($pay->appointment?->doctor?->doctorProfile?->specialization)
+                    <div style="font-size:.7rem;color:var(--txt-lt);font-weight:400">{{ $pay->appointment->doctor->doctorProfile->specialization }}</div>
+                    @endif
+                </td>
+                <td style="font-size:.8rem;color:var(--txt-md)">
+                    {{ $pay->appointment?->appointment_number ?? '—' }}
+                    @if($pay->appointment?->slot_datetime)
+                    <div style="font-size:.7rem;color:var(--txt-lt)">{{ $pay->appointment->slot_datetime->format('d M Y') }}</div>
+                    @endif
+                </td>
+                <td style="font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt);white-space:nowrap">
+                    ₹{{ number_format($pay->amount, 0) }}
+                </td>
+                <td>
+                    <span class="badge status-{{ $pay->status }}">
+                        {{ ucfirst($pay->status) }}
+                    </span>
+                </td>
+                <td style="font-size:.75rem;color:var(--txt-lt);white-space:nowrap">
+                    {{ $pay->paid_at ? $pay->paid_at->format('d M Y') : $pay->created_at->format('d M Y') }}
+                </td>
+                <td style="text-align:right">
+                    @if($pay->isPaid())
+                    <a href="{{ route('patient.payments.receipt', $pay) }}"
+                       style="font-size:.72rem;padding:4px 11px;border:1.5px solid var(--warm-bd);border-radius:8px;color:var(--txt-md);text-decoration:none;transition:background .12s"
+                       onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
+                        Receipt
+                    </a>
+                    @endif
+                </td>
+            </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Mobile card list (mirrors the table) --}}
+    <div class="pay-cards">
         @foreach($payments as $pay)
-        <tr class="pay-row" style="border-bottom:1px solid var(--warm-bd)">
-            <td style="padding:12px 18px;font-size:.875rem;font-weight:500;color:var(--txt)">
-                Dr. {{ $pay->appointment?->doctor?->profile?->full_name ?? '—' }}
-                @if($pay->appointment?->doctor?->doctorProfile?->specialization)
-                <div style="font-size:.7rem;color:var(--txt-lt)">{{ $pay->appointment->doctor->doctorProfile->specialization }}</div>
-                @endif
-            </td>
-            <td style="padding:12px 18px;font-size:.8rem;color:var(--txt-md)">
-                {{ $pay->appointment?->appointment_number ?? '—' }}
+        <div class="pay-card">
+            <div class="row1">
+                <div class="doc-name">
+                    Dr. {{ $pay->appointment?->doctor?->profile?->full_name ?? '—' }}
+                    @if($pay->appointment?->doctor?->doctorProfile?->specialization)
+                    <div style="font-size:.7rem;color:var(--txt-lt);font-weight:400;margin-top:2px">{{ $pay->appointment->doctor->doctorProfile->specialization }}</div>
+                    @endif
+                </div>
+                <div class="amount">₹{{ number_format($pay->amount, 0) }}</div>
+            </div>
+            <div class="row2">
+                <span class="apt-no">{{ $pay->appointment?->appointment_number ?? '—' }}</span>
                 @if($pay->appointment?->slot_datetime)
-                <div style="font-size:.7rem;color:var(--txt-lt)">{{ $pay->appointment->slot_datetime->format('d M Y') }}</div>
+                <span>·</span>
+                <span>{{ $pay->appointment->slot_datetime->format('d M Y') }}</span>
                 @endif
-            </td>
-            <td style="padding:12px 18px;font-family:'Lora',serif;font-size:1rem;font-weight:500;color:var(--txt)">
-                ₹{{ number_format($pay->amount, 0) }}
-            </td>
-            <td style="padding:12px 18px">
-                <span class="badge status-{{ $pay->status }}" style="font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px">
-                    {{ ucfirst($pay->status) }}
-                </span>
-            </td>
-            <td style="padding:12px 18px;font-size:.75rem;color:var(--txt-lt)">
-                {{ $pay->paid_at ? $pay->paid_at->format('d M Y') : $pay->created_at->format('d M Y') }}
-            </td>
-            <td style="padding:12px 18px;text-align:right">
-                @if($pay->isPaid())
-                <a href="{{ route('patient.payments.receipt', $pay) }}"
-                   style="font-size:.72rem;padding:4px 11px;border:1.5px solid var(--warm-bd);border-radius:8px;color:var(--txt-md);text-decoration:none;transition:background .12s"
-                   onmouseover="this.style.background='var(--parch)'" onmouseout="this.style.background='transparent'">
-                    Receipt
-                </a>
-                @endif
-            </td>
-        </tr>
+            </div>
+            <div class="row3">
+                <span class="badge status-{{ $pay->status }}">{{ ucfirst($pay->status) }}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:.7rem;color:var(--txt-lt)">
+                        {{ $pay->paid_at ? $pay->paid_at->format('d M Y') : $pay->created_at->format('d M Y') }}
+                    </span>
+                    @if($pay->isPaid())
+                    <a href="{{ route('patient.payments.receipt', $pay) }}" class="receipt-btn">Receipt</a>
+                    @endif
+                </div>
+            </div>
+        </div>
         @endforeach
-        </tbody>
-    </table>
     </div>
 
     @if($payments->hasPages())

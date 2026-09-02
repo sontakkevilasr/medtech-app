@@ -39,6 +39,9 @@ class AppointmentController extends Controller
                                 ->orderByDesc('slot_datetime'),
             'cancelled'=> $query->where('status', 'cancelled')
                                 ->orderByDesc('slot_datetime'),
+            'unpaid'   => $query->where('payment_status', 'pending')
+                                ->whereNotIn('status', ['cancelled'])
+                                ->orderByDesc('slot_datetime'),
             default    => $query->orderByDesc('slot_datetime'),
         };
 
@@ -47,10 +50,14 @@ class AppointmentController extends Controller
         $upcomingCount  = Appointment::where('patient_user_id', $patient->id)->where('slot_datetime','>', now())->whereNotIn('status',['cancelled'])->count();
         $pastCount      = Appointment::where('patient_user_id', $patient->id)->where('slot_datetime','<', now())->whereNotIn('status',['cancelled'])->count();
         $cancelledCount = Appointment::where('patient_user_id', $patient->id)->where('status','cancelled')->count();
+        $unpaidCount    = Appointment::where('patient_user_id', $patient->id)
+                                    ->where('payment_status', 'pending')
+                                    ->whereNotIn('status', ['cancelled'])
+                                    ->count();
 
         return view('patient.appointments.index', compact(
             'appointments', 'tab',
-            'upcomingCount', 'pastCount', 'cancelledCount'
+            'upcomingCount', 'pastCount', 'cancelledCount', 'unpaidCount'
         ));
     }
 
@@ -293,6 +300,7 @@ class AppointmentController extends Controller
             'slot_time'   => ['required', 'date_format:H:i'],
             'type'        => ['required', 'in:consultation,follow_up,emergency'],
             'reason'      => ['nullable', 'string', 'max:500'],
+            'payment_preference' => ['nullable', 'in:online,cash'],
         ]);
 
         $doctor      = User::findOrFail($doctorId);
@@ -321,6 +329,8 @@ class AppointmentController extends Controller
             'status'          => 'booked',
             'fee'             => $profile->consultation_fee,
             'payment_status'  => 'pending',
+            // Step 5: stated preference only — no Payment record is created here.
+            'payment_preference' => $request->input('payment_preference', 'online'),
         ]);
 
         NotificationService::appointmentBooked($appointment->load('doctor.profile', 'patient.profile'));
@@ -337,7 +347,7 @@ class AppointmentController extends Controller
 
         return redirect()
             ->route('patient.appointments.show', $appointment)
-            ->with('success', 'Appointment booked! Confirmation sent to your WhatsApp.');
+            ->with('success', 'Appointment booked! Confirmation sent to your WhatsApp. Click "Pay Now" to pay online.');
     }
 
     // ── Show one appointment ─────────────────────────────────────────────────

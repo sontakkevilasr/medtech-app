@@ -350,6 +350,29 @@ $memberList = $familyMembers->map(
                 </div>
             </div>
 
+            {{-- Payment preference (Step 5) --}}
+            <div style="margin-bottom:14px">
+                <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:8px">Payment</label>
+                <div style="display:flex;gap:8px">
+                    <label style="flex:1;cursor:pointer" x-on:click="paymentPreference = 'online'">
+                        <input type="radio" name="payment_preference" value="online" x-model="paymentPreference" style="display:none">
+                        <div :style="'text-align:center;padding:8px 6px;border:1.5px solid '+ (paymentPreference === 'online' ? 'var(--plum)' : 'var(--warm-bd)') +';border-radius:9px;font-size:.78rem;font-weight:500;transition:all .15s;color:' + (paymentPreference === 'online' ? 'var(--plum)' : 'var(--txt-md)') + ';background:' + (paymentPreference === 'online' ? 'rgba(74,55,96,.05)' : 'transparent')">
+                            <div style="font-size:1rem;margin-bottom:2px">💳</div>
+                            Pay Online
+                        </div>
+                    </label>
+                    <label style="flex:1;cursor:pointer" x-on:click="paymentPreference = 'cash'">
+                        <input type="radio" name="payment_preference" value="cash" x-model="paymentPreference" style="display:none">
+                        <div :style="'text-align:center;padding:8px 6px;border:1.5px solid '+ (paymentPreference === 'cash' ? 'var(--plum)' : 'var(--warm-bd)') +';border-radius:9px;font-size:.78rem;font-weight:500;transition:all .15s;color:' + (paymentPreference === 'cash' ? 'var(--plum)' : 'var(--txt-md)') + ';background:' + (paymentPreference === 'cash' ? 'rgba(74,55,96,.05)' : 'transparent')">
+                            <div style="font-size:1rem;margin-bottom:2px">💵</div>
+                            Cash at Clinic
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-bottom:14px">
+
             <div style="margin-bottom:14px">
                 <label style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-lt);display:block;margin-bottom:4px">
                     Reason <span style="font-weight:400;color:var(--txt-lt)">(optional)</span>
@@ -656,6 +679,7 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, selfUrl, me
         memberUrls,
         members,
         selectedMemberId: initialMemberId,
+        paymentPreference: 'online', // Step 5
 
         memberColor(idx) {
             const palette = ['#3d7a6e','#7a5c3d','#3d5e7a','#7a3d4a','#5c7a3d','#7a3d6a'];
@@ -800,6 +824,8 @@ function bookingFlow({ doctorId, slotsUrl, datesUrl, availDays, fee, selfUrl, me
             const fd = new FormData(form);
             fd.set('slot_date', this.selectedDate);
             fd.set('slot_time', this.selectedSlot);
+            // Step 5: patient's stated payment preference (not an actual payment).
+            fd.set('payment_preference', this.paymentPreference || 'online');
 
             try {
                 const resp = await fetch(storeUrl, {

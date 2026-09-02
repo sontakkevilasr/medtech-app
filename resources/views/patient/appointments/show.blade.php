@@ -103,7 +103,7 @@
         {{-- Pay Now badge in banner if payment pending --}}
         @if($needsPay)
         <button type="button"
-                @click="open({{ $appointment->id }}, {{ $appointment->fee }}, '{{ addslashes($name) }}', '{{ $appointment->appointment_number }}')"
+                @click="payDirect({{ $appointment->id }}, {{ $appointment->fee }}, '{{ addslashes($name) }}', '{{ $appointment->appointment_number }}')"
                 style="flex-shrink:0;padding:8px 18px;background:var(--plum);color:#fff;border:none;border-radius:10px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s"
                 onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
             💳 Pay Now
@@ -212,7 +212,7 @@
                 @if($needsPay)
                 <div style="text-align:right;flex-shrink:0">
                     <button type="button"
-                            @click="open({{ $appointment->id }}, {{ $appointment->fee }}, '{{ addslashes($name) }}', '{{ $appointment->appointment_number }}')"
+                            @click="payDirect({{ $appointment->id }}, {{ $appointment->fee }}, '{{ addslashes($name) }}', '{{ $appointment->appointment_number }}')"
                             style="padding:11px 24px;background:var(--plum);color:#fff;border:none;border-radius:11px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;display:flex;align-items:center;gap:8px"
                             onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path stroke-linecap="round" d="M1 10h22"/></svg>
@@ -305,7 +305,7 @@
     <div style="display:flex;flex-direction:column;gap:8px">
         @if($needsPay)
         <button type="button"
-                @click="open({{ $appointment->id }}, {{ $appointment->fee }}, '{{ addslashes($name) }}', '{{ $appointment->appointment_number }}')"
+                @click="payDirect({{ $appointment->id }}, {{ $appointment->fee }}, '{{ addslashes($name) }}', '{{ $appointment->appointment_number }}')"
                 style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:var(--plum);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s"
                 onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path stroke-linecap="round" d="M1 10h22"/></svg>
@@ -382,13 +382,87 @@ function aptPay() {
         aptNumber:     '',
         appointmentId: null,
 
+        // No init() auto-launch — Pay Now buttons call payDirect() directly.
+        // This prevents race conditions and the duplicate-tab issue.
+
         open(aptId, fee, doctor, aptNo) {
+            // Kept for backwards compat — Pay Now buttons now call payDirect() directly
             this.appointmentId = aptId;
             this.amount        = fee;
             this.doctorName    = 'Dr. ' + doctor;
             this.aptNumber     = aptNo;
             this.errorMsg      = '';
             this.showModal     = true;
+        },
+
+        // Directly launch Razorpay checkout without opening the modal first
+        async payDirect(aptId, fee, doctor, aptNo) {
+            this.appointmentId = aptId;
+            this.amount        = fee;
+            this.doctorName    = 'Dr. ' + doctor;
+            this.aptNumber     = aptNo;
+            this.errorMsg      = '';
+            this.processing    = true;
+            try {
+                const orderRes = await fetch('{{ route('patient.payments.order') }}', {
+                    method:  'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept':       'application/json',
+                    },
+                    body: JSON.stringify({ appointment_id: aptId }),
+                });
+                const order = await orderRes.json();
+                if (!order.success) {
+                    alert(order.message || 'Could not create order.');
+                    this.processing = false;
+                    return;
+                }
+                const self = this;
+                const rzp  = new Razorpay({
+                    key:         order.key_id,
+                    amount:      order.amount,
+                    currency:    order.currency,
+                    name:        order.name,
+                    description: order.description,
+                    order_id:    order.order_id,
+                    prefill: {
+                        name:    order.prefill_name,
+                        contact: order.prefill_mobile,
+                    },
+                    theme: { color: '#4a3760' },
+                    modal: {
+                        ondismiss() { self.processing = false; }
+                    },
+                    handler: async function(response) {
+                        const verRes = await fetch('{{ route('patient.payments.verify') }}', {
+                            method:  'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept':       'application/json',
+                            },
+                            body: JSON.stringify({
+                                razorpay_order_id:   response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature:  response.razorpay_signature,
+                            }),
+                        });
+                        const ver = await verRes.json();
+                        if (ver.success) {
+                            window.location.href = ver.receipt_url;
+                        } else {
+                            alert(ver.message || 'Payment verification failed.');
+                            self.processing = false;
+                        }
+                    }
+                });
+                rzp.open();
+            } catch (e) {
+                alert('Something went wrong. Please try again.');
+                this.processing = false;
+            }
         },
 
         async payWithRazorpay() {

@@ -59,6 +59,24 @@ class WhatsAppService
         return $this->send($patient->full_mobile, $message);
     }
 
+    public function sendPaymentRequest(Appointment $appointment): bool
+    {
+        $patient    = $appointment->patient;
+        $doctor     = $appointment->doctor;
+        $doctorName = $doctor->profile->full_name ?? 'your doctor';
+        $dateTime   = $appointment->slot_datetime?->format('D, d M Y \a\t h:i A') ?? '';
+        $amount     = '₹' . number_format((float) $appointment->fee, 0);
+        $payLink    = route('patient.payments.index');
+
+        $message = "💰 *Payment Request*\n\n"
+            . "Dear {$patient->profile->full_name},\n"
+            . "Dr. {$doctorName} has requested payment of *{$amount}* for your appointment on {$dateTime}.\n\n"
+            . "Please pay here: {$payLink}\n\n"
+            . "_Naumah Clinic_";
+
+        return $this->send($patient->full_mobile, $message);
+    }
+
     public function sendFollowUpReminder(User $patient, string $doctorName, string $followUpDate): bool
     {
         $message = "📋 *Follow-up Reminder*\n\n"

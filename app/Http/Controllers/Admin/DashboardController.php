@@ -30,9 +30,9 @@ class DashboardController extends Controller
             'total_prescriptions' => Prescription::count(),
             'prescriptions_today' => Prescription::whereDate('prescribed_date', today())->count(),
 
-            'revenue_month'       => Payment::where('status', 'completed')
+            'revenue_month'       => Payment::where('status', 'paid')
                                         ->whereMonth('created_at', now()->month)->sum('amount'),
-            'revenue_total'       => Payment::where('status', 'completed')->sum('amount'),
+            'revenue_total'       => Payment::where('status', 'paid')->sum('amount'),
         ];
 
         // ── User growth (last 6 months) ───────────────────────────────────────

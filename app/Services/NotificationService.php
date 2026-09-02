@@ -269,15 +269,34 @@ class NotificationService
     public static function paymentReceived(\App\Models\Payment $payment): void
     {
         // $drName = $payment->appointment?->doctor?->profile?->full_name ?? 'Doctor';
-        $drName   = self::drName($payment->appointment?->doctor?->profile?->full_name  ?? 'Doctor');     
+        $drName   = self::drName($payment->appointment?->doctor?->profile?->full_name  ?? 'Doctor');
         $amount = '₹' . number_format($payment->amount, 0);
 
         self::create(
             userId: $payment->user_id,
             type:   'payment.success',
             title:  'Payment Successful 💳',
-            body:   "Payment of {$amount} to Dr. {$drName} was successful. Receipt is ready.",
+            body:   "Payment of {$amount} to {$drName} was successful. Receipt is ready.",
             data:   ['payment_id' => $payment->id],
+        );
+    }
+
+    public static function paymentRequested(\App\Models\Appointment $apt): void
+    {
+        $drName    = self::drName($apt->doctor?->profile?->full_name ?? 'Doctor');
+        $amount    = '₹' . number_format((float) $apt->fee, 0);
+        $dateTime  = $apt->slot_datetime?->format('d M Y, h:i A') ?? '';
+
+        self::create(
+            userId: $apt->patient_user_id,
+            type:   'payment.requested',
+            title:  'Payment Requested 💰',
+            body:   "{$drName} has requested payment of {$amount} for your appointment on {$dateTime}. Tap to pay now.",
+            data:   [
+                'appointment_id' => $apt->id,
+                'amount'         => (float) $apt->fee,
+                'action'         => 'pay_now',
+            ],
         );
     }
 

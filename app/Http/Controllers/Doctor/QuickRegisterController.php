@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\FamilyMember;
 use App\Models\DoctorAccessRequest;
+use App\Models\Appointment;
 use App\Services\SubIdService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -121,8 +122,41 @@ class QuickRegisterController extends Controller
             ->firstOrFail();
 
         $selfSubId = $patient->familyMembers->firstWhere('relation', 'self')?->sub_id;
+        $doctorFee = auth()->user()->doctorProfile?->consultation_fee ?? 0;
 
-        return view('doctor.quick-register.success', compact('patient', 'selfSubId'));
+        return view('doctor.quick-register.success', compact('patient', 'selfSubId', 'doctorFee'));
+    }
+
+    // Step 6: optional button — create an immediate appointment for this walk-in.
+    public function startVisit(Request $request, int $patient)
+    {
+        $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $patient = User::where('id', $patient)
+            ->where('role', 'patient')
+            ->firstOrFail();
+
+        $doctor  = auth()->user();
+        $profile = $doctor->doctorProfile;
+
+        $appointment = Appointment::create([
+            'doctor_user_id'    => $doctor->id,
+            'patient_user_id'   => $patient->id,
+            'slot_datetime'     => now(),
+            'duration_minutes'  => config('medtech.appointment.default_duration', 15),
+            'type'              => 'in_person',
+            'status'            => 'booked',
+            'reason'            => $request->input('reason'),
+            'fee'               => $profile->consultation_fee ?? 0,
+            'payment_status'    => 'pending',
+            'payment_preference'=> 'cash',
+        ]);
+
+        return redirect()
+            ->route('doctor.appointments.show', $appointment)
+            ->with('success', 'Visit started. You can complete it after the consultation.');
     }
 
     // ── Private: grant doctor direct access to patient ────────────────────────

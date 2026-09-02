@@ -82,6 +82,29 @@
     </div>
 
     {{-- ── Next action buttons ──────────────────────────────────────────────── --}}
+    {{-- ── Next action buttons ──────────────────────────────────────────────── --}}
+    <div style="display:flex;flex-direction:column;gap:9px">
+
+        {{-- Step 6: Start Visit Now — creates a real appointment for this patient --}}
+        @if($doctorFee > 0)
+        <form method="POST" action="{{ route('doctor.quick-register.start-visit', $patient->id) }}">
+            @csrf
+            <button type="submit"
+                    style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#16a34a;color:#fff;border:none;border-radius:12px;text-decoration:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s;box-shadow:0 2px 8px rgba(22,163,74,.25)"
+                    onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                <div style="display:flex;align-items:center;gap:10px;text-align:left">
+                    <span style="font-size:1.3rem">🚶</span>
+                    <div>
+                        <div style="font-weight:600;font-size:.9rem">Start Visit Now</div>
+                        <div style="font-size:.72rem;opacity:.8">Create appointment · ₹{{ number_format($doctorFee, 0) }} fee · unpaid</div>
+                    </div>
+                </div>
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+        </form>
+        @endif
+
+        <a href="{{ route('doctor.records.create', $patient->id) }}"
     <div style="display:flex;flex-direction:column;gap:9px">
 
         <a href="{{ route('doctor.records.create', $patient->id) }}"

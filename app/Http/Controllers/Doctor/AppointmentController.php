@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Payment;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -117,18 +118,120 @@ class AppointmentController extends Controller
     }
 
     // ── Complete ─────────────────────────────────────────────────────────────
+    //
+    // Behaviour:
+    //  - If appointment is already paid, complete immediately (existing flow).
+    //  - Otherwise return a "needs_payment" flag so the UI can show the popup.
+    //  - The popup's two actions (collect cash / complete anyway) hit their own
+    //    dedicated endpoints below.
 
     public function complete(Request $request, Appointment $appointment)
     {
         $this->gate($appointment);
-        $appointment->update(['status' => 'completed']);
+
+        // Already paid → complete immediately, no popup.
+        if ($appointment->payment_status === 'paid') {
+            $appointment->update(['status' => 'completed']);
+            NotificationService::appointmentCompleted($appointment->load('doctor.profile'));
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'status' => 'completed']);
+            }
+            return back()->with('success', 'Appointment marked as completed.');
+        }
+
+        // Not paid → tell the frontend to show the popup.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'           => false,
+                'needs_payment'     => true,
+                'appointment_id'    => $appointment->id,
+                'fee'               => (float) $appointment->fee,
+                'payment_status'    => $appointment->payment_status,
+                'payment_preference'=> $appointment->payment_preference,
+            ], 409);
+        }
+
+        // Non-AJAX (e.g. direct form submit): behave like "Complete Anyway" with a
+        // forced note so the audit trail is never empty.
+        $request->validate(['completion_note' => ['required', 'string', 'min:1', 'max:1000']]);
+        $appointment->update([
+            'status'          => 'completed',
+            'completion_note' => $request->completion_note,
+        ]);
+        NotificationService::appointmentCompleted($appointment->load('doctor.profile'));
+        return back()->with('success', 'Appointment marked as completed (no payment recorded).');
+    }
+
+    // Step 2: doctor collected cash → create a real Payment row, mark paid + complete.
+    public function collectCash(Request $request, Appointment $appointment)
+    {
+        $this->gate($appointment);
+
+        $data = $request->validate([
+            'note'           => ['required', 'string', 'min:1', 'max:1000'],
+            'reference'      => ['nullable', 'string', 'max:200'],
+            'mark_completed' => ['sometimes', 'boolean'],
+        ]);
+
+        // Refuse if already paid — keeps the audit trail clean.
+        if ($appointment->payment_status === 'paid') {
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'error' => 'This appointment is already marked paid.'], 422)
+                : back()->with('error', 'This appointment is already marked paid.');
+        }
+
+        $notes = $data['note'];
+        if (!empty($data['reference'])) {
+            $notes .= ' | Ref: ' . $data['reference'];
+        }
+
+        Payment::create([
+            'user_id'        => $appointment->patient_user_id,
+            'appointment_id' => $appointment->id,
+            'payment_method' => 'cash',
+            'status'         => 'paid',
+            'amount'         => $appointment->fee,
+            'currency'       => 'INR',
+            'purpose'        => 'appointment',
+            'notes'          => $notes,
+            'paid_at'        => now(),
+        ]);
+
+        $appointment->update([
+            'payment_status' => 'paid',
+            'status'         => 'completed',
+        ]);
+
         NotificationService::appointmentCompleted($appointment->load('doctor.profile'));
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'status' => 'completed']);
+            return response()->json(['success' => true, 'status' => 'completed', 'payment_status' => 'paid']);
         }
+        return back()->with('success', 'Cash payment recorded and appointment completed.');
+    }
 
-        return back()->with('success', 'Appointment marked as completed.');
+    // Step 2: "Complete Anyway" → complete, stay unpaid, no Payment record.
+    public function completeAnyway(Request $request, Appointment $appointment)
+    {
+        $this->gate($appointment);
+
+        $data = $request->validate([
+            'note' => ['required', 'string', 'min:1', 'max:1000'],
+        ]);
+
+        $appointment->update([
+            'status'          => 'completed',
+            'completion_note' => $data['note'],
+            // payment_status deliberately left alone.
+        ]);
+
+        NotificationService::appointmentCompleted($appointment->load('doctor.profile'));
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'status' => 'completed', 'payment_status' => $appointment->payment_status]);
+        }
+        return back()->with('success', 'Appointment completed (no payment recorded).');
     }
 
     // ── Cancel ───────────────────────────────────────────────────────────────
@@ -168,6 +271,48 @@ class AppointmentController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Could not send reminder: ' . $e->getMessage());
         }
+    }
+
+    // ── Request payment (nudge patient to pay online) ─────────────────────────
+
+    public function requestPayment(Request $request, Appointment $appointment)
+    {
+        $this->gate($appointment);
+
+        if ($appointment->payment_status === 'paid') {
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'error' => 'This appointment is already paid.'], 422)
+                : back()->with('error', 'This appointment is already paid.');
+        }
+
+        if ($appointment->status === 'cancelled') {
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'error' => 'Cannot request payment for a cancelled appointment.'], 422)
+                : back()->with('error', 'Cannot request payment for a cancelled appointment.');
+        }
+
+        $appointment->update([
+            'payment_requested_at' => now(),
+            'payment_requested_by' => auth()->id(),
+        ]);
+
+        $appointment = $appointment->fresh(['patient.profile', 'doctor.profile']);
+
+        // In-app notification to patient
+        NotificationService::paymentRequested($appointment);
+
+        // WhatsApp nudge (best-effort, never fail the request)
+        try {
+            $this->whatsApp->sendPaymentRequest($appointment);
+        } catch (\Exception) {}
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'              => true,
+                'payment_requested_at' => $appointment->payment_requested_at?->toIso8601String(),
+            ]);
+        }
+        return back()->with('success', 'Payment request sent to patient.');
     }
 
     // ── Manage availability slots ─────────────────────────────────────────────
